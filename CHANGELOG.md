@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+## [0.106.0] - 2026-10-24
+
 - [Feature] **Clubmates can be kept apart in a team Swiss.** Settings, Forbidden pairings now speaks of teams when the event is one: *Teams of the same club* (from the club on each team's card, compared trimmed and without regard to capitals, a team with no club being no club's) and *Teams I choose*, each a rule or a wish, for every round or a window of them, exactly as the players' rules are. A rule is handed to Ainalrami 0.46.0 as absolute; a wish only breaks ties between pairings C.04.6 ranks equal and never costs a colour, a floater or the bye. When the groups leave a round that would pair without them no pairing, the Pairings page says which groups are in force and which of them, lifted alone, would let it through, instead of blaming Article 3. Not FIDE, and the documents say so.
 - [Change] **FIDE mode counts team rules as it counts the players'.** Rules set before round 1 change nothing; a wish that actually moves a match asks the two questions first and is recorded for the report, as does any rule added, changed or removed once round 1 is paired. A team Swiss paired through the page now asks too, which it had no way to do before.
 - [Change] **A team TRF never writes `XXP` or `260`.** Ainalrami 0.46.0 refuses them in a team Swiss, since they name players and a team event has none to name. The engine dialect writes `XXO team-forbidden 3 11 16 @1-2` and `XXO team-soft-pairs ...` instead, `ainalrami -c` replays the file with them, and importing it brings them back as rules for the teams named. The TRF26 report keeps to FIDE's records. Ainalrami is pinned to v0.46.0.
