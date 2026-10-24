@@ -23,7 +23,7 @@ msgstr ""
 #: lib/pairings_engine_web/live/rating_lists_live.ex:274
 #: lib/pairings_engine_web/live/settings_boards_live.ex:995
 #: lib/pairings_engine_web/live/settings_fide_live.ex:495
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1513
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1521
 #: lib/pairings_engine_web/live/team_sheets_live.ex:604
 #: lib/pairings_engine_web/live/teams_live.ex:972
 #: lib/pairings_engine_web/live/tools_norms_live.ex:978
@@ -133,7 +133,7 @@ msgstr ""
 msgid "Actual score minus expected score"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1501
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1509
 #, elixir-autogen, elixir-format
 msgid "Add collaborator"
 msgstr ""
@@ -183,7 +183,7 @@ msgstr ""
 msgid "Already have an account?"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1134
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1142
 #, elixir-autogen, elixir-format
 msgid "Applied in order, following the FIDE Tie-Break Regulations. Higher in the list = decided first."
 msgstr ""
@@ -335,7 +335,7 @@ msgstr ""
 msgid "Choose a .trf file"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1636
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1644
 #, elixir-autogen, elixir-format
 msgid "Choose a PNG, JPEG, GIF or WebP image"
 msgstr ""
@@ -448,7 +448,7 @@ msgstr ""
 msgid "Ctrl+I"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1614
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1622
 #, elixir-autogen, elixir-format
 msgid "Current logo"
 msgstr ""
@@ -552,7 +552,7 @@ msgstr ""
 msgid "Elo bands (rating:bonus, comma-separated)"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1481
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1489
 #: lib/pairings_engine_web/live/user_live/settings.ex:834
 #, elixir-autogen, elixir-format
 msgid "Email address"
@@ -949,7 +949,7 @@ msgstr ""
 #: lib/pairings_engine_web/live/settings_export_live.ex:1952
 #: lib/pairings_engine_web/live/settings_fide_live.ex:619
 #: lib/pairings_engine_web/live/settings_group_live.ex:276
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1207
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1215
 #, elixir-autogen, elixir-format
 msgid "Move down"
 msgstr ""
@@ -957,7 +957,7 @@ msgstr ""
 #: lib/pairings_engine_web/live/settings_export_live.ex:1941
 #: lib/pairings_engine_web/live/settings_fide_live.ex:606
 #: lib/pairings_engine_web/live/settings_group_live.ex:262
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1195
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1203
 #, elixir-autogen, elixir-format
 msgid "Move up"
 msgstr ""
@@ -1078,7 +1078,7 @@ msgstr ""
 msgid "No tournaments yet."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1594
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1602
 #, elixir-autogen, elixir-format
 msgid "Nobody else has access to this tournament yet."
 msgstr ""
@@ -1116,7 +1116,7 @@ msgstr ""
 
 #: lib/pairings_engine/federations/bel/swar_merge.ex:904
 #: lib/pairings_engine_web/live/players_live.ex:2752
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1110
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1118
 #, elixir-autogen, elixir-format
 msgid "Number of rounds"
 msgstr ""
@@ -1348,7 +1348,7 @@ msgstr ""
 msgid "Remove last arbiter"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1622
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1630
 #, elixir-autogen, elixir-format
 msgid "Remove logo"
 msgstr ""
@@ -1363,7 +1363,7 @@ msgstr ""
 msgid "Requested / absence byes this round"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1239
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1247
 #, elixir-autogen, elixir-format
 msgid "Reset to FIDE default"
 msgstr ""
@@ -1441,7 +1441,7 @@ msgstr ""
 
 #: lib/pairings_engine_web/live/badge_studio_live.ex:1568
 #: lib/pairings_engine_web/live/settings_scoring_live.ex:855
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1455
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1463
 #, elixir-autogen, elixir-format
 msgid "Save settings"
 msgstr ""
@@ -1517,7 +1517,7 @@ msgstr ""
 msgid "Settings - Scoring"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1029
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1037
 #, elixir-autogen, elixir-format
 msgid "Settings - Tournament"
 msgstr ""
@@ -1527,7 +1527,7 @@ msgstr ""
 msgid "Settings → Export / backup"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1465
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1473
 #, elixir-autogen, elixir-format
 msgid "Share / Team"
 msgstr ""
@@ -1666,7 +1666,7 @@ msgstr ""
 msgid "To round"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1092
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1100
 #, elixir-autogen, elixir-format
 msgid "Tournament format"
 msgstr ""
@@ -1702,7 +1702,7 @@ msgstr ""
 msgid "Upload files"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1664
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1672
 #, elixir-autogen, elixir-format
 msgid "Upload logo"
 msgstr ""
@@ -1871,7 +1871,7 @@ msgstr ""
 msgid "in progress"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1474
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1482
 #, elixir-autogen, elixir-format
 msgid "magic link"
 msgstr ""
@@ -1899,7 +1899,7 @@ msgid "nothing given up"
 msgstr ""
 
 #: lib/pairings_engine_web/live/pairings_live.ex:7873
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1637
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1645
 #: lib/pairings_engine_web/live/tournaments_live.ex:3350
 #: lib/pairings_engine_web/live/tournaments_live.ex:3543
 #: lib/pairings_engine_web/live/tournaments_live.ex:3607
@@ -1954,7 +1954,7 @@ msgstr ""
 msgid "starting rank"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1482
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1490
 #, elixir-autogen, elixir-format
 msgid "teammate@example.com"
 msgstr ""
@@ -2887,7 +2887,7 @@ msgstr ""
 msgid "Cross table"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1164
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1172
 #, elixir-autogen, elixir-format
 msgid "Custom"
 msgstr ""
@@ -2982,7 +2982,7 @@ msgid "Download rating list"
 msgstr ""
 
 #: lib/pairings_engine_web/live/settings_support.ex:1492
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1509
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1517
 #: lib/pairings_engine_web/live/user_live/login.ex:174
 #: lib/pairings_engine_web/live/user_live/login.ex:207
 #: lib/pairings_engine_web/live/user_live/registration.ex:137
@@ -3071,7 +3071,7 @@ msgstr ""
 msgid "From"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1035
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1043
 #, elixir-autogen, elixir-format
 msgid "General"
 msgstr ""
@@ -3111,7 +3111,7 @@ msgstr ""
 msgid "Import results (CSV) - round %{n}"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1469
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1477
 #, elixir-autogen, elixir-format
 msgid "Invite other people to this tournament by email - they can open, edit, pair, enter results, print and export it, exactly like you, except they can't manage collaborators or delete the tournament. They only get access once they explicitly accept the emailed invitation while signed in with their own email (%[magic_link]) - no shared password needed."
 msgstr ""
@@ -3149,7 +3149,7 @@ msgstr ""
 msgid "Local mail adapter - sent emails appear in %[mailbox]."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1599
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1607
 #, elixir-autogen, elixir-format
 msgid "Logo"
 msgstr ""
@@ -3288,7 +3288,7 @@ msgid "Options"
 msgstr ""
 
 #: lib/pairings_engine_web/live/settings_norms_live.ex:674
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1058
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1066
 #: lib/pairings_engine_web/live/tools_norms_live.ex:1108
 #: lib/pairings_engine_web/live/user_live/settings.ex:1151
 #, elixir-autogen, elixir-format
@@ -3434,7 +3434,7 @@ msgstr ""
 msgid "Points"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1155
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1163
 #, elixir-autogen, elixir-format
 msgid "Preset"
 msgstr ""
@@ -3456,7 +3456,7 @@ msgstr ""
 #: lib/pairings_engine_web/live/players_live.ex:3138
 #: lib/pairings_engine_web/live/players_live.ex:5734
 #: lib/pairings_engine_web/live/print_live.ex:30
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1608
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1616
 #: lib/pairings_engine_web/live/standings_live.ex:799
 #: lib/pairings_engine_web/live/team_sheets_live.ex:144
 #, elixir-autogen, elixir-format
@@ -3521,8 +3521,8 @@ msgstr ""
 #: lib/pairings_engine_web/live/settings_restrictions_live.ex:881
 #: lib/pairings_engine_web/live/settings_restrictions_live.ex:923
 #: lib/pairings_engine_web/live/settings_rooms_live.ex:231
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1219
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1585
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1227
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1593
 #: lib/pairings_engine_web/live/teams_live.ex:1030
 #: lib/pairings_engine_web/live/tools_norms_live.ex:1008
 #: lib/pairings_engine_web/live/tools_norms_live.ex:1022
@@ -3730,7 +3730,7 @@ msgstr ""
 msgid "Sex"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1603
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1611
 #, elixir-autogen, elixir-format
 msgid "Shown on printed documents (place cards, and any other print page that has a logo slot - see %[print]). Only raster images (PNG, JPEG, GIF, WebP) are accepted - SVG is rejected, since it can carry scripts and this image is embedded straight back into pages the app serves. Capped at 2 MB."
 msgstr ""
@@ -3788,7 +3788,7 @@ msgstr ""
 #: lib/pairings_engine_web/live/fide_live.ex:1106
 #: lib/pairings_engine_web/live/players_live.ex:110
 #: lib/pairings_engine_web/live/settings_export_live.ex:1399
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1511
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1519
 #: lib/pairings_engine_web/live/tournaments_live.ex:3824
 #: lib/pairings_engine_web/live/tournaments_live.ex:3920
 #, elixir-autogen, elixir-format
@@ -3890,7 +3890,7 @@ msgstr ""
 msgid "This tournament is paired using %[engine]."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1131
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1139
 #, elixir-autogen, elixir-format
 msgid "Tiebreaks"
 msgstr ""
@@ -3949,7 +3949,7 @@ msgstr ""
 msgid "Tournament"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1617
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1625
 #, elixir-autogen, elixir-format
 msgid "Tournament logo"
 msgstr ""
@@ -4945,7 +4945,7 @@ msgstr ""
 #: lib/pairings_engine_web/live/badge_studio_live.ex:660
 #: lib/pairings_engine_web/live/badge_studio_live.ex:799
 #: lib/pairings_engine_web/live/badge_studio_live.ex:999
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1486
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1494
 #: lib/pairings_engine_web/live/tournaments_live.ex:3058
 #, elixir-autogen, elixir-format
 msgid "Role"
@@ -5832,7 +5832,7 @@ msgstr ""
 #: lib/pairings_engine_web/controllers/mobile_connect_html.ex:117
 #: lib/pairings_engine_web/controllers/team_print_controller.ex:292
 #: lib/pairings_engine_web/live/settings_tournament_live.ex:658
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1551
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1559
 #: lib/pairings_engine_web/live/tournaments_live.ex:3079
 #, elixir-autogen, elixir-format
 msgid "Arbiter"
@@ -8688,12 +8688,12 @@ msgstr ""
 msgid "Main navigation"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1208
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1216
 #, elixir-autogen, elixir-format
 msgid "Move %{tiebreak} down"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1196
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1204
 #, elixir-autogen, elixir-format
 msgid "Move %{tiebreak} up"
 msgstr ""
@@ -8715,7 +8715,7 @@ msgstr ""
 msgid "QR code for entering results on a phone"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1220
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1228
 #, elixir-autogen, elixir-format
 msgid "Remove %{tiebreak}"
 msgstr ""
@@ -13670,7 +13670,7 @@ msgstr ""
 msgid "That file could not be uploaded. Fix the problem shown above it and try again."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1661
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1669
 #, elixir-autogen, elixir-format
 msgid "Uploading…"
 msgstr ""
@@ -16036,7 +16036,7 @@ msgstr ""
 msgid "Apply this change"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1266
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1274
 #, elixir-autogen, elixir-format
 msgid "Average rating of the rated players"
 msgstr ""
@@ -16098,17 +16098,17 @@ msgstr ""
 msgid "Bye preference"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1391
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1399
 #, elixir-autogen, elixir-format
 msgid "C.07 Article 10: rating-based tie-breaks are not recommended when a player can have more than one rating during the tournament. Consider removing them from the list above."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1274
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1282
 #, elixir-autogen, elixir-format
 msgid "C.07 Article 10: with an unrated player in the tournament the rating-based tie-breaks (ARO and its cuts and medians, TPR, PTP, APRO, APPO, RTNG) are dropped, unless the regulations say how unrated players are handled. Leave empty to drop them; enter a rating to count every unrated player as that rating instead. State the rule in the tournament regulations before the first round."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1292
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1300
 #, elixir-autogen, elixir-format
 msgid "C.07 Article 2.1: the regulations say whether tied participants share a place. Off, players still level after the whole tie-break list are put in an order (rating, then name) and numbered one after the other - record a drawing of lots with the manual order. On, they all show the same place, such as 2=, and the next place is skipped accordingly."
 msgstr ""
@@ -16143,7 +16143,7 @@ msgstr ""
 msgid "Checking that the FIDE list is current..."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1320
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1328
 #, elixir-autogen, elixir-format
 msgid "Chess960"
 msgstr ""
@@ -16379,12 +16379,12 @@ msgstr ""
 msgid "Finished hand edits to round %{round}: nothing to record."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1258
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1266
 #, elixir-autogen, elixir-format
 msgid "Fixed rating"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1251
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1259
 #, elixir-autogen, elixir-format
 msgid "Fixed rating: the rating below, and the rating-based tie-breaks are dropped while it is empty. Lowest rating in the field: every unrated player counts as the lowest rating of the tournament. Average rating: as the average of the rated players. The number worked out is the one written to the TRF tie-break line, so a checker computes the same values."
 msgstr ""
@@ -16481,7 +16481,7 @@ msgstr ""
 msgid "Highest of FIDE, national and manual (HBFN)"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1249
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1257
 #, elixir-autogen, elixir-format
 msgid "How an unrated player is counted in the tie-breaks"
 msgstr ""
@@ -16563,7 +16563,7 @@ msgstr ""
 msgid "Leave FIDE mode?"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1400
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1408
 #, elixir-autogen, elixir-format
 msgid "Leave empty for each player's first rating, which C.07 Article 10 prescribes unless the regulations say otherwise. Enter a round to use the ratings valid in that round instead."
 msgstr ""
@@ -16609,7 +16609,7 @@ msgstr ""
 msgid "Lots cannot be drawn for this tournament."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1262
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1270
 #, elixir-autogen, elixir-format
 msgid "Lowest rating in the field"
 msgstr ""
@@ -16711,7 +16711,7 @@ msgstr ""
 msgid "No tie-breaks in the file (records 202/212): this app's defaults were set (%{list})."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1231
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1239
 #, elixir-autogen, elixir-format
 msgid "No tiebreaks selected - players level on points are ordered by rating and name."
 msgstr ""
@@ -16818,7 +16818,7 @@ msgstr ""
 msgid "Players are numbered by rating. Players with the same rating can exchange their numbers, to order them by another rule; regenerating renumbers everyone by the current ratings and keeps the order you gave players of equal rating. Both are possible until round 4 is paired (C.04.2)."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1290
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1298
 #, elixir-autogen, elixir-format
 msgid "Players still level share a place"
 msgstr ""
@@ -16864,7 +16864,7 @@ msgstr ""
 msgid "Rating lists of your own, loaded from a CSV file, to use beside the FIDE and national lists: they turn up when a player is added, and a tournament can put them in its rating-list sequence (Settings, FIDE). They are shared by every tournament on this machine."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1272
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1280
 #, elixir-autogen, elixir-format
 msgid "Rating of an unrated player in the tie-breaks"
 msgstr ""
@@ -16874,7 +16874,7 @@ msgstr ""
 msgid "Rating-based"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1398
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1406
 #, elixir-autogen, elixir-format
 msgid "Rating-based tie-breaks use the rating valid in round"
 msgstr ""
@@ -17210,7 +17210,7 @@ msgstr ""
 msgid "The sequence needs at least one list."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1322
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1330
 #, elixir-autogen, elixir-format
 msgid "The tournament is played as Chess960. The arbiter draws a random starting position for each round on the Pairings page; it is shown there and printed with the pairings."
 msgstr ""
@@ -17275,7 +17275,7 @@ msgstr ""
 msgid "This tournament uses the FIDE list of %{needed}, but the list on this machine is from %{have}. Update the list, then check again."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1446
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1454
 #, elixir-autogen, elixir-format
 msgid "This tournament's dates span %{days} days. If a new rating list is published during it, tick \"Tournament lasts more than 30 days\" so players can hold more than one rating."
 msgstr ""
@@ -17285,7 +17285,7 @@ msgstr ""
 msgid "Took back a full-point bye in round %{round}: the player is absent again."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1342
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1350
 #, elixir-autogen, elixir-format
 msgid "Tournament lasts more than 30 days"
 msgstr ""
@@ -18820,7 +18820,7 @@ msgstr ""
 msgid "They get no pairing number when round 1 is paired and are numbered when they arrive, by the setting above. On for every tournament created from version 0.79 on; off, the old way, for older and imported ones. Can be switched until round 1 is paired."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1422
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1430
 #, elixir-autogen, elixir-format
 msgid "Only if your tournament regulations say so. On, each opponent counts at the rating they held in the round the game was played, and the round above is ignored; Rating (RTNG) still sorts by the first rating. Off, the default, every opponent counts at one rating for the whole event."
 msgstr ""
@@ -18840,7 +18840,7 @@ msgstr ""
 msgid "Rating-based tie-breaks count every player at their first rating of the tournament (C.07 Article 10)."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1420
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1428
 #, elixir-autogen, elixir-format
 msgid "Rating-based tie-breaks use each round's rating"
 msgstr ""
@@ -21421,7 +21421,7 @@ msgstr[1] ""
 msgid "How the rounds are paired, and the rating that sets the pairing numbers. The settings of one pairing system show only while it is chosen."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1315
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1323
 #, elixir-autogen, elixir-format
 msgid "Only for an event that is not ordinary chess over a few weeks."
 msgstr ""
@@ -21454,12 +21454,12 @@ msgstr ""
 msgid "Show advanced settings"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1312
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1320
 #, elixir-autogen, elixir-format
 msgid "Special formats"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1246
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1254
 #, elixir-autogen, elixir-format
 msgid "Unrated players and shared places"
 msgstr ""
@@ -21474,7 +21474,7 @@ msgstr ""
 msgid "What a win, a draw, a loss and the odd player out's bye are worth."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1038
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1046
 #, elixir-autogen, elixir-format
 msgid "What the tournament is called, where it is played and how long it runs."
 msgstr ""
@@ -22353,27 +22353,27 @@ msgstr ""
 msgid "from round %{round}"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1354
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1362
 #, elixir-autogen, elixir-format
 msgid "For a tournament that runs over more than one FIDE rating list. A player can then have a later rating from a given round: Refresh ratings adds the new list that way instead of replacing the starting rating. The pairing never changes: pairing numbers stay as they were at the start. It is reported to FIDE either month by month (B.02 4.1) or once at the end, as chosen below. Tie-breaks that use ratings count the first rating unless you choose otherwise below."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1371
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1379
 #, elixir-autogen, elixir-format
 msgid "Monthly reports"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1379
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1387
 #, elixir-autogen, elixir-format
 msgid "Monthly: each month's rounds go to FIDE in a file of their own, due for the next rating list. At the end: the tournament is registered with FIDE once and every round goes in one file after the last day; a report must carry as many rounds as the registration it is sent against."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1374
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1382
 #, elixir-autogen, elixir-format
 msgid "One report at the end (as registered with FIDE)"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1365
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1373
 #, elixir-autogen, elixir-format
 msgid "Reporting to FIDE"
 msgstr ""
@@ -22857,7 +22857,7 @@ msgstr ""
 msgid "%{owner} invited you to be an arbiter at \"%{tournament}\" on OpenPairings. You will enter results and incidents from your phone, under your own account; the tournament itself stays with its organisers."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1490
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1498
 #, elixir-autogen, elixir-format
 msgid "Arbiter - results and incidents on a phone"
 msgstr ""
@@ -22949,13 +22949,13 @@ msgstr ""
 
 #: lib/pairings_engine_web/controllers/mobile_connect_html.ex:116
 #: lib/pairings_engine_web/live/settings_tournament_live.ex:659
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1548
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1556
 #: lib/pairings_engine_web/live/tournaments_live.ex:3079
 #, elixir-autogen, elixir-format
 msgid "Editor"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1488
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1496
 #, elixir-autogen, elixir-format
 msgid "Editor - everything you can do"
 msgstr ""
@@ -25291,7 +25291,7 @@ msgstr ""
 msgid "Regular Swiss"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1580
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1588
 #, elixir-autogen, elixir-format
 msgid "Remove %{email}? They lose access to this tournament."
 msgstr ""
@@ -25794,7 +25794,7 @@ msgstr ""
 msgid "You already own this tournament"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1557
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1565
 #, elixir-autogen, elixir-format
 msgid "active"
 msgstr ""
@@ -25829,7 +25829,7 @@ msgstr ""
 msgid "e.g. 1800:0.5, 2000:1"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1558
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1566
 #, elixir-autogen, elixir-format
 msgid "invited (waiting for accept)"
 msgstr ""
@@ -26276,7 +26276,7 @@ msgstr ""
 msgid "FIDE"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1073
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1081
 #, elixir-autogen, elixir-format
 msgid "FIDE ID %{id} belongs to %{name}. Pick the new name from the list, or saving clears the ID rather than pinning it on somebody else."
 msgstr ""
@@ -26321,12 +26321,12 @@ msgstr ""
 msgid "Phones cannot reach this computer yet - switch on \"Let phones on this network connect\" in Phone QR before %{action}."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1572
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1580
 #, elixir-autogen, elixir-format
 msgid "Resend invitation"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1545
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1553
 #, elixir-autogen, elixir-format
 msgid "Role of %{email}"
 msgstr ""
@@ -26356,7 +26356,7 @@ msgstr ""
 msgid "Saving new points re-scores every round already played, not just the ones to come: standings, tie-breaks and anything already published move with it. Fine for fixing a mistake; not something to try mid-event to see what happens."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1570
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1578
 #, elixir-autogen, elixir-format
 msgid "Sending…"
 msgstr ""
@@ -26401,12 +26401,12 @@ msgstr ""
 msgid "The e-mail could not be sent - share this link instead: %{link}"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1105
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1113
 #, elixir-autogen, elixir-format
 msgid "The format is fixed now that round 1 is paired: the rounds already played were made for it. For another format, start a new tournament."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:1085
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:1093
 #, elixir-autogen, elixir-format
 msgid "The organizer's FIDE ID was cleared: it belonged to %{name}. Pick the organizer from the list to set a new one."
 msgstr ""
@@ -26694,12 +26694,12 @@ msgstr ""
 msgid "50% - 1/2"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:958
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:966
 #, elixir-autogen, elixir-format
 msgid "Add tie-break"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:854
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:862
 #, elixir-autogen, elixir-format
 msgid "Adjust it"
 msgstr ""
@@ -26709,12 +26709,12 @@ msgstr ""
 msgid "Already in the list."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:830
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:838
 #, elixir-autogen, elixir-format
 msgid "Choose the tie-break"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:877
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:885
 #, elixir-autogen, elixir-format
 msgid "Cut or median"
 msgstr ""
@@ -26734,17 +26734,17 @@ msgstr ""
 msgid "Direct encounter only"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:907
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:915
 #, elixir-autogen, elixir-format
 msgid "Fore (the last round counted as a draw)"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:898
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:906
 #, elixir-autogen, elixir-format
 msgid "Forfeits count as games"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:885
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:893
 #, elixir-autogen, elixir-format
 msgid "Koya limit"
 msgstr ""
@@ -26759,17 +26759,17 @@ msgstr ""
 msgid "Median-2"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:921
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:929
 #, elixir-autogen, elixir-format
 msgid "Normalising factor (optional)"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:916
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:924
 #, elixir-autogen, elixir-format
 msgid "Reversed (the lower, the better)"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:861
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:869
 #, elixir-autogen, elixir-format
 msgid "Score basis"
 msgstr ""
@@ -26779,7 +26779,7 @@ msgstr ""
 msgid "The normalising factor is a whole number from 1."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:869
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:877
 #, elixir-autogen, elixir-format
 msgid "Then"
 msgstr ""
@@ -26789,7 +26789,7 @@ msgstr ""
 msgid "This combination is not a tie-break."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_tournament_live.ex:838
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:846
 #, elixir-autogen, elixir-format
 msgid "Tie-break"
 msgstr ""
@@ -26822,4 +26822,14 @@ msgstr ""
 #: lib/pairings_engine_web/controllers/print_controller.ex:2416
 #, elixir-autogen, elixir-format
 msgid "Paired by OpenPairings (by %{author}) using %{engine} · pairings.cloud"
+msgstr ""
+
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:830
+#, elixir-autogen, elixir-format
+msgid "Add a tie-break"
+msgstr ""
+
+#: lib/pairings_engine_web/live/settings_tournament_live.ex:832
+#, elixir-autogen, elixir-format
+msgid "Build one in two steps; it goes to the bottom of the list above, where you can move it."
 msgstr ""

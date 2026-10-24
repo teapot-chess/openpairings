@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] The tie-break builder says what it is for before asking you to choose anything: an "Add a tie-break" heading, and a line saying where the new one lands.
+
 ## [0.105.0] - 2026-10-24
 
 - [Change] **The printouts are signed by the author, not by the testers.** The footer on every printed sheet now says who made the program and where it lives; the thanks to the people whose feedback shaped it moved to Settings, About, where credits are read rather than photocopied. About gains the author's line above them.

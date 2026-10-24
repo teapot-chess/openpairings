@@ -826,6 +826,14 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
 
     ~H"""
     <div id="tiebreak-builder" class="tb-builder">
+      <div class="tb-head">
+        <h3 id="tb-builder-title" class="tb-title">{gettext("Add a tie-break")}</h3>
+        <p class="tb-intro">
+          {gettext(
+            "Build one in two steps; it goes to the bottom of the list above, where you can move it."
+          )}
+        </p>
+      </div>
       <p class="tb-step">
         <span class="tb-step-n">1</span> {gettext("Choose the tie-break")}
       </p>
