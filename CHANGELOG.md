@@ -17,6 +17,10 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Feature] **Board order, chosen for each round.** Options, Teams has a new *Board order*: *Fixed by the roster* (the default and the Olympiad procedure, where nobody sits above a player listed higher) or *Chosen for each round*, where any player of the roster, reserves included, may sit on any board of a line-up. Some leagues let the captain decide the order, and arguing with a league is a hobby for people with more time. The pairing still seats a team in roster order; the match's *Line-ups* page changes it. Every line of the TRF26 already names the opponent and colour actually played, so the line-ups as played are what the file carries. In FIDE mode the setting is locked once round 1 is paired, since it is competition regulation.
+- [Feature] **A series and a club on the team.** The team card takes an optional *Series* label ("Reeks 1") and an optional *Club*. A series is a label, not a group: teams of every series are still paired together. When any team has a series, the team standings and their printout gain a *Series* column. The club is stored and shown on the card; it waits for a pairing rule that wants to know who shares a clubhouse.
+- [Feature] **An individual ranking for team tournaments.** The Standings page has a second view, *Individual ranking*: every player who played, with rank, name, rating, team, series, games, points and percentage, filtered by series when there are any, and a printout that follows the filter. The order is points, then percentage, then rating; players level on points and percentage share a rank. Points are the board statistics' own, and *Games* counts only games actually played, so a forfeit adds a point but not a game.
+
 - [Change] The printout footer thanks a tester again, next to the signature. Some debts go on every page.
 - [Change] The tie-break builder says what it is for before asking you to choose anything: an "Add a tie-break" heading, and a line saying where the new one lands.
 

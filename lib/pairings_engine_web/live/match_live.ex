@@ -105,6 +105,7 @@ defmodule PairingsEngineWeb.MatchLive do
           Plugins.check_lineups(t, match, socket.assigns.round_number, lineups.a, lineups.b),
         draft?: false,
         optional?: Tournament.team_lineups_optional?(t),
+        free_order?: Tournament.team_free_board_order?(t),
         unseated?: Enum.all?(lineups.a ++ lineups.b, &is_nil/1),
         score_form: to_form(%{"a" => "", "b" => ""}, as: :score)
       )
@@ -564,13 +565,19 @@ defmodule PairingsEngineWeb.MatchLive do
         <div class="card">
           <h2>{gettext("Line-ups")}</h2>
 
-          <p :if={!@optional?} class="hint">
+          <p :if={@free_order?} id="lineups-free-order-hint" class="hint">
+            {gettext(
+              "The board order is chosen for each round in this tournament: put any player of the roster on any board. The roster order is only how the pairing seats a team when nobody changes it."
+            )}
+          </p>
+
+          <p :if={!@optional? and !@free_order?} class="hint">
             {gettext(
               "Who plays on which board. Each team plays in its roster's board order: players can be left out, and the players below them move up, but nobody plays above a player listed higher. A team short of players leaves its bottom boards empty, and the other team wins them by forfeit."
             )}
           </p>
 
-          <p :if={@optional?} id="lineups-optional-hint" class="hint">
+          <p :if={@optional? and !@free_order?} id="lineups-optional-hint" class="hint">
             {gettext(
               "Line-ups are optional in this tournament: a board may stay empty, and its result is entered on the Pairings page all the same. Players who are entered keep their roster's board order."
             )}

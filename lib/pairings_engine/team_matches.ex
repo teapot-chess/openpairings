@@ -591,7 +591,10 @@ defmodule PairingsEngine.TeamMatches do
       `{:error, {:board_order, upper, lower}}`.
       Unless a plugin's regulations set the board order for this
       tournament (`PairingsEngine.Plugins.plugin_board_order?/1`): then the
-      plugin's line-up check reports on it instead.
+      plugin's line-up check reports on it instead. And unless the
+      tournament's *Board order* is "chosen for each round"
+      (`Tournament.team_free_board_order?/1`): then any roster player may
+      sit on any board.
 
   At least one team must field a player (`{:error, :no_players}`; a match
   neither team plays is a double forfeit, `double_forfeit/2`). Boards are
@@ -665,7 +668,7 @@ defmodule PairingsEngine.TeamMatches do
     # which reports and never refuses; the roster order is then only the
     # order the pairing seats by default.
     out_of_order =
-      if PairingsEngine.Plugins.plugin_board_order?(t) do
+      if PairingsEngine.Plugins.plugin_board_order?(t) or Tournament.team_free_board_order?(t) do
         nil
       else
         seated
@@ -1009,6 +1012,9 @@ defmodule PairingsEngine.TeamMatches do
   # match's lower boards have lower board orders than the new player, and
   # those on higher boards higher ones. A player with no board order has no
   # place to check and never blocks.
+  defp order_fits?(%Tournament{team_board_order: "free"}, _match, _pairings, _k, _white, _black),
+    do: true
+
   defp order_fits?(t, match, pairings, k, white, black) do
     per_match = max(t.team_boards || 1, 1)
     {new_a, new_b} = if white.team_id == match.team_a_id, do: {white, black}, else: {black, white}

@@ -43,7 +43,13 @@ defmodule PairingsEngineWeb.StandingsLive do
        # simply what a mount with no `?category=` in the URL would resolve
        # to anyway, kept as an explicit default so `reload_standings/1`
        # never reads an unassigned key on the very first call.
-       selected_category: nil
+       selected_category: nil,
+       # A team tournament's second view and its series filter
+       # (`?view=players&series=NAME`), set by `handle_params/3`.
+       team_view: :teams,
+       selected_series: nil,
+       series_labels: [],
+       player_ranking: []
      )
      |> reload_standings()}
   end
@@ -62,11 +68,17 @@ defmodule PairingsEngineWeb.StandingsLive do
     selected =
       if is_binary(requested) and requested in (tournament.categories || []), do: requested
 
+    view = if params["view"] == "players", do: :players, else: :teams
+
     {:noreply,
-     assign(socket,
+     socket
+     |> assign(
        selected_category: selected,
-       filtered_entries: compute_filtered_entries(socket.assigns.entries, selected)
-     )}
+       filtered_entries: compute_filtered_entries(socket.assigns.entries, selected),
+       team_view: view,
+       selected_series: params["series"]
+     )
+     |> assign_player_ranking()}
   end
 
   # Nothing here is user-editable except the manual-ranking controls below
@@ -247,6 +259,19 @@ defmodule PairingsEngineWeb.StandingsLive do
     {:noreply, push_patch(socket, to: path)}
   end
 
+  # The series filter of the individual ranking. Like the category selector
+  # it goes through the URL, so it survives a reload and can be linked.
+  def handle_event("series_change", %{"series" => value}, socket) do
+    id = socket.assigns.tournament.id
+
+    path =
+      if value in [nil, ""],
+        do: ~p"/t/#{id}/standings?view=players",
+        else: ~p"/t/#{id}/standings?view=players&series=#{value}"
+
+    {:noreply, push_patch(socket, to: path)}
+  end
+
   ## ---------- before round 1 ----------
   #
   # Round 0 is the field as entered, before a single game has been played.
@@ -409,7 +434,7 @@ defmodule PairingsEngineWeb.StandingsLive do
     selected_category = Map.get(socket.assigns, :selected_category)
     latest_complete_round = Tournaments.latest_complete_round(tournament)
 
-    socket = assign_team_standings(socket, tournament)
+    socket = socket |> assign_team_standings(tournament) |> assign_player_ranking()
     postponed_open = PostponedGames.open_games(tournament)
     overdue = PostponedGames.overdue_blanks(tournament)
 
@@ -483,6 +508,24 @@ defmodule PairingsEngineWeb.StandingsLive do
         board_stats: []
       )
     end
+  end
+
+  # The individual ranking of a team tournament, for the series chosen. A
+  # series no team carries (a stale link) shows everybody.
+  defp assign_player_ranking(socket) do
+    %{tournament: t, team?: team?} = socket.assigns
+
+    labels =
+      if team?, do: TeamStandings.series_labels(Map.values(socket.assigns.teams_by_id)), else: []
+
+    series = if socket.assigns.selected_series in labels, do: socket.assigns.selected_series
+
+    ranking =
+      if team? and socket.assigns.team_view == :players,
+        do: TeamStandings.player_ranking(t, series: series),
+        else: []
+
+    assign(socket, series_labels: labels, selected_series: series, player_ranking: ranking)
   end
 
   defp team_name(teams_by_id, id) do
@@ -858,6 +901,10 @@ defmodule PairingsEngineWeb.StandingsLive do
         dropped={@team_dropped}
         teams_by_id={@teams_by_id}
         board_stats={@board_stats}
+        team_view={@team_view}
+        series_labels={@series_labels}
+        selected_series={@selected_series}
+        player_ranking={@player_ranking}
       />
       <div
         :if={!@keizer? and !@team? and !@final_refused}
@@ -1326,6 +1373,10 @@ defmodule PairingsEngineWeb.StandingsLive do
   attr :dropped, :list, required: true
   attr :teams_by_id, :map, required: true
   attr :board_stats, :list, required: true
+  attr :team_view, :atom, default: :teams
+  attr :series_labels, :list, default: []
+  attr :selected_series, :string, default: nil
+  attr :player_ranking, :list, default: []
 
   defp team_standings_section(assigns) do
     ~H"""
@@ -1386,7 +1437,39 @@ defmodule PairingsEngineWeb.StandingsLive do
       </.link>
     </div>
 
-    <div :if={@entries != []} id="team-standings" class="card table-card">
+    <nav :if={@entries != []} id="standings-views" class="round-picker" style="margin-bottom: 12px">
+      <.link
+        patch={~p"/t/#{@tournament.id}/standings"}
+        id="standings-view-teams"
+        class={["pe-btn", "filter-picker", @team_view == :teams && "active"]}
+        aria-current={@team_view == :teams && "page"}
+      >
+        {gettext("Team standings")}
+      </.link>
+
+      <.link
+        patch={~p"/t/#{@tournament.id}/standings?view=players"}
+        id="standings-view-players"
+        class={["pe-btn", "filter-picker", @team_view == :players && "active"]}
+        aria-current={@team_view == :players && "page"}
+      >
+        {gettext("Individual ranking")}
+      </.link>
+    </nav>
+
+    <.player_ranking_section
+      :if={@entries != [] and @team_view == :players}
+      tournament={@tournament}
+      ranking={@player_ranking}
+      series_labels={@series_labels}
+      selected_series={@selected_series}
+    />
+
+    <div
+      :if={@entries != [] and @team_view == :teams}
+      id="team-standings"
+      class="card table-card"
+    >
       <table class="pe-table">
         <caption class="sr-only">{gettext("Team standings")}</caption>
 
@@ -1395,6 +1478,10 @@ defmodule PairingsEngineWeb.StandingsLive do
             <th scope="col" class="num">{gettext("Rank")}</th>
 
             <th scope="col">{gettext("Team")}</th>
+
+            <th :if={@series_labels != []} scope="col" id="team-series-head">
+              {gettext("Series")}
+            </th>
 
             <th scope="col" class="num" title={gettext("Matches played")}>{gettext("Played")}</th>
 
@@ -1453,6 +1540,10 @@ defmodule PairingsEngineWeb.StandingsLive do
               </details>
             </td>
 
+            <td :if={@series_labels != []} id={"team-series-#{entry.team.id}"}>
+              {entry.team.series}
+            </td>
+
             <td class="num">{entry.played}</td>
 
             <td class="num">{entry.won}-{entry.drawn}-{entry.lost}</td>
@@ -1467,13 +1558,17 @@ defmodule PairingsEngineWeb.StandingsLive do
       </table>
     </div>
 
-    <p class="hint">
+    <p :if={@team_view == :teams} class="hint">
       {gettext(
         "Match points decide the ranking, then the tie-breaks in the order set under Settings. A match scores match points once every board in it has a result; game points count each board as its result comes in."
       )}
     </p>
 
-    <div :if={@board_stats != []} id="board-stats" class="card table-card">
+    <div
+      :if={@board_stats != [] and @team_view == :teams}
+      id="board-stats"
+      class="card table-card"
+    >
       <h2 style="margin: 12px 12px 0">{gettext("Board statistics")}</h2>
 
       <table :for={{board, stats} <- stats_by_board(@board_stats)} class="pe-table">
@@ -1520,4 +1615,82 @@ defmodule PairingsEngineWeb.StandingsLive do
     </div>
     """
   end
+
+  attr :tournament, :map, required: true
+  attr :ranking, :list, required: true
+  attr :series_labels, :list, required: true
+  attr :selected_series, :string, default: nil
+
+  # Every player who played, best first: points, then percentage, then
+  # rating (the manual says so). Games are the games actually played.
+  defp player_ranking_section(assigns) do
+    ~H"""
+    <div id="player-ranking" class="card table-card">
+      <h2 style="margin: 12px 12px 0">{gettext("Individual ranking")}</h2>
+
+      <form
+        :if={@series_labels != []}
+        id="series-filter-form"
+        phx-change="series_change"
+        style="margin: 8px 12px"
+      >
+        <label class="field">
+          <span>{gettext("Series")}</span>
+          <select id="series-filter" name="series">
+            <option value="" selected={@selected_series == nil}>{gettext("All series")}</option>
+            <option :for={label <- @series_labels} value={label} selected={@selected_series == label}>
+              {label}
+            </option>
+          </select>
+        </label>
+      </form>
+
+      <p :if={@ranking == []} id="player-ranking-empty" class="hint" style="margin: 8px 12px">
+        {gettext("No games played yet.")}
+      </p>
+
+      <table :if={@ranking != []} class="pe-table">
+        <caption class="sr-only">{gettext("Individual ranking")}</caption>
+
+        <thead>
+          <tr>
+            <th scope="col" class="num">{gettext("Rank")}</th>
+            <th scope="col">{gettext("Name")}</th>
+            <th scope="col" class="num">{gettext("Rating")}</th>
+            <th scope="col">{gettext("Team")}</th>
+            <th :if={@series_labels != []} scope="col">{gettext("Series")}</th>
+            <th scope="col" class="num">{gettext("Games")}</th>
+            <th scope="col" class="num">Pts</th>
+            <th scope="col" class="num">%</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr :for={row <- @ranking} id={"player-ranking-#{row.player.id}"}>
+            <td class="num">{row.rank}</td>
+            <td><strong>{row.player.name}</strong></td>
+            <td class="num">{if row.rating > 0, do: row.rating, else: "-"}</td>
+            <td>{row.team && row.team.name}</td>
+            <td :if={@series_labels != []}>{row.series}</td>
+            <td class="num">{row.games}</td>
+            <td class="num">{format_tb(row.points)}</td>
+            <td class="num">{if row.percentage, do: format_tb(row.percentage), else: "-"}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="hint" style="margin: 8px 12px">
+        <.link
+          href={print_href(@tournament.id, @selected_series)}
+          id="player-ranking-print"
+        >
+          {gettext("Print")}
+        </.link>
+      </p>
+    </div>
+    """
+  end
+
+  defp print_href(id, nil), do: ~p"/t/#{id}/print/player-ranking"
+  defp print_href(id, label), do: ~p"/t/#{id}/print/player-ranking?series=#{label}"
 end

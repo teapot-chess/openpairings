@@ -250,6 +250,15 @@ defmodule PairingsEngineWeb.PrintLive do
                 "Per board number, the players ranked by percentage, points and performance."
               ),
             href: if(rounds_paired > 0, do: ~p"/t/#{tournament.id}/print/board-prizes")
+          },
+          %{
+            id: "print-player-ranking",
+            name: gettext("Individual ranking"),
+            desc:
+              gettext(
+                "Every player who played, ranked by points, then percentage, then rating. One series can be printed from the Standings page."
+              ),
+            href: if(rounds_paired > 0, do: ~p"/t/#{tournament.id}/print/player-ranking")
           }
         ]
     else

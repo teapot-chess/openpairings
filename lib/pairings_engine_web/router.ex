@@ -206,6 +206,7 @@ defmodule PairingsEngineWeb.Router do
     get "/t/:id/print/team-match-sheets", TeamPrintController, :match_sheets
     get "/t/:id/print/team-rosters", TeamPrintController, :rosters
     get "/t/:id/print/board-prizes", TeamPrintController, :board_prizes
+    get "/t/:id/print/player-ranking", TeamPrintController, :player_ranking
     get "/t/:id/print/postponed", PrintController, :postponed_notices
     get "/t/:id/print/schedule", SchedulePrintController, :schedule
     get "/t/:id/print/team-schedule", SchedulePrintController, :team_schedule

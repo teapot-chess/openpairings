@@ -1758,9 +1758,11 @@ defmodule PairingsEngineWeb.PrintController do
     opts = if requested, do: [through_round: requested], else: []
     entries = TeamStandings.standings(tournament, opts)
     codes = tournament |> TeamStandings.effective_tiebreaks() |> Enum.reject(&(&1 == "MP"))
+    series? = Enum.any?(entries, &(&1.team.series not in [nil, ""]))
 
     head =
       "<th class=\"num\">#{gettext("Rank")}</th><th>#{gettext("Team")}</th>" <>
+        if(series?, do: "<th>#{gettext("Series")}</th>", else: "") <>
         "<th class=\"num\">#{gettext("Played")}</th><th class=\"num\">#{gettext("W-D-L")}</th>" <>
         "<th class=\"num\">MP</th>" <>
         Enum.map_join(codes, "", &"<th class=\"num\">#{esc(&1)}</th>")
@@ -1768,6 +1770,7 @@ defmodule PairingsEngineWeb.PrintController do
     rows =
       Enum.map_join(entries, "", fn e ->
         "<tr><td class=\"num\">#{e.rank}</td><td><strong>#{esc(e.team.name)}</strong>#{team_pending_note(e)}</td>" <>
+          if(series?, do: "<td>#{esc(e.team.series)}</td>", else: "") <>
           "<td class=\"num\">#{e.played}</td>" <>
           "<td class=\"num\">#{e.won}-#{e.drawn}-#{e.lost}</td>" <>
           "<td class=\"num\"><strong>#{format_num(e.mp)}</strong></td>" <>

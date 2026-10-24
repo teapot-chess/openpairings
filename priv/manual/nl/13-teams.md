@@ -13,7 +13,7 @@ Keizer kan geen teamtoernooi zijn.
 1. Maak het toernooi aan met *Teamtoernooi* aangevinkt.
 2. **Teams** (een tabblad naast Spelers, alleen getoond bij teamtoernooien): voeg elk team toe met een
    naam, een optionele korte naam voor smalle kolommen (die staat bij de tiebreakberekening en
-   wordt niet gepubliceerd) en een optionele captain. Een team kan worden verwijderd zolang het in geen
+   wordt niet gepubliceerd) en een optionele captain, een optionele **reeks** en een optionele **club**. Een team kan worden verwijderd zolang het in geen
    enkele ronde zit; een team dat in een gepaarde wedstrijd zit, wordt in plaats daarvan teruggetrokken.
 3. Registreer de spelers zoals gewoonlijk op de pagina Spelers, en zet dan elk van hen op een
    team vanaf de kaart van het team. **De volgorde van een opstelling is de bordvolgorde**:
@@ -45,6 +45,16 @@ resultaat wordt aangekondigd.
 Opties, *Opstellingen*: **Verplicht** (de standaard en de FIDE-procedure): een team speelt met de
 spelers van zijn opstelling in bordvolgorde, een reserve schuift op voor een afwezige speler, en een
 bord dat een team niet kan bezetten is een forfaitoverwinning voor de tegenstander.
+
+Opties, *Bordvolgorde*: **Vast volgens de spelerslijst** (de standaard en de FIDE-procedure): een
+speler die lager op de lijst staat zit nooit boven een speler die hoger staat, dus een opstelling kan
+spelers weglaten maar niet herordenen. **Voor elke ronde gekozen**: elke speler van de spelerslijst,
+reserves inbegrepen, mag aan elk bord van een opstelling zitten, handig voor competities waarin de
+captain elke ronde de volgorde bepaalt. De koppeling zet een team nog steeds in lijstvolgorde; je
+past de volgorde aan op de pagina *Opstellingen* van de wedstrijd, voordat het eerste resultaat van de
+wedstrijd is ingevoerd. Het TRF26-rapport heeft niets extra's nodig: de regel van elke speler noemt de
+tegenstander en kleur die echt gespeeld zijn, dus de opstellingen zoals gespeeld staan erin. In
+FIDE-modus kan deze instelling niet meer wijzigen zodra ronde 1 is gekoppeld.
 
 > [!NOTE] Optioneel: teams paren zonder spelers
 > Sommige competities en schoolevenementen registreren alleen wedstrijdscores. De wedstrijden worden
@@ -80,7 +90,7 @@ een resultaat heeft, een link naar de opstellingen van de wedstrijd (*Opstelling
 **Forfait bij beslissing**.
 
 - *Opstellingen*: de pagina van een wedstrijd bepaalt wie op welk bord speelt; een opstelling
-  behoudt de bordvolgorde van het team; ze kan alleen gewijzigd worden voordat het eerste resultaat
+  behoudt de bordvolgorde van het team (tenzij de bordvolgorde voor elke ronde wordt gekozen); ze kan alleen gewijzigd worden voordat het eerste resultaat
   van de wedstrijd is ingevoerd.
 - *Forfait bij beslissing*: *Aan team A* / *Aan team B* maakt elk bord van de wedstrijd het
   forfaitresultaat van dat team, en *Geen van beide* registreert een dubbel forfait (beide verliezen). *Beslissing intrekken* herstelt de oude
@@ -130,6 +140,25 @@ teamtiebreaks, elk met zijn berekening (voor elke ronde de tegenstander en wat d
 een bye). De pagina toont ook **bordstatistieken**: per boordnummer de spelers die daar zaten, met
 partijen, punten, percentage en prestatie.
 
+### Reeks en club {#series-and-club}
+
+Een team kan een **reeks**-label dragen ("Reeks 1", "Reeks 2": vrije korte tekst) en een **club**, beide
+op de kaart van het team. Een reeks is alleen een label: teams van alle reeksen worden samen gepaard,
+als één Zwitsers toernooi. Zodra een team er een heeft, krijgen de teamrangschikking (pagina en
+afdruk) een kolom *Reeks*. De club wordt bewaard en getoond op de kaart.
+
+### Individuele rangschikking {#individual-ranking}
+
+Op de pagina Stand van een teamtoernooi toont *Individuele rangschikking* elke speler die gespeeld
+heeft: plaats, naam, rating, team, reeks, partijen, punten en percentage. Als er reeksen zijn, houdt het
+filter *Reeks* één reeks over. De afdruk (*Individuele rangschikking* op de pagina Afdrukken, of
+*Afdrukken* onder de tabel) volgt het filter.
+
+De volgorde is **punten, dan percentage, dan rating** (hoogste eerst), dan naam; spelers met gelijke
+punten en percentage delen een plaats en de rating bepaalt alleen hun volgorde. De punten zijn die van
+de bordstatistieken, een forfaitwinst inbegrepen; *Partijen* telt alleen echt gespeelde partijen, en
+een speler die er geen gespeeld heeft, staat er niet in.
+
 ### Teamtiebreaks {#team-tie-breaks}
 
 MP (wedstrijdpunten), GP (partijpunten), DE (directe ontmoeting), BB (bordpunten gewogen per bord), SB, BH:GP, EMGSB, EGMSB, EGGSB, EDE (uitgebreide directe ontmoeting), TBR (resultaten op het topbord), BBE (eliminatie op het laagste bord), SSSC. De rest van de tabel
@@ -151,9 +180,9 @@ en teruggetrokken teams in een teams-Zwitsers.
 ## Afdrukken {#printing}
 
 De pagina Afdrukken somt **teamparingen**, **teamrangschikkingen**, **teamkruistabel**,
-**wedstrijdformulieren**, **teamopstellingen** en **bordprijzen** op
+**wedstrijdformulieren**, **teamopstellingen**, **bordprijzen** en de **individuele rangschikking** op
 ([Afdrukken](09-printing.md)). De pagina Stand heeft dezelfde als knoppen:
-*Kruistabel*, *Wedstrijdformulieren*, *Opstellingen*, *Bordprijzen*.
+*Kruistabel*, *Wedstrijdformulieren*, *Opstellingen*, *Bordprijzen*; de individuele rangschikking heeft daar een eigen weergave.
 
 ## Rapporteren en publiceren {#reporting-and-publishing}
 

@@ -15,6 +15,16 @@ defmodule PairingsEngine.Tournaments.Team do
     field :captain, :string, default: ""
     field :short_name, :string, default: ""
 
+    # A free label such as "Reeks 1": which series of the event the team
+    # belongs to. Not a group - teams of every series are paired together.
+    # Shown beside the team in the standings and on the printouts, and the
+    # filter of the individual ranking. Empty for none.
+    field :series, :string, default: ""
+
+    # The club the team plays for, free text. Stored and shown on the card;
+    # a later "keep same-club teams apart" pairing rule reads it.
+    field :club, :string, default: ""
+
     # The arbiter's ordering of the teams before the draw is frozen - what
     # becomes `pairing_number` when round 1 is paired. Managed by
     # `Tournaments.move_team/3` and `Tournaments.seed_teams_by_rating/1`, and
@@ -52,14 +62,20 @@ defmodule PairingsEngine.Tournaments.Team do
 
   def changeset(team, attrs) do
     team
-    |> cast(attrs, [:name, :captain, :short_name, :rating_override])
+    |> cast(attrs, [:name, :captain, :short_name, :series, :club, :rating_override])
     |> update_change(:name, &trim/1)
     |> update_change(:short_name, &trim/1)
     |> update_change(:captain, &trim/1)
+    |> update_change(:series, &trim/1)
+    |> update_change(:club, &trim/1)
+    |> default_empty(:series)
+    |> default_empty(:club)
     |> validate_required([:name])
     |> validate_length(:name, min: 1, max: 100)
     |> validate_length(:short_name, max: 12)
     |> validate_length(:captain, max: 100)
+    |> validate_length(:series, max: 30)
+    |> validate_length(:club, max: 100)
     |> validate_number(:rating_override, greater_than_or_equal_to: 0, less_than: 4000)
   end
 
@@ -68,6 +84,13 @@ defmodule PairingsEngine.Tournaments.Team do
     do: number in rounds
 
   def absent_in?(_team, _number), do: false
+
+  # The column is NOT NULL: a cleared field comes in as nil.
+  defp default_empty(changeset, field) do
+    if Map.has_key?(changeset.changes, field) and is_nil(changeset.changes[field]),
+      do: put_change(changeset, field, ""),
+      else: changeset
+  end
 
   defp trim(value) when is_binary(value), do: String.trim(value)
   defp trim(value), do: value

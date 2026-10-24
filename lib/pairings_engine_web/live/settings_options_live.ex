@@ -98,7 +98,8 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
       initial_order_tiebreak_locked?: :initial_order_tiebreak in locked,
       round_one_paired?: Tournaments.round_one_paired?(tournament.id),
       late_entry_notice: Tournaments.late_entry_notice?(tournament),
-      team_lineups_locked?: :team_lineups in locked
+      team_lineups_locked?: :team_lineups in locked,
+      team_board_order_locked?: :team_board_order in locked
     )
   end
 
@@ -307,6 +308,7 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
     |> maybe_drop_locked("rating_method", assigns.rating_method_locked?)
     |> maybe_drop_locked("initial_order_tiebreak", assigns.initial_order_tiebreak_locked?)
     |> maybe_drop_locked("team_lineups", assigns.team_lineups_locked?)
+    |> maybe_drop_locked("team_board_order", assigns.team_board_order_locked?)
     |> maybe_drop_locked("round_one_absentees_late", assigns.round_one_paired?)
   end
 
@@ -859,6 +861,33 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
 
                 <span :if={@team_lineups_locked?} class="hint">
                   {gettext("Locked: round 1 has been paired.")}
+                </span>
+              </.setting_field>
+
+              <.setting_field
+                label={gettext("Board order")}
+                hint={
+                  gettext(
+                    "Fixed by the roster: a player listed lower on the roster never sits above one listed higher (the Olympiad procedure). Chosen for each round: any player of the roster, reserves included, may sit on any board of a line-up; the pairing still seats a team in roster order until you change the line-up."
+                  )
+                }
+              >
+                <select
+                  id="team-board-order"
+                  name="tournament[team_board_order]"
+                  disabled={@team_board_order_locked?}
+                >
+                  <option value="roster" selected={@tournament.team_board_order == "roster"}>
+                    {gettext("Fixed by the roster (FIDE)")}
+                  </option>
+
+                  <option value="free" selected={@tournament.team_board_order == "free"}>
+                    {gettext("Chosen for each round")}
+                  </option>
+                </select>
+
+                <span :if={@team_board_order_locked?} class="hint">
+                  {gettext("Locked in FIDE mode: round 1 has been paired.")}
                 </span>
               </.setting_field>
 
