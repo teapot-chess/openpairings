@@ -17,6 +17,7 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] The printout footer thanks a tester again, next to the signature. Some debts go on every page.
 - [Change] The tie-break builder says what it is for before asking you to choose anything: an "Add a tie-break" heading, and a line saying where the new one lands.
 
 ## [0.105.0] - 2026-10-24

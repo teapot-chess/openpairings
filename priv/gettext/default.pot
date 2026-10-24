@@ -26819,11 +26819,6 @@ msgstr ""
 msgid "Made by %[author]."
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2416
-#, elixir-autogen, elixir-format
-msgid "Paired by OpenPairings (by %{author}) using %{engine} · pairings.cloud"
-msgstr ""
-
 #: lib/pairings_engine_web/live/settings_tournament_live.ex:830
 #, elixir-autogen, elixir-format
 msgid "Add a tie-break"
@@ -26832,4 +26827,9 @@ msgstr ""
 #: lib/pairings_engine_web/live/settings_tournament_live.ex:832
 #, elixir-autogen, elixir-format
 msgid "Build one in two steps; it goes to the bottom of the list above, where you can move it."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/print_controller.ex:2416
+#, elixir-autogen, elixir-format
+msgid "Paired by OpenPairings (by %{author}) using %{engine} · pairings.cloud · many thanks to Tom Wuyts for his valuable feedback."
 msgstr ""

@@ -26811,11 +26811,6 @@ msgstr "dan resultaten op het topbord"
 msgid "Made by %[author]."
 msgstr "Gemaakt door %[author]."
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2416
-#, elixir-autogen, elixir-format
-msgid "Paired by OpenPairings (by %{author}) using %{engine} · pairings.cloud"
-msgstr "Gepaard door OpenPairings (door %{author}) met %{engine} · pairings.cloud"
-
 #: lib/pairings_engine_web/live/settings_tournament_live.ex:830
 #, elixir-autogen, elixir-format
 msgid "Add a tie-break"
@@ -26825,3 +26820,8 @@ msgstr "Tiebreak toevoegen"
 #, elixir-autogen, elixir-format
 msgid "Build one in two steps; it goes to the bottom of the list above, where you can move it."
 msgstr "Stel er een samen in twee stappen; hij komt onderaan de lijst hierboven, waar je hem kunt verplaatsen."
+
+#: lib/pairings_engine_web/controllers/print_controller.ex:2416
+#, elixir-autogen, elixir-format
+msgid "Paired by OpenPairings (by %{author}) using %{engine} · pairings.cloud · many thanks to Tom Wuyts for his valuable feedback."
+msgstr "Gepaard door OpenPairings (door %{author}) met %{engine} · pairings.cloud · met dank aan Tom Wuyts voor zijn waardevolle feedback."

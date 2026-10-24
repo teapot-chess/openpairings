@@ -1536,8 +1536,9 @@ defmodule PairingsEngineWeb.PrintControllerTest do
                  "Paired by OpenPairings (by #{PairingsEngine.author()}) using Ainalrami",
                "expected the author and engine credit on #{path}"
 
-        # The thanks live in Settings > About; paper carries the signature.
-        refute html =~ "valuable feedback", "expected no thanks on #{path}"
+        # Every sheet still thanks one friend by name; About thanks both.
+        assert html =~ "many thanks to Tom Wuyts for his valuable feedback.",
+               "expected the thanks on #{path}"
       end
     end
 
