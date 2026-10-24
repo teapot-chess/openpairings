@@ -612,6 +612,25 @@ defmodule PairingsEngine.Tiebreaks do
 
   def fide_defaults(type), do: Map.get(@fide_defaults, type, [])
 
+  @doc """
+  `fide_defaults/1` for this tournament: a team event whose rules make game
+  points the primary score (`team_primary_score`, C.04.6 Art. 1.2.1) gets
+  the team list with GP and MP swapped, so the first tie-break is the other
+  score - C.07 Art. 13.1's MPvGP the other way round - and not a repeat of
+  the one the table is already sorted by.
+  """
+  def fide_defaults_for(%PairingsEngine.Tournaments.Tournament{} = t) do
+    defaults = fide_defaults(t.type)
+
+    if PairingsEngine.Tournaments.Tournament.team_game_points_primary?(t),
+      do: Enum.map(defaults, &swap_score/1),
+      else: defaults
+  end
+
+  defp swap_score("MP"), do: "GP"
+  defp swap_score("GP"), do: "MP"
+  defp swap_score(code), do: code
+
   # Maps a FIDE tiebreak `code` (as used in `tournament.tiebreaks`) to the
   # column key the Players grid (`PairingsEngineWeb.PlayersLive`) and the
   # Standings page's column-visibility filter both use - only the

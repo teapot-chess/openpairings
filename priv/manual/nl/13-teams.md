@@ -30,10 +30,29 @@ Keizer kan geen teamtoernooi zijn.
    gemiddelde van de hele opstelling, of een rating die je per team intypt. De rating van een team
    kan ook op zijn kaart ingetypt worden, en die wint dan. Een ongerate speler telt mee met de rating
    ingesteld bij *Rating van een ongerate speler* (standaard 1400).
+
+   **Volgorde loten** zet de teams in een willekeurige volgorde, voor een competitie waarvan het
+   reglement de teamnummers laat loten (C.04.6 art. 1.1.2 laat de methode aan het reglement over).
+   De knop staat er alleen wanneer de teamrating *Per team ingetypt* is: met elke andere methode
+   horen de nummers de ratings te volgen, en *Rangschikken op rating* of een hernummering na ronde 1
+   zou de loting ongedaan maken. Een volgorde die je zelf hebt ingesteld (of een eerdere loting)
+   wordt pas na een bevestiging vervangen, en er wordt eerst een herstelpunt bewaard. De pagina
+   Teams vermeldt wanneer er geloot is en het auditspoor noemt de volgorde; verplaats je daarna een
+   team of rangschik je op rating, dan verdwijnt die vermelding, want de volgorde is dan niet meer
+   de loting. Kan tot ronde 1 gepaard is; de loting haalt het toernooi niet uit de FIDE-modus.
 6. **Matchpunten** (Instellingen, Puntentelling): standaard 2, 1, 0. Een competitie die 3, 1, 0
    scoort, past ze hier aan. Partijpunten tellen de bordresultaten. In de FIDE-modus kun je ze
    niet meer wijzigen zodra ronde 1 gepaard is: het reglement van de competitie legt de
    puntentelling vooraf vast (C.04.6 art. 1.2.1).
+
+   *Gerangschikt en gepaard op*, in dezelfde kaart, is de **primaire score**: **Matchpunten eerst**
+   (de FIDE-standaard, C.04.6 art. 1.2.2) of **Partijpunten (bordpunten) eerst**, voor competities
+   die bordpunten boven matchpunten rangschikken. Het teamklassement wordt er eerst op gesorteerd,
+   de afdrukken en OpenResults volgen, en een teams-Zwitsers wordt gepaard in scoregroepen van die
+   score; de andere score beslist de kleuren tussen teams met dezelfde score. *Terugzetten naar de
+   FIDE-standaard* bij de tiebreaks begint dan met de andere score (GP, MP, DE, BB, SB). Artikel
+   1.2.1 laat het reglement kiezen, dus beide waarden houden het toernooi in de FIDE-modus; net als
+   de punten kun je ze daar niet meer wijzigen zodra ronde 1 gepaard is.
 7. **Tiebreaks** (Instellingen, Toernooi): een teamtoernooi krijgt de teamtiebreaks aangeboden. De
    FIDE-standaard is MP, GP, DE, BB, SB.
 
@@ -77,8 +96,9 @@ van zijn bord 1.
 FIDE C.04.6 (februari 2026).
 
 > [!FIDE] C.04.6 (februari 2026)
-> Wedstrijdpunten
-> zijn de primaire score, partijpunten beslissen de kleuren, de eerste kleur wordt bij loting
+> Matchpunten
+> zijn de primaire score (partijpunten, als het reglement van de competitie dat zegt - pagina
+> Puntentelling), de andere score beslist de kleuren, de eerste kleur wordt bij loting
 > getrokken. De door de paring toegekende bye scoort een gelijkspel in de wedstrijd (wedstrijd- en partijpunten
 > worden op de pagina Puntentelling ingesteld).
 
@@ -196,6 +216,14 @@ de teamratings niet meer volgen, en opent *Opnieuw aanmaken uit ratings…* de l
 verandert er niets meer. Een team-rondetoernooi is uitgesloten: zijn schema is over de nummers
 getekend.
 
+Die ronde is *Teamnummers kunnen gecorrigeerd worden tot ronde* op de pagina Opties (geavanceerd,
+kaart Teams; standaard 4). Een vroegere ronde vergrendelt ze alleen sneller. Een latere is niet de
+regel van C.04.2 - C.04.6 art. 1.1.3 laat de hoofdarbiter ruimte, maar een instelling die er de
+regel voor het hele toernooi van maakt, is toch een afwijking - dus bij het bewaren krijg je eerst
+de twee vragen van *FIDE-modus verlaten?*, en Instellingen - FIDE noemt ze zoals elke andere
+afwijking. Een team toevoegen in een latere ronde staat daar los van: een laat team krijgt altijd
+een nummer na de andere.
+
 ### Gemiddelde rating opgesteld {#average-rating-fielded}
 
 De gemiddelde rating van de spelers die een team echt opstelde (spelers zonder rating tellen niet
@@ -254,7 +282,10 @@ Beide gelden voor één ronde (`?round=n`), en één team of match kan apart afg
 
 Het TRF26-rapport bevat de teams en hun bordvolgordes (records 310 en
 013, 362, 320 voor de bye en 330 voor een forfaitwedstrijd), en een teambestand kan
-opnieuw geïmporteerd worden, waarbij de wedstrijden worden herbouwd waar de borden dat
+opnieuw geïmporteerd worden. De `192` van een teams-Zwitsers noemt de primaire score -
+`FIDE_TEAM_TYPEA_MP_GP`, of `FIDE_TEAM_TYPEA_GP_MP` met partijpunten eerst - en een import leest
+die terug. De Bergercode van een team-rondetoernooi heeft er geen plaats voor, dus een
+team-rondetoernooi uit een TRF komt terug op matchpunten. Teambestanden worden geïmporteerd waarbij de wedstrijden worden herbouwd waar de borden dat
 eenduidig aangeven. Teamtoernooien worden gepubliceerd op OpenResults net als andere
 ([Publiceren](14-publishing.md)).
 

@@ -247,10 +247,12 @@ defmodule PairingsEngineWeb.SettingsScoringLive do
   def handle_event("save", %{"tournament" => params} = payload, socket) do
     params =
       params
-      |> Map.take(~w(points_win points_draw points_loss bye_value abs_value abs_jusque abs_nbfois
+      |> Map.take(
+        ~w(points_win points_draw points_loss bye_value abs_value abs_jusque abs_nbfois
         absent_counts_as_vur late_entry_absences ask_bye_type team_match_points_win team_match_points_draw team_match_points_loss
         team_pab_match_points team_pab_game_points team_withdrawal_annul team_forfeit_board_points
-        postponed_games postponed_requester_outcome postponed_opponent_outcome))
+        team_primary_score postponed_games postponed_requester_outcome postponed_opponent_outcome)
+      )
       |> maybe_drop_locked("abs_value", socket.assigns.abs_scoring_locked?)
       |> maybe_drop_locked("abs_jusque", socket.assigns.abs_scoring_locked?)
       |> maybe_drop_locked("abs_nbfois", socket.assigns.abs_scoring_locked?)
@@ -411,7 +413,6 @@ defmodule PairingsEngineWeb.SettingsScoringLive do
                 />
               </.setting_field>
             </.setting_group>
-
             <.points_change_warning show={@round_one_paired? and @points_changed?} />
           </div>
 
@@ -431,6 +432,39 @@ defmodule PairingsEngineWeb.SettingsScoringLive do
             </p>
 
             <.setting_group>
+              <%!-- The primary score sits with the match points because it is
+                    what the table is ranked by; it also decides the score
+                    groups a team Swiss is paired in (C.04.6 1.2), which is
+                    why it locks with round 1 in FIDE mode like the points. --%>
+              <.setting_field
+                label={gettext("Ranked and paired by")}
+                hint={
+                  gettext(
+                    "The primary score: the one the team standings are sorted by first and, in a team Swiss, the score groups are made of. The other one decides colours between teams on the same score. FIDE's default is match points; the competition's rules may say game points (C.04.6 Art. 1.2.1), so either keeps the tournament in FIDE mode."
+                  )
+                }
+              >
+                <select
+                  id="team-primary-score"
+                  name="tournament[team_primary_score]"
+                  disabled={:team_primary_score in @fide_locked}
+                >
+                  <option
+                    value="match_points"
+                    selected={@tournament.team_primary_score != "game_points"}
+                  >
+                    {gettext("Match points first (FIDE default)")}
+                  </option>
+
+                  <option
+                    value="game_points"
+                    selected={@tournament.team_primary_score == "game_points"}
+                  >
+                    {gettext("Game points (board points) first")}
+                  </option>
+                </select>
+              </.setting_field>
+
               <.setting_field label={gettext("Match points for a won match")}>
                 <input
                   type="number"
@@ -469,7 +503,6 @@ defmodule PairingsEngineWeb.SettingsScoringLive do
               id="match-points-change-warning"
               show={@round_one_paired? and @points_changed?}
             />
-
             <div
               :if={PairingsEngine.Tournaments.Tournament.team_swiss?(@tournament)}
               id="team-pab-settings"
@@ -799,6 +832,7 @@ defmodule PairingsEngineWeb.SettingsScoringLive do
                           "Off (the default) = no postponed option is offered anywhere. On = the result lists offer \"postponed by White\" and \"postponed by Black\", and a Postponed games page lists them and exports their TRF."
                         )}
                       </span>
+
                       <span
                         :if={@tournament.pairing_system == "round_robin"}
                         class="hint"

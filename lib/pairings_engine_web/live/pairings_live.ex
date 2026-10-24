@@ -6965,13 +6965,15 @@ defmodule PairingsEngineWeb.PairingsLive do
 
       <%!-- The team Swiss's version: team numbers that no longer follow the
             team ratings (`TeamTpn.out_of_place/1`), correctable until round
-            4 is paired. Pairing is not held up by it. --%>
+            `TeamTpn.until_round/1` (4 by default) is paired. Pairing is not
+            held up by it. --%>
       <div :if={@team_tpn_out_of_order != []} id="team-tpn-out-of-order" class="tpn-order-warning">
         <p class="tpn-order-warning-head">
           <.icon name="hero-exclamation-triangle-micro" class="setup-line-icon" />
           <span>
             {gettext(
-              "These team numbers do not follow the team ratings. They can be corrected until round 4 is paired (C.04.2); pairing is still possible."
+              "These team numbers do not follow the team ratings. They can be corrected until round %{round} is paired; pairing is still possible.",
+              round: PairingsEngine.TeamTpn.until_round(@tournament)
             )}
           </span>
         </p>
@@ -7118,7 +7120,6 @@ defmodule PairingsEngineWeb.PairingsLive do
               {Phoenix.HTML.raw(PairingsEngineWeb.Chess960Diagram.svg(@round.chess960_position))}
             </div>
           </details>
-
           <%!-- A second draw, while nothing in the round is decided. --%>
           <button
             :if={
@@ -7573,7 +7574,6 @@ defmodule PairingsEngineWeb.PairingsLive do
               <button type="button" role="menuitem" id="phone-qr-link" phx-click="phone_qr_open">
                 {gettext("Phone QR")}
               </button>
-
               <%!-- What the phones (Manubrium) logged at the boards. --%>
               <.link
                 role="menuitem"
@@ -7655,6 +7655,7 @@ defmodule PairingsEngineWeb.PairingsLive do
           )}
         </.link>
       </p>
+
       <%!-- Boards of the round about to be paired whose name cards are out
             (`PairingsEngine.BoardAnnouncements`): watched until the round
             is paired. --%>

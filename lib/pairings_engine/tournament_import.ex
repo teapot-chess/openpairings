@@ -382,7 +382,10 @@ defmodule PairingsEngine.TournamentImport do
       initial_colour_drawn: drawn,
       team_pairing_mode: mode,
       baku_group_a_last: group_a_last,
-      teams_ordered_by_hand: ordered_by_hand
+      teams_ordered_by_hand: ordered_by_hand,
+      # When the teams' order was drawn by lot, written only by
+      # `Tournaments.draw_team_order/1`. A file without it had no draw.
+      teams_drawn_at: parse_datetime(Map.get(t_attrs, "teams_drawn_at"))
     ]
   end
 

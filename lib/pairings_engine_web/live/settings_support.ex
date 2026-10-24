@@ -941,6 +941,9 @@ defmodule PairingsEngineWeb.SettingsSupport do
   def compliance_setting_label(:postponed_opponent_outcome),
     do: gettext("Postponed game, for the opponent")
 
+  def compliance_setting_label(:team_tpn_until_round),
+    do: gettext("Team numbers can be corrected until round")
+
   def compliance_setting_label(:points_draw), do: gettext("Points for a draw")
   def compliance_setting_label(:bye_value), do: gettext("Pairing-allocated bye")
 
@@ -1003,6 +1006,12 @@ defmodule PairingsEngineWeb.SettingsSupport do
         "A player who joins late is numbered after the field instead of where their rating puts them, so every later round is paired on numbers the FIDE rules (C.04.2 2.4) would not have given. By rating puts this back."
       )
 
+  def compliance_message(:team_numbers_corrected_late),
+    do:
+      gettext(
+        "Team numbers can still be corrected after round 4 is paired. The FIDE rules (C.04.2 2.3) freeze them then, so a later round could be paired on numbers FIDE would not have given. Round 4 or earlier puts this back."
+      )
+
   def compliance_message(:prohibition_changed_after_round_1),
     do:
       gettext(
@@ -1032,8 +1041,8 @@ defmodule PairingsEngineWeb.SettingsSupport do
            ],
       do: ~p"/t/#{tournament.id}/settings/scoring"
 
-  # pairing_system, swiss_match_format and late_entry_numbering all live on
-  # the Options page.
+  # pairing_system, swiss_match_format, late_entry_numbering and
+  # team_tpn_until_round all live on the Options page.
   def compliance_setting_path(tournament, _setting),
     do: ~p"/t/#{tournament.id}/settings/options"
 

@@ -404,9 +404,19 @@ defmodule PairingsEngine.Snapshot do
   # `team_boards` (added 2026-10-03): how many boards one match is played
   # on, so a reader can lay out a match - and number an empty seat - without
   # inferring it from the boards that happen to be there.
+  #
+  # `team_primary_score` (added 2026-10-25): "MP" or "GP", the score
+  # `team_standings` is ranked by first (`TeamStandings.primary_code/1`), so
+  # a reader can put the column that decided the order first. The rows'
+  # `rank` already follows it; a reader that ignores the key still shows
+  # the right order, only with the wrong column in bold.
   defp put_team_event(row, %Tournament{} = t) do
     if paired_as_teams?(t),
-      do: row |> Map.put("team_event", true) |> Map.put("team_boards", t.team_boards),
+      do:
+        row
+        |> Map.put("team_event", true)
+        |> Map.put("team_boards", t.team_boards)
+        |> Map.put("team_primary_score", TeamStandings.primary_code(t)),
       else: row
   end
 

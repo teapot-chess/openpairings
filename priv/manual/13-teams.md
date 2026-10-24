@@ -33,10 +33,33 @@ Keizer cannot be a team tournament.
    average of the whole roster, or a rating typed for each team. A team's
    rating can also be typed on its card, which then wins. An unrated player
    counts as the rating set in *Rating of an unrated player* (1400 by default).
+
+   **Draw the order by lot** puts the teams in a random order, for a
+   competition whose rules draw the team numbers (C.04.6 Art. 1.1.2 leaves the
+   method to them). It is offered only when the team rating is *Typed in for
+   each team*: with any other method the numbers are meant to follow the
+   ratings, and *Order by rating* or a regeneration after round 1 would undo
+   the draw. An order you set yourself (or an earlier draw) is replaced only
+   after a confirmation, and a restore point is saved first. The Teams page
+   says when the order was drawn and the audit trail lists it; moving a team
+   or ordering by rating afterwards removes the note, since the order is no
+   longer the draw. Possible until round 1 is paired; the draw does not leave
+   FIDE mode.
 6. **Match points** (Settings, Scoring): 2, 1, 0 by default. A league that scores
    3, 1, 0 changes them here. Game points count board results. In FIDE mode
    they cannot change once round 1 is paired: the competition's rules state the
    scoring in advance (C.04.6 Art. 1.2.1).
+
+   *Ranked and paired by*, in the same card, is the **primary score**: **Match
+   points first** (the FIDE default, C.04.6 Art. 1.2.2) or **Game points
+   (board points) first**, for leagues that rank board points above match
+   points. The team standings are sorted by it first, the printouts and
+   OpenResults follow, and a team Swiss is paired in score groups of it; the
+   other score decides colours between teams on the same score. *Reset to
+   FIDE default* on the tie-breaks then starts with the other score (GP, MP,
+   DE, BB, SB). Article 1.2.1 lets the competition's rules choose, so either
+   value keeps the tournament in FIDE mode; like the points, it cannot change
+   once round 1 is paired there.
 7. **Tie-breaks** (Settings, Tournament): a team tournament is offered the team
    tie-breaks. The FIDE default is MP, GP, DE, BB, SB.
 
@@ -84,7 +107,8 @@ of FIDE C.04.6 (February 2026).
 
 > [!FIDE] C.04.6 (February 2026)
 > Match points
-> are the primary score, game points decide colours, the first colour is drawn
+> are the primary score (game points, when the competition's rules say so -
+> Scoring page), the other score decides colours, the first colour is drawn
 > by lot. The pairing-allocated bye scores a drawn match (match and game points
 > are set on the Scoring page).
 
@@ -209,6 +233,15 @@ above *Pair round N* when the numbers no longer follow the team ratings, and
 *Regenerate from ratings…* opens the list. From round 5 nothing renumbers. A
 team round robin is excluded: its table was drawn over the numbers.
 
+The round is the Options page's *Team numbers can be corrected until round*
+(advanced, Teams card; 4 by default). An earlier round only locks them
+sooner. A later one is not C.04.2's rule - C.04.6 Art. 1.1.3 leaves the Chief
+Arbiter room, but a setting that makes it the rule for the whole event is
+still a departure - so saving it asks the two *Leave FIDE mode?* questions
+first and lists it on Settings - FIDE like any other departure. Adding a team
+in a later round has nothing to do with this: a late team is always
+numbered after the others.
+
 ### Average rating fielded
 
 The average rating of the players a team actually fielded (unrated players
@@ -273,7 +306,11 @@ be printed on its own.
 
 The TRF26 report carries the teams and their board orders (records 310 and
 013, 362, 320 for the bye and 330 for a forfeited match), and a team file can
-be imported again, with the matches rebuilt where the boards say it
+be imported again. A team Swiss's `192` names its primary score -
+`FIDE_TEAM_TYPEA_MP_GP`, or `FIDE_TEAM_TYPEA_GP_MP` with game points first -
+and an import reads it back. A team round robin's Berger code has no place
+for it, so a team round robin read from a TRF comes back on match points.
+Team files are imported with the matches rebuilt where the boards say it
 unambiguously. Team tournaments are published to OpenResults like others
 ([Publishing](14-publishing.md)).
 

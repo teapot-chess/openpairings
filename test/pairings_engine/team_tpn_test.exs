@@ -2,7 +2,8 @@ defmodule PairingsEngine.TeamTpnTest do
   @moduledoc """
   Team numbers corrected until round 4 (C.04.2 2.3 as C.04.6 Art. 1.1 takes
   it): the exchange of two teams of equal rating, the regeneration from the
-  team ratings, the lock from round 5, and the average rating fielded.
+  team ratings, the lock from round 5, the tournament's own limit, and the
+  average rating fielded.
   """
   use PairingsEngine.DataCase, async: false
 
@@ -12,7 +13,7 @@ defmodule PairingsEngine.TeamTpnTest do
 
   defp event(n \\ 6, opts \\ []) do
     teams = for i <- 1..n, do: {"T#{i}", [2100 - i * 10, 2000 - i * 10]}
-    team_swiss(teams, [boards: 2, rounds: 5] ++ opts)
+    team_swiss(teams, Keyword.merge([boards: 2, rounds: 5], opts))
   end
 
   defp play!(t, round) do
@@ -116,6 +117,63 @@ defmodule PairingsEngine.TeamTpnTest do
     assert {:error, :locked} = TeamTpn.regenerate(t)
     assert {:error, :locked} = TeamTpn.exchange(t, t1.id, t2.id)
     assert TeamTpn.out_of_place(t) == []
+  end
+
+  describe "the limit (team_tpn_until_round)" do
+    test "defaults to FIDE's round 4" do
+      {t, _} = event()
+      assert TeamTpn.until_round(t) == 4
+      assert Compliance.check(t) == []
+    end
+
+    test "a later round keeps the numbers correctable, and leaves FIDE mode" do
+      {t, [t1, t2 | _]} = event(8, rounds: 6)
+      {:ok, t} = Tournaments.update_tournament(t, %{"team_tpn_until_round" => "6"})
+
+      assert [%{code: :team_numbers_corrected_late, restore_to: [4, 3, 2]}] = Compliance.check(t)
+      refute Compliance.fide_mode?(t)
+
+      for round <- 1..4 do
+        pair_next!(t)
+        play!(t, round)
+      end
+
+      t = Repo.reload!(t)
+      assert TeamTpn.editable?(t)
+      rate!(t1, 2000)
+      rate!(t2, 2000)
+      assert {:ok, _} = TeamTpn.exchange(Repo.reload!(t), t1.id, t2.id)
+
+      pair_next!(t)
+      play!(t, 5)
+      pair_next!(t)
+      refute TeamTpn.editable?(Repo.reload!(t))
+    end
+
+    test "an earlier round locks sooner and stays in FIDE mode" do
+      {t, _} = event()
+      {:ok, t} = Tournaments.update_tournament(t, %{"team_tpn_until_round" => "2"})
+      assert Compliance.check(t) == []
+
+      pair_next!(t)
+      assert TeamTpn.editable?(Repo.reload!(t))
+      play!(t, 1)
+      pair_next!(t)
+
+      t = Repo.reload!(t)
+      refute TeamTpn.editable?(t)
+      assert {:error, :locked} = TeamTpn.regenerate(t)
+    end
+
+    test "is no departure where nothing renumbers, and refuses nonsense" do
+      {rr, _} = team_round_robin([{"A", [2000, 1900]}, {"B", [1950, 1850]}])
+      {:ok, rr} = Tournaments.update_tournament(rr, %{"team_tpn_until_round" => "9"})
+      assert Compliance.check(rr) == []
+
+      {t, _} = event()
+      assert {:error, cs} = Tournaments.update_tournament(t, %{"team_tpn_until_round" => "1"})
+      assert errors_on(cs)[:team_tpn_until_round]
+    end
   end
 
   describe "the average rating fielded" do

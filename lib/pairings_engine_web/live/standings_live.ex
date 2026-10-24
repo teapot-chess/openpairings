@@ -881,6 +881,7 @@ defmodule PairingsEngineWeb.StandingsLive do
           </label>
         </form>
       </div>
+
       <PairingsEngineWeb.Postponed.missing_results_banner
         count={@missing_results_count}
         overdue={@overdue_count}
@@ -983,6 +984,7 @@ defmodule PairingsEngineWeb.StandingsLive do
 
       <div :if={@entries == [] and !@team?} class="card empty">
         <p><strong>{gettext("No players registered yet.")}</strong></p>
+
         <p>
           <.link id="standings-add-players" navigate={~p"/t/#{@tournament.id}/players"}>
             {gettext("Add players")}
@@ -1469,7 +1471,6 @@ defmodule PairingsEngineWeb.StandingsLive do
       series_labels={@series_labels}
       selected_series={@selected_series}
     />
-
     <div
       :if={@entries != [] and @team_view == :teams}
       id="team-standings"
@@ -1494,10 +1495,17 @@ defmodule PairingsEngineWeb.StandingsLive do
               {gettext("W-D-L")}
             </th>
 
-            <th scope="col" class="num" title={tb_name("MP")}>MP</th>
+            <th
+              scope="col"
+              class="num"
+              id="team-primary-head"
+              title={tb_name(TeamStandings.primary_code(@tournament))}
+            >
+              {TeamStandings.primary_code(@tournament)}
+            </th>
 
             <th
-              :for={code <- Enum.reject(@tiebreaks, &(&1 == "MP"))}
+              :for={code <- Enum.reject(@tiebreaks, &(&1 == TeamStandings.primary_code(@tournament)))}
               scope="col"
               class="num"
               title={tb_name(code)}
@@ -1562,9 +1570,14 @@ defmodule PairingsEngineWeb.StandingsLive do
 
             <td class="num">{entry.won}-{entry.drawn}-{entry.lost}</td>
 
-            <td class="num"><strong>{format_tb(entry.mp)}</strong></td>
+            <td class="num">
+              <strong>{format_tb(TeamStandings.primary_value(entry, @tournament))}</strong>
+            </td>
 
-            <td :for={code <- Enum.reject(@tiebreaks, &(&1 == "MP"))} class="num">
+            <td
+              :for={code <- Enum.reject(@tiebreaks, &(&1 == TeamStandings.primary_code(@tournament)))}
+              class="num"
+            >
               {format_tb(Map.get(entry.tiebreaks, code, 0.0))}
             </td>
 
@@ -1577,9 +1590,15 @@ defmodule PairingsEngineWeb.StandingsLive do
     </div>
 
     <p :if={@team_view == :teams} class="hint">
-      {gettext(
-        "Match points decide the ranking, then the tie-breaks in the order set under Settings. A match scores match points once every board in it has a result; game points count each board as its result comes in."
-      )}
+      {if TeamStandings.primary_code(@tournament) == "GP",
+        do:
+          gettext(
+            "Game points decide the ranking, as this competition's rules have it (Settings - Scoring), then the tie-breaks in the order set under Settings. Game points count each board as its result comes in; a match scores match points once every board in it has a result."
+          ),
+        else:
+          gettext(
+            "Match points decide the ranking, then the tie-breaks in the order set under Settings. A match scores match points once every board in it has a result; game points count each board as its result comes in."
+          )}
     </p>
 
     <div
@@ -1656,6 +1675,7 @@ defmodule PairingsEngineWeb.StandingsLive do
           <span>{gettext("Series")}</span>
           <select id="series-filter" name="series">
             <option value="" selected={@selected_series == nil}>{gettext("All series")}</option>
+
             <option :for={label <- @series_labels} value={label} selected={@selected_series == label}>
               {label}
             </option>
@@ -1673,12 +1693,19 @@ defmodule PairingsEngineWeb.StandingsLive do
         <thead>
           <tr>
             <th scope="col" class="num">{gettext("Rank")}</th>
+
             <th scope="col">{gettext("Name")}</th>
+
             <th scope="col" class="num">{gettext("Rating")}</th>
+
             <th scope="col">{gettext("Team")}</th>
+
             <th :if={@series_labels != []} scope="col">{gettext("Series")}</th>
+
             <th scope="col" class="num">{gettext("Games")}</th>
+
             <th scope="col" class="num">Pts</th>
+
             <th scope="col" class="num">%</th>
           </tr>
         </thead>
@@ -1686,12 +1713,19 @@ defmodule PairingsEngineWeb.StandingsLive do
         <tbody>
           <tr :for={row <- @ranking} id={"player-ranking-#{row.player.id}"}>
             <td class="num">{row.rank}</td>
+
             <td><strong>{row.player.name}</strong></td>
+
             <td class="num">{if row.rating > 0, do: row.rating, else: "-"}</td>
+
             <td>{row.team && row.team.name}</td>
+
             <td :if={@series_labels != []}>{row.series}</td>
+
             <td class="num">{row.games}</td>
+
             <td class="num">{format_tb(row.points)}</td>
+
             <td class="num">{if row.percentage, do: format_tb(row.percentage), else: "-"}</td>
           </tr>
         </tbody>

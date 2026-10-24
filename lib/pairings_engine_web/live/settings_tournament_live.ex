@@ -188,7 +188,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
 
   def handle_event("tb_reset", _params, socket) do
     {:noreply,
-     assign(socket, tiebreaks: Tiebreaks.fide_defaults(socket.assigns.tournament.type), note: nil)}
+     assign(socket, tiebreaks: Tiebreaks.fide_defaults_for(socket.assigns.tournament), note: nil)}
   end
 
   def handle_event("tb_preset", %{"key" => "personel"}, socket), do: {:noreply, socket}
@@ -828,15 +828,18 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
     <div id="tiebreak-builder" class="tb-builder">
       <div class="tb-head">
         <h3 id="tb-builder-title" class="tb-title">{gettext("Add a tie-break")}</h3>
+
         <p class="tb-intro">
           {gettext(
             "Build one in two steps; it goes to the bottom of the list above, where you can move it."
           )}
         </p>
       </div>
+
       <p class="tb-step">
         <span class="tb-step-n">1</span> {gettext("Choose the tie-break")}
       </p>
+
       <select
         id="tb-family"
         name="family"
@@ -894,7 +897,6 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
         value={@state["limit"]}
         options={for l <- @spec[:limits], do: {l, tb_limit_label(l)}}
       />
-
       <div class="tb-flags">
         <label :if={@spec[:forfeits?]} for="tb-forfeits">
           <input
@@ -905,6 +907,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
             phx-value-field="forfeits"
           /> {gettext("Forfeits count as games")}
         </label>
+
         <label :if={@spec[:fore?]} for="tb-fore">
           <input
             type="checkbox"
@@ -914,6 +917,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
             phx-value-field="fore"
           /> {gettext("Fore (the last round counted as a draw)")}
         </label>
+
         <label :if={@spec[:reversed?]} for="tb-reversed">
           <input
             type="checkbox"
@@ -965,6 +969,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
         >
           {gettext("Add tie-break")}
         </button>
+
         <span
           :if={match?({:error, _, _}, @candidate)}
           id="tb-add-reason"
@@ -1084,6 +1089,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
                     name: @organizer_id_name
                   )}
                 </p>
+
                 <p
                   :if={@organizer_id_cleared}
                   id="organizer-id-cleared-note"
@@ -1240,9 +1246,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
                   "No tiebreaks selected - players level on points are ordered by rating and name."
                 )}
               </p>
-
               <.tb_builder state={@tb_state} type={@tournament.type} selected={@tiebreaks} />
-
               <div class="actions" style="flex-wrap: wrap">
                 <button type="button" class="pe-btn" phx-click="tb_reset">{gettext(
                   "Reset to FIDE default"
@@ -1358,6 +1362,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
                         phx-change="preview_long_event"
                       />
                     </.setting_field>
+
                     <.explain id="long-event-explain">
                       {gettext(
                         "For a tournament that runs over more than one FIDE rating list. A player can then have a later rating from a given round: Refresh ratings adds the new list that way instead of replacing the starting rating. The pairing never changes: pairing numbers stay as they were at the start. It is reported to FIDE either month by month (B.02 4.1) or once at the end, as chosen below. Tie-breaks that use ratings count the first rating unless you choose otherwise below."
@@ -1378,11 +1383,13 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
                       >
                         {gettext("Monthly reports")}
                       </option>
+
                       <option value="end" selected={@tournament.long_event_reporting == "end"}>
                         {gettext("One report at the end (as registered with FIDE)")}
                       </option>
                     </select>
                   </.setting_field>
+
                   <.explain id="long-event-reporting-explain">
                     {gettext(
                       "Monthly: each month's rounds go to FIDE in a file of their own, due for the next rating list. At the end: the tournament is registered with FIDE once and every round goes in one file after the last day; a report must carry as many rounds as the registration it is sent against."
@@ -1489,11 +1496,13 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
               <.setting_field label={gettext("Email address")}>
                 <input type="email" name="email" placeholder={gettext("teammate@example.com")} />
               </.setting_field>
+
               <%!-- An arbiter gets the hall and nothing else: results and
                   incidents on Manubrium, under their own account. --%>
               <.setting_field label={gettext("Role")}>
                 <select name="role" id="collaborator-role">
                   <option value="editor">{gettext("Editor - everything you can do")}</option>
+
                   <option value="arbiter">
                     {gettext("Arbiter - results and incidents on a phone")}
                   </option>
@@ -1555,11 +1564,13 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
                         <option value="editor" selected={c.role != "arbiter"}>
                           {gettext("Editor")}
                         </option>
+
                         <option value="arbiter" selected={c.role == "arbiter"}>
                           {gettext("Arbiter")}
                         </option>
                       </select>
                     </form>
+
                     <span class={["badge", c.status != "accepted" && "muted"]}>
                       {if c.status == "accepted",
                         do: gettext("active"),
@@ -1579,6 +1590,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
                     >
                       {gettext("Resend invitation")}
                     </button>
+
                     <button
                       type="button"
                       class="pe-btn danger-link"

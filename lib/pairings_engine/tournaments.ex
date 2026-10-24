@@ -1470,7 +1470,9 @@ defmodule PairingsEngine.Tournaments do
   #   * `rounds_count`, and a round robin's `rr_cycles`, which is its round
   #     count by another name - Q57/Q58 (C.04.1:1, the number of rounds is
   #     announced beforehand).
-  #   * the scoring system, team match points included - Q75/Q76.
+  #   * the scoring system, team match points included - Q75/Q76. A team
+  #     event's primary score (`team_primary_score`, C.04.6 Art. 1.2.1) is
+  #     the scoring system too: it decides who is on which score.
   #     What a whole forfeit pays in game points (`team_forfeit_board_points`)
   #     is scoring too, and goes where the rest of it goes.
   #   * the pairing-allocated bye's value, and the SWAR 3-2-1 presence points
@@ -1489,7 +1491,7 @@ defmodule PairingsEngine.Tournaments do
                   team_match_points_win team_match_points_draw team_match_points_loss
                   bye_value presence_value presence_on_allocated_bye
                   team_pab_match_points team_pab_game_points team_forfeit_board_points
-                  team_board_order acceleration pairing_system tiebreaks)a
+                  team_board_order team_primary_score acceleration pairing_system tiebreaks)a
 
   @doc """
   The settings `tournament` cannot change at all while it is in FIDE mode
@@ -4313,8 +4315,8 @@ defmodule PairingsEngine.Tournaments do
                  |> List.replace_at(target, Enum.at(teams, index))
                  |> write_seeds(tournament.id) do
             # Ordered by hand: pairing round 1 keeps this order
-            # (`auto_seed_teams/1`).
-            set_ordered_by_hand(tournament, true)
+            # (`auto_seed_teams/1`). No longer the order a lot drew.
+            set_ordered_by_hand(tournament, true, nil)
             ok
           end
         end
@@ -4342,8 +4344,56 @@ defmodule PairingsEngine.Tournaments do
 
       true ->
         with {:ok, _} = ok <- write_seeds(teams_by_rating(tournament), tournament.id) do
-          set_ordered_by_hand(tournament, false)
+          set_ordered_by_hand(tournament, false, nil)
           ok
+        end
+    end
+  end
+
+  @doc """
+  Puts the teams in an order drawn by lot, so the pairing numbers round 1
+  gives them are a random draw - for a competition whose rules say so, which
+  C.04.6 Art. 1.1.2 allows ("the rules of the team competition shall
+  describe how to assign a TPN to each team"). Same refusals as
+  `move_team/3`, plus `{:error, :too_few_teams}` with fewer than two.
+
+  The lot is `:crypto.strong_rand_bytes/1`: each team draws 16 random bytes
+  and the teams are sorted by them, which is a uniform shuffle (a tie, at one
+  in 2^128, falls back to the id). Not `:rand`, whose seed is the process's
+  and whose output an observer of earlier draws could in principle predict.
+
+  The order counts as set by hand (`teams_ordered_by_hand`), so round 1 keeps
+  it instead of seeding by rating, and `teams_drawn_at` records when the lot
+  was drawn; moving a team or ordering by rating afterwards clears that,
+  since the order is then no longer the draw. Returns
+  `{:ok, teams_in_drawn_order}`.
+  """
+  def draw_team_order(%Tournament{} = tournament) do
+    teams = list_teams(tournament.id)
+
+    cond do
+      refusal = write_refused(tournament.id) ->
+        refusal
+
+      teams_frozen?(tournament.id) ->
+        {:error, :teams_frozen}
+
+      length(teams) < 2 ->
+        {:error, :too_few_teams}
+
+      true ->
+        drawn =
+          teams
+          |> Enum.map(&{:crypto.strong_rand_bytes(16), &1.id, &1})
+          |> Enum.sort()
+          |> Enum.map(&elem(&1, 2))
+
+        # The record first: `write_seeds/2` broadcasts, and a page that
+        # reloads on it should find the draw already on file.
+        set_ordered_by_hand(tournament, true, DateTime.utc_now(:second))
+
+        with {:ok, _} <- write_seeds(drawn, tournament.id) do
+          {:ok, list_teams(tournament.id)}
         end
     end
   end
@@ -4395,9 +4445,9 @@ defmodule PairingsEngine.Tournaments do
     |> Enum.map(&elem(&1, 0))
   end
 
-  defp set_ordered_by_hand(%Tournament{id: id}, value) do
+  defp set_ordered_by_hand(%Tournament{id: id}, value, drawn_at) do
     Repo.update_all(from(t in Tournament, where: t.id == ^id),
-      set: [teams_ordered_by_hand: value]
+      set: [teams_ordered_by_hand: value, teams_drawn_at: drawn_at]
     )
   end
 
