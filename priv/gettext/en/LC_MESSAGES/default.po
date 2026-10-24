@@ -2809,7 +2809,7 @@ msgstr ""
 msgid "Changing..."
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2486
+#: lib/pairings_engine_web/controllers/print_controller.ex:2487
 #, elixir-autogen, elixir-format
 msgid "Chief arbiter: %{value}"
 msgstr ""
@@ -2906,12 +2906,12 @@ msgstr ""
 msgid "Dates"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2509
+#: lib/pairings_engine_web/controllers/print_controller.ex:2510
 #, elixir-autogen, elixir-format
 msgid "Dates: %{from} - %{to}"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2512
+#: lib/pairings_engine_web/controllers/print_controller.ex:2513
 #, elixir-autogen, elixir-format
 msgid "Dates: %{value}"
 msgstr ""
@@ -2937,7 +2937,7 @@ msgstr ""
 msgid "Deleted"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2489
+#: lib/pairings_engine_web/controllers/print_controller.ex:2490
 #, elixir-autogen, elixir-format
 msgid "Deputy arbiter: %{value}"
 msgstr ""
@@ -3009,7 +3009,7 @@ msgstr ""
 msgid "Export"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2495
+#: lib/pairings_engine_web/controllers/print_controller.ex:2496
 #, elixir-autogen, elixir-format
 msgid "FIDE ID: %{value}"
 msgstr ""
@@ -3031,7 +3031,7 @@ msgstr ""
 msgid "Federation"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2481
+#: lib/pairings_engine_web/controllers/print_controller.ex:2482
 #, elixir-autogen, elixir-format
 msgid "Federation: %{value}"
 msgstr ""
@@ -3480,7 +3480,7 @@ msgstr ""
 msgid "Rank"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2492
+#: lib/pairings_engine_web/controllers/print_controller.ex:2493
 #, elixir-autogen, elixir-format
 msgid "Rate of play: %{value}"
 msgstr ""
@@ -3604,12 +3604,12 @@ msgstr ""
 msgid "Round %{round} · Board %{board}"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2537
+#: lib/pairings_engine_web/controllers/print_controller.ex:2538
 #, elixir-autogen, elixir-format
 msgid "Round date: %{value}"
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2540
+#: lib/pairings_engine_web/controllers/print_controller.ex:2541
 #, elixir-autogen, elixir-format
 msgid "Round dates: %{from} - %{to}"
 msgstr ""
@@ -20333,14 +20333,9 @@ msgstr ""
 msgid "this copy's access to the results site is suspended"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_about_live.ex:110
+#: lib/pairings_engine_web/live/settings_about_live.ex:116
 #, elixir-autogen, elixir-format
 msgid "Many thanks to %[first] and %[second] for their valuable feedback in the making of OpenPairings."
-msgstr ""
-
-#: lib/pairings_engine_web/controllers/print_controller.ex:2416
-#, elixir-autogen, elixir-format
-msgid "Paired by OpenPairings using %{engine} · many thanks to Tom Wuyts and Steven Bellens for their valuable feedback."
 msgstr ""
 
 #: lib/pairings_engine_web/live/settings_boards_live.ex:1013
@@ -23849,7 +23844,7 @@ msgstr ""
 msgid "An email was sent to %{email}, please access it to confirm your account."
 msgstr ""
 
-#: lib/pairings_engine_web/controllers/print_controller.ex:2455
+#: lib/pairings_engine_web/controllers/print_controller.ex:2456
 #, elixir-autogen, elixir-format
 msgid "Back to Print documents"
 msgstr ""
@@ -26291,7 +26286,7 @@ msgstr ""
 msgid "Invitation sent to %{email} again."
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_about_live.ex:135
+#: lib/pairings_engine_web/live/settings_about_live.ex:141
 #, elixir-autogen, elixir-format
 msgid "Keizer"
 msgstr ""
@@ -26336,7 +26331,7 @@ msgstr ""
 msgid "Role of %{email}"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_about_live.ex:134
+#: lib/pairings_engine_web/live/settings_about_live.ex:140
 #, elixir-autogen, elixir-format
 msgid "Round robin (Berger)"
 msgstr ""
@@ -26381,7 +26376,7 @@ msgstr ""
 msgid "Swiss (teams)"
 msgstr ""
 
-#: lib/pairings_engine_web/live/settings_about_live.ex:131
+#: lib/pairings_engine_web/live/settings_about_live.ex:137
 #, elixir-autogen, elixir-format
 msgid "Swiss - FIDE Dutch (%{engine})"
 msgstr ""
@@ -26817,4 +26812,14 @@ msgstr ""
 #: lib/pairings_engine_web/live/settings_tournament_live.ex:792
 #, elixir-autogen, elixir-format
 msgid "then Top Board Results"
+msgstr ""
+
+#: lib/pairings_engine_web/live/settings_about_live.ex:109
+#, elixir-autogen, elixir-format
+msgid "Made by %[author]."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/print_controller.ex:2416
+#, elixir-autogen, elixir-format
+msgid "Paired by OpenPairings (by %{author}) using %{engine} · pairings.cloud"
 msgstr ""

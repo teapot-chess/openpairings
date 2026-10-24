@@ -2414,7 +2414,8 @@ defmodule PairingsEngineWeb.PrintController do
 
     ~s(<p class="pf-credit">) <>
       gettext(
-        "Paired by OpenPairings using %{engine} · many thanks to Tom Wuyts and Steven Bellens for their valuable feedback.",
+        "Paired by OpenPairings (by %{author}) using %{engine} · pairings.cloud",
+        author: esc(PairingsEngine.author()),
         engine: esc(engine)
       ) <> ~s(</p>)
   end

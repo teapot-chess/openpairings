@@ -1532,12 +1532,12 @@ defmodule PairingsEngineWeb.PrintControllerTest do
           ] do
         html = get(conn, path) |> html_response(200)
 
-        assert html =~ "Paired by OpenPairings using Ainalrami",
-               "expected the engine credit on #{path}"
-
         assert html =~
-                 ~r/<p class="pf-credit">[^<]*· many thanks to [^<]+ and [^<]+ for their valuable feedback\.<\/p>/,
-               "expected the thanks, to two people, on #{path}"
+                 "Paired by OpenPairings (by #{PairingsEngine.author()}) using Ainalrami",
+               "expected the author and engine credit on #{path}"
+
+        # The thanks live in Settings > About; paper carries the signature.
+        refute html =~ "valuable feedback", "expected no thanks on #{path}"
       end
     end
 

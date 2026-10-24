@@ -105,6 +105,12 @@ defmodule PairingsEngineWeb.SettingsAboutLive do
         <div class="card">
           <h2>{gettext("Credits")}</h2>
 
+          <p id="about-author">
+            <.rich_text text={gettext("Made by %[author].")}>
+              <:part name="author"><strong>{PairingsEngine.author()}</strong></:part>
+            </.rich_text>
+          </p>
+
           <p id="about-credits">
             <.rich_text text={
               gettext(

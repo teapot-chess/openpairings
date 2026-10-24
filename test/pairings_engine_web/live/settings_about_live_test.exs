@@ -33,6 +33,7 @@ defmodule PairingsEngineWeb.SettingsAboutLiveTest do
 
     assert html =~ "Swiss"
     assert html =~ "Ainalrami"
+    assert has_element?(lv, "#about-author strong", PairingsEngine.author())
     # Two people are thanked, each in bold, in one sentence.
     assert has_element?(lv, "#about-credits strong:nth-of-type(2)")
     refute has_element?(lv, "#about-credits strong:nth-of-type(3)")
