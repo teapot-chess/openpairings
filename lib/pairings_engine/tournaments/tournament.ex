@@ -49,6 +49,11 @@ defmodule PairingsEngine.Tournaments.Tournament do
   # whether or not it has players, every match gets all its boards, empty
   # seats included, and the results go on the boards or on the match.
   @team_lineups ~w(required optional)
+  # Who may sit where in a line-up: "roster" - the roster's board order holds
+  # (the Olympiad procedure); "free" - any player of the roster on any board,
+  # chosen for each round (a league's own regulations). The pairing still
+  # seats by the roster.
+  @team_board_orders ~w(roster free)
   # What a match awarded as a whole pays the winner in game points
   # (`PairingsEngine.TeamStandings`): "seated" - a point per board it
   # filled, which is C.07 Art. 11.1.2 read straight; "full" - the full board
@@ -878,6 +883,11 @@ defmodule PairingsEngine.Tournaments.Tournament do
     # results only while it holds.
     field :team_lineups, :string, default: "required"
 
+    # "roster" (default) or "free": see `@team_board_orders`. Competition
+    # regulation, so locked once round 1 is paired in FIDE mode
+    # (`Tournaments.fide_locked_fields/1`).
+    field :team_board_order, :string, default: "roster"
+
     # How a team's rating is worked out for seeding: see
     # `@team_rating_methods` and `Tournaments.team_rating/2`. "olympiad" by
     # default (the Olympiad Pairing Rules, Art. 3.1).
@@ -1456,6 +1466,7 @@ defmodule PairingsEngine.Tournaments.Tournament do
       :team_withdrawal_annul,
       :team_forfeit_board_points,
       :team_lineups,
+      :team_board_order,
       :team_rating_method,
       :team_unrated_rating,
       :initial_colour,
@@ -1512,6 +1523,7 @@ defmodule PairingsEngine.Tournaments.Tournament do
     |> validate_number(:team_match_points_loss, greater_than_or_equal_to: 0)
     |> validate_inclusion(:team_board_colours, @team_board_colours)
     |> validate_inclusion(:team_lineups, @team_lineups)
+    |> validate_inclusion(:team_board_order, @team_board_orders)
     |> validate_inclusion(:team_forfeit_board_points, @team_forfeit_board_points)
     |> validate_inclusion(:team_rating_method, @team_rating_methods)
     |> validate_inclusion(:norm_event_type, @norm_event_types)
@@ -2519,6 +2531,16 @@ defmodule PairingsEngine.Tournaments.Tournament do
   """
   def team_forfeit_full?(%{team_forfeit_board_points: "full"} = t), do: team?(t)
   def team_forfeit_full?(_), do: false
+
+  @doc "The values `team_board_order` takes."
+  def team_board_order_values, do: @team_board_orders
+
+  @doc """
+  Whether a line-up may put the roster's players on any board
+  (`team_board_order` "free"). False for an individual tournament.
+  """
+  def team_free_board_order?(%{team_board_order: "free"} = t), do: team?(t)
+  def team_free_board_order?(_), do: false
 
   @doc "The values `team_lineups` takes."
   def team_lineups_values, do: @team_lineups

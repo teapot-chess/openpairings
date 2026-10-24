@@ -1489,7 +1489,7 @@ defmodule PairingsEngine.Tournaments do
                   team_match_points_win team_match_points_draw team_match_points_loss
                   bye_value presence_value presence_on_allocated_bye
                   team_pab_match_points team_pab_game_points team_forfeit_board_points
-                  acceleration pairing_system tiebreaks)a
+                  team_board_order acceleration pairing_system tiebreaks)a
 
   @doc """
   The settings `tournament` cannot change at all while it is in FIDE mode

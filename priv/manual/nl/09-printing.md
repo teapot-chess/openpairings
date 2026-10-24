@@ -127,7 +127,7 @@ matchpunten per ronde), **matchresultaatbladen** (één A4-pagina per match met 
 opstellingen, resultaatvakjes, de matchscore en handtekeningregels voor beide
 captains en de arbiter), **teamlijsten** en **bordprijzen** (per bordnummer, de
 spelers gerangschikt op percentage, punten en prestatie, met een optioneel minimum
-aantal partijen). Zie [Teams](13-teams.md).
+aantal partijen) en de **individuele rangschikking** (elke speler die gespeeld heeft, op punten, percentage en rating; op verzoek één reeks). Zie [Teams](13-teams.md).
 
 Een team-rondetoernooi heeft ook zijn **schema (alle rondes)**: elke ronde met
 haar datum en matchen, en per match de borden met beide spelers, de kleuren en,

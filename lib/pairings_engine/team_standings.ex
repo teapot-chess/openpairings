@@ -1059,6 +1059,75 @@ defmodule PairingsEngine.TeamStandings do
     |> Enum.sort_by(&{&1.main_board, -&1.points, &1.player.name})
   end
 
+  @doc """
+  The individual ranking of a team tournament: every player who played a
+  game, whatever board and team, best first.
+
+      [%{rank: n, player: %Player{}, team: %Team{} | nil, series: "", rating: n,
+         games: n, points: float, percentage: float | nil}]
+
+  Built from `board_stats/2`, so the points are the board statistics' - what
+  the boards the player sat at paid, a forfeit win included - and
+  `percentage` is theirs too. `games` counts only the games actually played
+  (a forfeited board is no game), and a player with none is left out.
+
+  Order: points, then percentage, then rating (an unrated player counts as
+  0), then name. Players level on points and percentage share a rank; the
+  rating only orders them.
+
+  Options: `:series` keeps only the players of teams with that series label;
+  anything else (`:through_round`) goes to `board_stats/2`.
+  """
+  def player_ranking(%Tournament{} = t, opts \\ []) do
+    {series, opts} = Keyword.pop(opts, :series)
+    teams = t.id |> Tournaments.list_teams() |> Map.new(&{&1.id, &1})
+
+    t
+    |> board_stats(opts)
+    |> Enum.filter(&(&1.played > 0))
+    |> Enum.map(fn s ->
+      team = Map.get(teams, s.team_id)
+
+      %{
+        player: s.player,
+        team: team,
+        series: (team && team.series) || "",
+        rating: Player.rating(s.player),
+        games: s.played,
+        points: s.points,
+        percentage: s.percentage
+      }
+    end)
+    |> Enum.filter(&(series in [nil, ""] or &1.series == series))
+    |> Enum.sort_by(&{-&1.points, -(&1.percentage || -1.0), -&1.rating, &1.player.name})
+    |> rank_players()
+  end
+
+  defp rank_players(rows) do
+    {ranked, _} =
+      rows
+      |> Enum.with_index(1)
+      |> Enum.map_reduce({nil, 0}, fn {row, i}, {last_key, last_rank} ->
+        key = {row.points, row.percentage}
+        rank = if key == last_key, do: last_rank, else: i
+        {Map.put(row, :rank, rank), {key, rank}}
+      end)
+
+    ranked
+  end
+
+  @doc """
+  The series labels in use, sorted: the distinct non-empty `series` of
+  `teams`. Empty when no team has one.
+  """
+  def series_labels(teams) do
+    teams
+    |> Enum.map(& &1.series)
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
+
   defp board_entries(%{pairing: %{result: ""}}, _m, _players), do: []
 
   defp board_entries(b, m, _players) do

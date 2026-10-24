@@ -18,15 +18,18 @@ defmodule PairingsEngineWeb.TeamPrintController do
     * `GET /t/:id/print/board-prizes` - per board number, the players ranked
       by percentage, then points, then performance. `?min_games=n` leaves out
       players with fewer games.
+    * `GET /t/:id/print/player-ranking` - the individual ranking of every
+      player who played: points, then percentage, then rating.
+      `?series=NAME` keeps one series.
 
-  All four answer 404 for a tournament that is not paired as teams. The data
+  All of them answer 404 for a tournament that is not paired as teams. The data
   comes from `PairingsEngine.TeamSheets`, which reads `TeamStandings`; nothing
   is scored here.
   """
 
   use PairingsEngineWeb, :controller
 
-  alias PairingsEngine.{Standings, TeamSheets, Tournaments}
+  alias PairingsEngine.{Standings, TeamSheets, TeamStandings, Tournaments}
   alias PairingsEngine.Tournaments.{Team, Tournament}
   alias PairingsEngineWeb.PrintController, as: Print
 
@@ -427,6 +430,55 @@ defmodule PairingsEngineWeb.TeamPrintController do
         @prize_css
       )
     end)
+  end
+
+  ## ---------- individual ranking ----------
+
+  @doc """
+  `GET /t/:id/print/player-ranking?series=NAME` - see the module doc.
+  """
+  def player_ranking(conn, %{"id" => id} = params) do
+    with_team_tournament(conn, id, fn tournament ->
+      labels = tournament.id |> Tournaments.list_teams() |> TeamStandings.series_labels()
+      series = if params["series"] in labels, do: params["series"]
+      rows = TeamStandings.player_ranking(tournament, series: series)
+      show_series? = labels != []
+
+      title =
+        if series,
+          do: gettext("Individual ranking - %{series}", series: series),
+          else: gettext("Individual ranking")
+
+      body =
+        Print.tournament_info_html(tournament) <>
+          Print.postponed_banner(tournament, nil) <>
+          if(rows == [],
+            do: "<p>#{gettext("No games played yet.")}</p>",
+            else: ranking_table_html(rows, show_series?)
+          )
+
+      Print.print_page(conn, tournament, tournament.name, title, body, @prize_css)
+    end)
+  end
+
+  defp ranking_table_html(rows, show_series?) do
+    body =
+      Enum.map_join(rows, "", fn r ->
+        "<tr><td class=\"num\">#{r.rank}</td>" <>
+          "<td><strong>#{Print.esc(r.player.name)}</strong></td>" <>
+          "<td class=\"num\">#{Print.blank_zero(r.rating)}</td>" <>
+          "<td>#{Print.esc(r.team && r.team.name)}</td>" <>
+          if(show_series?, do: "<td>#{Print.esc(r.series)}</td>", else: "") <>
+          "<td class=\"num\">#{r.games}</td>" <>
+          "<td class=\"num\">#{Print.esc(points_text(r.points))}</td>" <>
+          "<td class=\"num\">#{if r.percentage, do: Print.esc(Print.format_num(r.percentage)), else: "-"}</td></tr>"
+      end)
+
+    "<table><thead><tr><th class=\"num\">#</th><th>#{gettext("Name")}</th>" <>
+      "<th class=\"num\">Elo</th><th>#{gettext("Team")}</th>" <>
+      if(show_series?, do: "<th>#{gettext("Series")}</th>", else: "") <>
+      "<th class=\"num\">#{gettext("Games")}</th><th class=\"num\">Pts</th><th class=\"num\">%</th>" <>
+      "</tr></thead><tbody>#{body}</tbody></table>"
   end
 
   defp parse_min_games(value) do

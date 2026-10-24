@@ -103,7 +103,7 @@ defmodule PairingsEngine.TournamentExport do
     keizer_top_value pair_by_category
     team_boards team_match_points_win team_match_points_draw team_match_points_loss
     team_board_colours team_pab_match_points team_pab_game_points team_withdrawal_annul team_forfeit_board_points
-    team_lineups team_rating_method team_unrated_rating teams_ordered_by_hand
+    team_lineups team_board_order team_rating_method team_unrated_rating teams_ordered_by_hand
     team_pairing_mode initial_colour initial_colour_drawn rating_method initial_order_tiebreak late_entry_numbering
     round_one_absentees_late pairing_numbers_origin
     soft_position
@@ -277,7 +277,7 @@ defmodule PairingsEngine.TournamentExport do
   @doc false
   def excluded_tournament_fields, do: @excluded_tournament_fields
 
-  @team_fields ~w(name captain short_name seed pairing_number withdrawn_from_round
+  @team_fields ~w(name captain short_name series club seed pairing_number withdrawn_from_round
                   withdrawal_player_ids rating_override absent_rounds)a
 
   # A team's content: its names, its captain, where it stands in the seeding

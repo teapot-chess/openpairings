@@ -124,7 +124,7 @@ defmodule PairingsEngineWeb.TeamsLive do
 
   @impl true
   def handle_event("create_team", %{"team" => params}, socket) when is_map(params) do
-    attrs = Map.take(params, ~w(name short_name captain))
+    attrs = Map.take(params, ~w(name short_name captain series club))
 
     case Tournaments.create_team(socket.assigns.tournament, attrs) do
       {:ok, team} ->
@@ -149,7 +149,7 @@ defmodule PairingsEngineWeb.TeamsLive do
          {:ok, updated} <-
            Tournaments.update_team(
              team,
-             Map.take(params, ~w(name short_name captain rating_override))
+             Map.take(params, ~w(name short_name captain series club rating_override))
            ) do
       Audit.log(socket.assigns.tournament.id, socket.assigns.current_scope, "team.updated", %{
         team_name: updated.name,
@@ -668,6 +668,27 @@ defmodule PairingsEngineWeb.TeamsLive do
               />
             </label>
 
+            <label class="field">
+              <span>{gettext("Series (optional)")}</span>
+              <input
+                type="text"
+                id={"create-team-series-#{@form_nonce}"}
+                name="team[series]"
+                maxlength="30"
+                placeholder={gettext("e.g. Series 1")}
+              />
+            </label>
+
+            <label class="field">
+              <span>{gettext("Club (optional)")}</span>
+              <input
+                type="text"
+                id={"create-team-club-#{@form_nonce}"}
+                name="team[club]"
+                maxlength="100"
+              />
+            </label>
+
             <div class="actions">
               <button type="submit" class="pe-btn primary">{gettext("Add team")}</button>
             </div>
@@ -738,6 +759,16 @@ defmodule PairingsEngineWeb.TeamsLive do
 
           <p :if={team.captain != ""} class="hint">
             {gettext("Captain: %{name}", name: team.captain)}
+          </p>
+
+          <p :if={team.series != "" or team.club != ""} id={"team-meta-#{team.id}"} class="hint">
+            <span :if={team.series != ""} id={"team-series-#{team.id}"}>
+              {gettext("Series: %{name}", name: team.series)}
+            </span>
+            <span :if={team.series != "" and team.club != ""} aria-hidden="true"> &middot; </span>
+            <span :if={team.club != ""} id={"team-club-#{team.id}"}>
+              {gettext("Club: %{name}", name: team.club)}
+            </span>
           </p>
 
           <p id={"team-rating-#{team.id}"} class="hint">
@@ -934,6 +965,29 @@ defmodule PairingsEngineWeb.TeamsLive do
               <label class="field">
                 <span>{gettext("Captain")}</span>
                 <input type="text" name="team[captain]" value={team.captain} maxlength="100" />
+              </label>
+
+              <label class="field">
+                <span>{gettext("Series (optional)")}</span>
+                <input
+                  type="text"
+                  id={"team-series-input-#{team.id}"}
+                  name="team[series]"
+                  value={team.series}
+                  maxlength="30"
+                  placeholder={gettext("e.g. Series 1")}
+                />
+              </label>
+
+              <label class="field">
+                <span>{gettext("Club (optional)")}</span>
+                <input
+                  type="text"
+                  id={"team-club-input-#{team.id}"}
+                  name="team[club]"
+                  value={team.club}
+                  maxlength="100"
+                />
               </label>
 
               <label class="field">

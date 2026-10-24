@@ -157,6 +157,10 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
   public snapshot gains `tournament.time_control_minutes` (nil in every
   scenario). With that key taken out the regenerated file is equal, term for
   term, to the one before.
+
+  And for the team board order (koppeltornooi): every JSON export gains
+  `tournament.team_board_order` ("roster"). With that key taken out the
+  regenerated file is equal, term for term, to the one before.
   """
   use PairingsEngineWeb.ConnCase, async: false
 

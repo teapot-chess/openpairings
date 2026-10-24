@@ -125,7 +125,7 @@ points per round), **match result sheets** (one A4 page per match with both
 line-ups, result boxes, the match score and signature lines for both
 captains and the arbiter), **team rosters** and **board prizes** (per board
 number, the players ranked by percentage, points and performance, with an
-optional minimum number of games). See [Teams](13-teams.md).
+optional minimum number of games) and the **individual ranking** (every player who played, by points, percentage and rating; one series on request). See [Teams](13-teams.md).
 
 A team round robin also has its **schedule (all rounds)**: every round with
 its date and matches, and per match the boards with both players, the colours

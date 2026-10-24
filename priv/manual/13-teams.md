@@ -13,7 +13,8 @@ Keizer cannot be a team tournament.
 1. Create the tournament with *Team tournament* ticked.
 2. **Teams** (a tab next to Players, shown for team tournaments only): add each
    team with a name, an optional short name for narrow columns (it labels the
-   tie-break working and is not published) and an optional captain. A team can
+   tie-break working and is not published), an optional captain, an optional
+   **series** and an optional **club**. A team can
    be deleted while it is in no round; a team that is in a paired match is
    withdrawn instead.
 3. Register the players on the Players page as usual, then put each one on a
@@ -48,6 +49,17 @@ Options, *Line-ups*: **Required** (the default and the FIDE procedure): a team
 plays with the players of its roster in board order, a reserve moves up for an
 absent player, and a board that a team cannot fill is a forfeit win for the
 opponent.
+
+Options, *Board order*: **Fixed by the roster** (the default and the FIDE
+procedure): a player listed lower on the roster never sits above one listed
+higher, so a line-up can leave players out but not reorder them. **Chosen for
+each round**: any player of the roster, reserves included, may sit on any board
+of a line-up, which suits leagues that let the captain set the order each
+round. The pairing still seats a team in roster order; you change the order on
+the match's *Line-ups* page, before the first result of the match is entered.
+The TRF26 report needs nothing extra: each player's line names the opponent
+and colour actually played, so the line-ups as played are what it carries. In
+FIDE mode this setting cannot change once round 1 is paired.
 
 > [!NOTE] Optional: pair teams without players
 > Some leagues and school
@@ -85,7 +97,7 @@ score so far, the match points once every board has a result, a link to the matc
 line-ups (*Line-ups*) and the **Forfeit by decision** controls.
 
 - *Line-ups*: the page of a match sets who plays on which board; a line-up
-  keeps the team's board order; it can be changed only before the first result
+  keeps the team's board order (unless the Board order is chosen for each round); it can be changed only before the first result
   of the match is entered.
 - *Forfeit by decision*: *To Team A* / *To Team B* makes every board of the
   match the forfeit result of that team, and *Neither team* records a double
@@ -138,6 +150,28 @@ tie-breaks, each with its working (for each round the opponent and what it was
 worth, a forfeit, a bye). The page also shows **board statistics**: per board
 number, the players who sat there, with games, points, percentage and performance.
 
+### Series and club
+
+A team can carry a **series** label ("Series 1", "Reeks 2": free short text) and
+a **club**, both on its card. A series is only a label: teams of every series
+are paired together, as one Swiss. When any team has one, the team standings
+(page and printout) gain a *Series* column. The club is stored and shown on the
+card.
+
+### Individual ranking
+
+On the Standings page of a team tournament, *Individual ranking* shows every
+player who played: rank, name, rating, team, series, games, points and
+percentage. With series in use, a *Series* filter keeps one series. The printout
+(*Individual ranking* on the Print page, or *Print* under the table) follows the
+filter.
+
+The order is **points, then percentage, then rating** (higher first), then name;
+players level on points and percentage share a rank and the rating only orders
+them. Points are the ones the board statistics add up, a forfeit win included;
+*Games* counts only games actually played, and a player who has played none is
+not listed.
+
 ### Team tie-breaks
 
 MP (match points), GP (game points), DE (direct encounter), BB (board points
@@ -161,9 +195,9 @@ matches and withdrawn teams in a team Swiss.
 ## Printing
 
 The Print page lists **team pairings**, **team standings**, **team cross table**,
-**match result sheets**, **team rosters** and **board prizes**
+**match result sheets**, **team rosters**, **board prizes** and the **individual ranking**
 ([Printing](09-printing.md)). The Standings page has the same as buttons:
-*Cross table*, *Match sheets*, *Rosters*, *Board prizes*.
+*Cross table*, *Match sheets*, *Rosters*, *Board prizes*; the individual ranking has its own view there.
 
 ## Reporting and publishing
 
