@@ -91,35 +91,40 @@ defmodule PairingsEngine.TeamStandings do
   alias PairingsEngine.{PlayerStats, Repo, Results, Standings, Tournaments}
   alias PairingsEngine.Tournaments.{Match, Player, Round, Tournament}
 
-  @supported ~w(MP GP DE BH BHC1 BHC2 MBH BH:GP SB EMGSB EGMSB EGGSB EDE TBR BBE SSSC BB)
+  @table_codes PairingsEngine.Tiebreaks.TableCodes.team_codes()
+
+  @supported ~w(MP GP DE BH BHC1 BHC2 MBH BH:GP SB EMGSB EGMSB EGGSB EDE TBR BBE SSSC BB) ++
+               @table_codes
 
   # Each code in Ainalrami's (C.07) spelling. BB ranks as Board Count; see
   # the tie-breaks section below. The Buchholz cuts reuse the individual
   # codes (BHC1 = BH/C1, MBH = BH/M1), on match points like BH; `BH:GP` is
   # Buchholz on game points (C.07 Art. 13: "using teams MP or GP as the
   # reference score").
-  @c07 %{
-    "MP" => "MPTS",
-    "GP" => "GPTS",
-    "DE" => "DE",
-    "BH" => "BH:MP",
-    "BHC1" => "BH:MP/C1",
-    "BHC2" => "BH:MP/C2",
-    "MBH" => "BH:MP/M1",
-    "BH:GP" => "BH:GP",
-    "SB" => "SB:MP",
-    "EMGSB" => "EMGSB",
-    "EGMSB" => "EGMSB",
-    "EGGSB" => "EGGSB",
-    "EDE" => "EDE",
-    "TBR" => "TBR",
-    "BBE" => "BBE",
-    "SSSC" => "SSSC",
-    "BB" => "BC"
-  }
+  @c07 Map.new(@table_codes, &{&1, &1})
+       |> Map.merge(%{
+         "MP" => "MPTS",
+         "GP" => "GPTS",
+         "DE" => "DE",
+         "BH" => "BH:MP",
+         "BHC1" => "BH:MP/C1",
+         "BHC2" => "BH:MP/C2",
+         "MBH" => "BH:MP/M1",
+         "BH:GP" => "BH:GP",
+         "SB" => "SB:MP",
+         "EMGSB" => "EMGSB",
+         "EGMSB" => "EGMSB",
+         "EGGSB" => "EGGSB",
+         "EDE" => "EDE",
+         "TBR" => "TBR",
+         "BBE" => "BBE",
+         "SSSC" => "SSSC",
+         "BB" => "BC"
+       })
 
   @with_working ~w(BH SB EMGSB)
-  @buchholz ~w(BH BHC1 BHC2 MBH BH:GP)
+  @buchholz ~w(BH BHC1 BHC2 MBH BH:GP) ++
+              Enum.filter(@table_codes, &String.starts_with?(&1, ["BH:", "FB:", "AOB:"]))
 
   @doc """
   This app's team tie-break codes in C.07's own spelling, as a TRF26 `202`

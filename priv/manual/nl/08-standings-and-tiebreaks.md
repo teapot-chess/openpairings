@@ -116,6 +116,8 @@ onder *Regels die het programma toepast*.
 | FB/M1, FB/M2 | Fore-mediaan-Buchholz, Mediaan-2 | Fore-Buchholz zonder de hoogste en laagste, of zonder de twee hoogste en twee laagste. |
 | AOB | Gemiddelde Buchholz van de tegenstanders | Gemiddelde Buchholz van de tegenstanders die over het bord zijn ontmoet. |
 | AOB/F | Gemiddelde Fore-Buchholz van de tegenstanders | Hetzelfde met Fore-Buchholz. |
+| BH/P, BH/C1/P, BH/C2/P, BH/M1/P, BH/M2/P | Buchholz en zijn cuts en medianen, forfaits meegeteld | Een forfait telt als een partij tegen de tegenstander met wie je gepaard was, tegen de echte score van die tegenstander, in plaats van de virtuele tegenstander van artikel 16. |
+| FB/P, FB/C1/P, FB/C2/P, FB/M1/P, FB/M2/P | Fore-Buchholz en zijn cuts en medianen, forfaits meegeteld | Hetzelfde voor Fore-Buchholz. |
 
 **Sonneborn-Berger en Koya**
 
@@ -126,6 +128,7 @@ onder *Regels die het programma toepast*.
 | KS | Koya-systeem | Score tegen tegenstanders die 50% of meer hebben gescoord. |
 | KS/L1, KS/L2 | Koya-systeem, grens 50% + ½ of + 1 | De kwalificatiegrens met een halve of een hele punt verhoogd. |
 | KS/L-1, KS/L-2 | Koya-systeem, grens 50% - ½ of - 1 | De kwalificatiegrens met een halve of een hele punt verlaagd. |
+| SB/P, SB/C1/P, SB/C2/P | Sonneborn-Berger en zijn cuts, forfaits meegeteld | Een forfait telt als een partij tegen de tegenstander met wie je gepaard was, gewogen met de echte score van die tegenstander. |
 
 **Progressieve score**
 
@@ -151,6 +154,18 @@ onder *Regels die het programma toepast*.
 Teamevenementen hebben een eigen lijst: MP (matchpunten), GP (partijpunten), EMGSB,
 EGMSB, EGGSB, BH:GP, EDE, TBR, BBE, SSSC, BB (zie [Teams](13-teams.md)). Zij
 vormen de laatste groep van de lijst.
+
+Elke code uit de tabel "Mandatory Tie-Breaks - TRF26" van FIDE kun je kiezen, met
+de schrijfwijze van die tabel. Dezelfde schrijfwijze staat in de TRF-regels `202`
+en `212`, dus een bestand gaat de deur uit en komt terug met dezelfde codes. De
+toevoeging `/P` betekent "forfaits tellen als partijen tegen de tegenstander met
+wie je gepaard was" en bestaat voor Buchholz, Fore-Buchholz, Sonneborn-Berger,
+de vier uitgebreide Sonneborn-Bergers (EMMSB, EMGSB, EGMSB, EGGSB), de
+uitgebreide directe ontmoetingen en SSSC. SSSC accepteert ook `/K4` of `/K5`: de
+normaliseringsfactor die het reglement van de wedstrijd voorschrijft, in plaats
+van de berekende (C.07 artikel 13.4.2 b). Teamevenementen bieden daarnaast de
+vormen van de tabel op wedstrijdpunten en partijpunten (`BH:MP/C1/P`, `FB:GP`,
+`PS:MP`, `KS:GP/L1`, `AOB:MP/F`, `WIN:MP`, `MPVGP` en de rest).
 
 ### Regels die het programma toepast {#rules-the-program-applies}
 

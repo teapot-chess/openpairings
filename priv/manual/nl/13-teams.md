@@ -132,7 +132,9 @@ partijen, punten, percentage en prestatie.
 
 ### Teamtiebreaks {#team-tie-breaks}
 
-MP (wedstrijdpunten), GP (partijpunten), DE (directe ontmoeting), BB (bordpunten gewogen per bord), SB, BH:GP, EMGSB, EGMSB, EGGSB, EDE (uitgebreide directe ontmoeting), TBR (resultaten op het topbord), BBE (eliminatie op het laagste bord), SSSC.
+MP (wedstrijdpunten), GP (partijpunten), DE (directe ontmoeting), BB (bordpunten gewogen per bord), SB, BH:GP, EMGSB, EGMSB, EGGSB, EDE (uitgebreide directe ontmoeting), TBR (resultaten op het topbord), BBE (eliminatie op het laagste bord), SSSC. De rest van de tabel
+"Mandatory Tie-Breaks" van FIDE wordt ook aangeboden, met de vormen `/P` en `/K<n>`;
+[Rangschikking en tiebreaks](08-standings-and-tiebreaks.md) legt de toevoegingen uit.
 De behandeling van niet-gespeelde partijen van C.07 artikel 16 geldt voor byes, forfaitwedstrijden
 en teruggetrokken teams in een teams-Zwitsers.
 

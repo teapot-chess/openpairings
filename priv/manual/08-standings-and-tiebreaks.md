@@ -112,6 +112,8 @@ the program applies*.
 | FB/M1, FB/M2 | Fore Median Buchholz, Median-2 | Fore Buchholz without the highest and lowest, or the two highest and two lowest. |
 | AOB | Average of opponents' Buchholz | Average Buchholz of the opponents met over the board. |
 | AOB/F | Average of opponents' Fore Buchholz | The same with Fore Buchholz. |
+| BH/P, BH/C1/P, BH/C2/P, BH/M1/P, BH/M2/P | Buchholz and its cuts and medians, forfeits counted | A forfeit counts as a game against the opponent it was scheduled with, at that opponent's real score, instead of Article 16's virtual opponent. |
+| FB/P, FB/C1/P, FB/C2/P, FB/M1/P, FB/M2/P | Fore Buchholz and its cuts and medians, forfeits counted | The same for Fore Buchholz. |
 
 **Sonneborn-Berger and Koya**
 
@@ -122,6 +124,7 @@ the program applies*.
 | KS | Koya system | Score against opponents who scored 50% or more. |
 | KS/L1, KS/L2 | Koya system, limit 50% + ½ or + 1 | The qualifying limit raised by half a point or a point. |
 | KS/L-1, KS/L-2 | Koya system, limit 50% - ½ or - 1 | The qualifying limit lowered by half a point or a point. |
+| SB/P, SB/C1/P, SB/C2/P | Sonneborn-Berger and its cuts, forfeits counted | A forfeit counts as a game against its scheduled opponent, weighted by that opponent's real score. |
 
 **Progressive score**
 
@@ -147,6 +150,18 @@ the program applies*.
 Team events have their own list: MP (match points), GP (game points), EMGSB,
 EGMSB, EGGSB, BH:GP, EDE, TBR, BBE, SSSC, BB (see [Teams](13-teams.md)). They
 are the last group of the list.
+
+Every code in FIDE's "Mandatory Tie-Breaks - TRF26" table can be picked, under
+the spelling the table uses: that spelling is also what the TRF `202` and `212`
+lines carry, so a file goes out and comes back with the same codes. The suffix
+`/P` means "forfeits count as games against the scheduled opponent" and exists
+for Buchholz, Fore Buchholz, Sonneborn-Berger, the four extended
+Sonneborn-Bergers (EMMSB, EMGSB, EGMSB, EGGSB), the extended direct encounters
+and SSSC. SSSC also takes `/K4` or `/K5`: the normalising factor the
+competition's rules state, in place of the computed one (C.07 Article 13.4.2 b).
+Team events additionally offer the table's match-point and game-point forms
+(`BH:MP/C1/P`, `FB:GP`, `PS:MP`, `KS:GP/L1`, `AOB:MP/F`, `WIN:MP`, `MPVGP` and
+the rest).
 
 ### Rules the program applies
 

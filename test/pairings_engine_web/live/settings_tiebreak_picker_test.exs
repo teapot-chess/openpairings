@@ -32,6 +32,44 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     assert has_element?(lv, ~s(select[name="code"] optgroup[label="Buchholz"]))
   end
 
+  test "the picker offers the /P codes of FIDE's mandatory table, and adding one keeps it", %{
+    conn: conn,
+    scope: scope
+  } do
+    tournament = create_tournament(scope)
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+
+    for code <- ~w(BH/P BH/C1/P FB/M2/P SB/P SB/C2/P) do
+      assert has_element?(lv, ~s(select[name="code"] optgroup option[value="#{code}"]))
+    end
+
+    refute has_element?(lv, ~s(select[name="code"] option[value="SSSC/K4"]))
+
+    lv |> element(~s(select[name="code"])) |> render_change(%{"code" => "BH/C1/P"})
+    assert has_element?(lv, "#tiebreak-editor", "forfeits counted")
+    refute has_element?(lv, ~s(select[name="code"] option[value="BH/C1/P"]))
+  end
+
+  test "a team tournament's picker offers SSSC with a normalising factor", %{
+    conn: conn,
+    scope: scope
+  } do
+    {:ok, tournament} =
+      Tournaments.create_tournament(scope, %{
+        "name" => "Teams",
+        "type" => "team-swiss",
+        "rounds_count" => "5"
+      })
+
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+
+    for code <- ~w(SSSC/K4 SSSC/F/P/K5 EMMSB/C1/P PS:GP/C1 MPVGP) do
+      assert has_element?(lv, ~s(select[name="code"] optgroup option[value="#{code}"]))
+    end
+
+    refute has_element?(lv, ~s(select[name="code"] option[value="BH/C1/P"]))
+  end
+
   test "adding a tie-break from a group puts it in the list and takes it out of the picker", %{
     conn: conn,
     scope: scope
