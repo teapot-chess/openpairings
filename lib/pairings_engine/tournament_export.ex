@@ -943,6 +943,7 @@ defmodule PairingsEngine.TournamentExport do
         "soft" => r.soft,
         "names" => r.names,
         "player_ids" => r.player_ids,
+        "team_ids" => r.team_ids,
         "window" => r.window,
         "window_rounds" => r.window_rounds,
         "window_from" => r.window_from,

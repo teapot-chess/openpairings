@@ -382,6 +382,16 @@ wens of weer een regel met **Maak er een wens van** / **Maak er een regel van**;
 een groep wijzig je met **Bewerken**, dat de leden aanvinkt zodat je er kunt
 toevoegen of weghalen, en dan **Groep bewaren**.
 
+**In een Zwitsers teamtoernooi** houdt de pagina *teams* uit elkaar, geen spelers:
+*Teams van dezelfde club* (de club die je op de kaart van elk team typt, vergeleken zonder
+spaties aan de rand en hoofdletterongevoelig; een team zonder club wordt nooit gegroepeerd) en
+*Teams die ik kies* (vink de teams aan die elkaar niet mogen ontmoeten). Regel of wens, en de
+rondes waarin het geldt, kies je net als hierboven. Een regel wordt nooit gekoppeld; een wens
+beslist alleen tussen koppelingen die C.04.6 gelijk rangschikt en kost nooit een kleur, een
+floater of de bye. Laten de regels een ronde zonder koppeling terwijl ze er zonder wel zou
+zijn, dan zegt de koppelknop dat, noemt de groepen die gelden en welke ervan, alleen
+opgeheven, de ronde toch laat doorgaan. De spelerskiezers verschijnen niet. Zie [Teams](13-teams.md).
+
 Een paar of een regel die je toevoegt wanneer er al rondes gepaard zijn, geldt
 vanaf de eerstvolgende ronde die gepaard wordt, en het TRF-rapport zegt dat.
 Maak je daarna een ronde ongedaan, dan geldt de beperking vanaf die ronde: paar

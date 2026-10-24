@@ -194,11 +194,56 @@ defmodule PairingsEngine.Pairing do
     t = PairingsEngine.TeamSwiss.settle_mode(t)
 
     if Tournament.team_swiss?(t),
-      do: dispatch_stub(t, PairingsEngine.TeamSwiss),
+      do: guard_team_departures(t, fn -> dispatch_stub(t, PairingsEngine.TeamSwiss) end),
       else: dispatch_swiss(t)
   end
 
   defp dispatch_pair_next_round(%Tournament{} = tournament), do: dispatch_swiss(tournament)
+
+  # The team Swiss's half of `guard_fide_departures/3`: a wish ("teams of
+  # the same club, if possible") that moved a match takes the tournament out
+  # of FIDE mode, so it is a Level-4 act and the arbiter is asked first. The
+  # run goes inside one transaction and is rolled back when it turns out to
+  # depart; the caller confirms by pairing again without the guard. When the
+  # round stands, a departure is stamped as the individual path stamps it
+  # (`record_pairing_deviations/2`).
+  defp guard_team_departures(%Tournament{} = tournament, run) do
+    guarded? =
+      tournament.fide_departure_guard == true and PairingsEngine.Compliance.fide_mode?(tournament)
+
+    result =
+      if guarded? do
+        outcome =
+          Repo.transaction(fn ->
+            case run.() do
+              {:ok, round} = ok ->
+                case pairing_deviations(tournament, round.number) do
+                  [] -> ok
+                  deviations -> Repo.rollback({:fide_departure, deviations})
+                end
+
+              other ->
+                other
+            end
+          end)
+
+        case outcome do
+          {:ok, inner} -> inner
+          {:error, other} -> {:error, other}
+        end
+      else
+        run.()
+      end
+
+    case result do
+      {:ok, round} ->
+        record_pairing_deviations(tournament, round.number)
+        result
+
+      other ->
+        other
+    end
+  end
 
   defp dispatch_swiss(%Tournament{} = tournament) do
     paired = PairTiming.span(:load, fn -> paired_rounds_count(tournament.id) end)

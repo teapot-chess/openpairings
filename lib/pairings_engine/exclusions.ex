@@ -71,7 +71,79 @@ defmodule PairingsEngine.Exclusions do
     end
   end
 
+  # A team tournament's rules read TEAMS, not players: `items` are the
+  # tournament's `Team` rows. Clubs compare as a player's do (trimmed,
+  # case-insensitive, blank is no club).
+  def groups(%{kind: "team_club"} = rule, teams),
+    do: value_groups(only_teams(teams), & &1.club, rule.names)
+
+  def groups(%{kind: "team_group", team_ids: ids}, teams) do
+    wanted = MapSet.new(ids || [])
+
+    case teams |> only_teams() |> Enum.filter(&MapSet.member?(wanted, &1.id)) do
+      [_, _ | _] = members -> [members]
+      _ -> []
+    end
+  end
+
   def groups(_rule, _players), do: []
+
+  # A team rule handed players (a legacy player-by-player event, Keizer, a
+  # count) keeps nobody apart: the check is on the struct, not the field
+  # names, which a player shares with a team.
+  defp only_teams(items), do: Enum.filter(items, &is_struct(&1, PairingsEngine.Tournaments.Team))
+
+  @doc """
+  The groups of team numbers (pairing numbers) the team rules of `rules`
+  keep apart in `round`, `soft?` choosing wishes or rules: the shape
+  `Ainalrami.TeamPairing`'s `:soft_pairs` / `:forbidden_pairs` take. A team
+  with no number yet is left out, and so is a group left with fewer than two.
+  """
+  @spec team_groups([map()], [map()], pos_integer(), non_neg_integer() | nil, boolean()) ::
+          [[integer()]]
+  def team_groups(rules, teams, round, rounds_count, soft?) do
+    rules
+    |> Enum.filter(&(&1.kind in ["team_club", "team_group"] and &1.soft == soft?))
+    |> Enum.filter(&applies?(&1, round, rounds_count))
+    |> Enum.flat_map(&tpn_groups(&1, teams))
+  end
+
+  @doc """
+  The same groups for a file: each as `{tpns, first_round, last_round}` with
+  the rounds the rule holds for, or a plain list when it holds for the whole
+  event. `last_round` is the event's last round when the rule runs to the end.
+  """
+  @spec team_group_spans([map()], [map()], non_neg_integer(), boolean()) :: [
+          [integer()] | {[integer()], pos_integer(), pos_integer()}
+        ]
+  def team_group_spans(rules, teams, rounds_count, soft?) do
+    rules
+    |> Enum.filter(&(&1.kind in ["team_club", "team_group"] and &1.soft == soft?))
+    |> Enum.flat_map(fn rule ->
+      case rounds(rule, rounds_count) do
+        nil ->
+          []
+
+        {first, last} ->
+          last = min(last || rounds_count, rounds_count)
+
+          cond do
+            first > last -> []
+            first <= 1 and last >= rounds_count -> tpn_groups(rule, teams)
+            true -> Enum.map(tpn_groups(rule, teams), &{&1, first, last})
+          end
+      end
+    end)
+  end
+
+  defp tpn_groups(rule, teams) do
+    rule
+    |> groups(teams)
+    |> Enum.map(fn group ->
+      group |> Enum.map(& &1.pairing_number) |> Enum.reject(&is_nil/1) |> Enum.sort()
+    end)
+    |> Enum.filter(&(length(&1) >= 2))
+  end
 
   @doc """
   Every pair of `players` a HARD rule of `rules` keeps apart in `round`, as
@@ -136,6 +208,8 @@ defmodule PairingsEngine.Exclusions do
       case rule.kind do
         "club" -> "same club" <> names_suffix(rule.names)
         "federation" -> "same federation" <> names_suffix(rule.names)
+        "team_club" -> "teams of the same club" <> names_suffix(rule.names)
+        "team_group" -> "team group"
         _ -> "group"
       end
 

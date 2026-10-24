@@ -367,6 +367,17 @@ back into a rule with **Make it a wish** / **Make it a rule**; a group is
 changed with **Edit**, which ticks its members so you can add or remove
 some, then **Save group**.
 
+**In a team Swiss** the page keeps *teams* apart, not players: *Teams of the
+same club* (the club typed on each team's card, compared trimmed and without
+regard to capitals; a team with no club is never grouped) and *Teams I
+choose* (tick the teams that must not meet each other). Rule or wish, and the
+rounds it holds for, are chosen exactly as above. A rule is never seated; a
+wish only decides between pairings C.04.6 ranks equal and never costs a
+colour, a floater or the bye. If the rules leave a round no pairing where it
+would pair without them, *Pair round N* says so, names the groups in force
+and which of them, lifted alone, would let the round through. The player
+pickers are not shown. See [Teams](13-teams.md).
+
 A pair or a rule added once rounds are paired holds from the next round to be
 paired, and the TRF report says so. Unpair a round afterwards and it holds
 from that round: pair it again and the restriction is applied.

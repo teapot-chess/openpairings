@@ -211,6 +211,10 @@ en met 4 op *Ronde N paren* drukt, krijgt dan eerst een vraag
 ([Een ronde paren](06-pairing.md), *Wanneer de paringsnummers de ratings niet
 volgen*).
 
+De teamnummers van een Zwitsers teamtoernooi kunnen op dezelfde manier gecorrigeerd worden tot
+ronde 4 gepaard is, vanaf de pagina Teams ([De volgorde van de teams
+corrigeren](13-teams.md#correcting-the-order-of-the-teams)).
+
 **Startnummers van een rondetoernooi.** Vóór ronde 1 opent
 **Startnummers** (pagina Spelers, **Meer**) de lijst waarop de Berger-tabellen paren. Voer het resultaat van
 een loting met de hand in (een nummer per speler, of verplaats een speler omhoog

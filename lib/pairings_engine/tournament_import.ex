@@ -327,7 +327,7 @@ defmodule PairingsEngine.TournamentImport do
     PairingsEngine.BoardLink.import_games(tournament.id, list(entry, "board_games"))
     import_byes!(tournament, records!(entry, "byes"), player_map)
     import_forbidden_pairings!(tournament, records!(entry, "forbidden_pairings"), player_map)
-    import_pairing_rules!(tournament, entry, t_attrs, player_map)
+    import_pairing_rules!(tournament, entry, t_attrs, player_map, team_map)
     tournament = import_prohibition_changes!(tournament, t_attrs, player_map)
 
     tournament
@@ -599,7 +599,7 @@ defmodule PairingsEngine.TournamentImport do
     import_rounds!(tournament, records!(t_data, "rounds"), player_map, team_map)
     import_byes!(tournament, records!(t_data, "byes"), player_map)
     import_forbidden_pairings!(tournament, records!(t_data, "forbidden_pairings"), player_map)
-    import_pairing_rules!(tournament, t_data, t_attrs, player_map)
+    import_pairing_rules!(tournament, t_data, t_attrs, player_map, team_map)
     tournament = import_prohibition_changes!(tournament, t_attrs, player_map)
     # What the file says was sent to the rating officer goes on this copy's
     # sent-games record: the file's own record of it (`"sent_games"`, audit
@@ -1289,10 +1289,10 @@ defmodule PairingsEngine.TournamentImport do
   # A group rule's members are remapped like every other player reference;
   # one left with fewer than two is dropped, as a pair naming a lost player
   # is.
-  defp import_pairing_rules!(tournament, entry, t_attrs, player_map) do
+  defp import_pairing_rules!(tournament, entry, t_attrs, player_map, team_map) do
     attrs =
       if Map.has_key?(entry, "pairing_rules"),
-        do: entry |> records!("pairing_rules") |> Enum.map(&rule_attrs(&1, player_map)),
+        do: entry |> records!("pairing_rules") |> Enum.map(&rule_attrs(&1, player_map, team_map)),
         else: legacy_rule_attrs(t_attrs)
 
     for {attrs, from_round} <- Enum.reject(attrs, &is_nil/1) do
@@ -1309,12 +1309,19 @@ defmodule PairingsEngine.TournamentImport do
     :ok
   end
 
-  defp rule_attrs(r, player_map) do
+  defp rule_attrs(r, player_map, team_map) do
     ids =
       r
       |> Map.get("player_ids")
       |> List.wrap()
       |> Enum.map(&Map.get(player_map, &1))
+      |> Enum.reject(&is_nil/1)
+
+    team_ids =
+      r
+      |> Map.get("team_ids")
+      |> List.wrap()
+      |> Enum.map(&Map.get(team_map, &1))
       |> Enum.reject(&is_nil/1)
 
     from = coerce_int(r["from_round"])
@@ -1324,6 +1331,7 @@ defmodule PairingsEngine.TournamentImport do
        "soft" => r["soft"] == true,
        "names" => List.wrap(r["names"]),
        "player_ids" => ids,
+       "team_ids" => team_ids,
        "window" => r["window"] || "all",
        "window_rounds" => r["window_rounds"],
        "window_from" => r["window_from"],

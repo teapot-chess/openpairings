@@ -1623,10 +1623,11 @@ defmodule PairingsEngineWeb.PrintController do
     else
       teams = tournament.id |> Tournaments.list_teams() |> Map.new(&{&1.id, &1})
       pairings = Map.new(round.pairings, &{&1.id, &1})
+      fielded = TeamStandings.fielded_ratings(tournament, matches)
 
       body =
         tournament_info_html(tournament) <>
-          Enum.map_join(matches, "", &team_match_table(&1, teams, pairings, tournament))
+          Enum.map_join(matches, "", &team_match_table(&1, teams, pairings, tournament, fielded))
 
       print_page(
         conn,
@@ -1640,18 +1641,18 @@ defmodule PairingsEngineWeb.PrintController do
 
   # A team Swiss's pairing-allocated bye scores a draw (C.04.6 Art. 1.4); a
   # round robin's bye scores nothing, and has no match points to show.
-  defp team_match_table(%{bye?: true, mp_a: mp} = m, teams, _pairings, _tournament)
+  defp team_match_table(%{bye?: true, mp_a: mp} = m, teams, _pairings, _tournament, _fielded)
        when not is_nil(mp) do
     "<p class=\"sub\" style=\"margin-top:18px\"><strong>#{esc(team_print_name(teams, m.team_a_id))}</strong> - " <>
       "#{gettext("pairing-allocated bye, scored as a drawn match")}</p>"
   end
 
-  defp team_match_table(%{bye?: true} = m, teams, _pairings, _tournament) do
+  defp team_match_table(%{bye?: true} = m, teams, _pairings, _tournament, _fielded) do
     "<p class=\"sub\" style=\"margin-top:18px\"><strong>#{esc(team_print_name(teams, m.team_a_id))}</strong> - " <>
       "#{gettext("does not play this round")}</p>"
   end
 
-  defp team_match_table(m, teams, pairings, tournament) do
+  defp team_match_table(m, teams, pairings, tournament, fielded) do
     # A postponed board leaves the score provisional: said beside it, so the
     # sheet does not read as the match's final score.
     pending =
@@ -1668,7 +1669,7 @@ defmodule PairingsEngineWeb.PrintController do
       gettext("Match %{n}", n: m.number) <>
         ": " <>
         esc(team_print_name(teams, m.team_a_id)) <>
-        " - " <> esc(team_print_name(teams, m.team_b_id)) <> score
+        " - " <> esc(team_print_name(teams, m.team_b_id)) <> score <> avg_elo_text(fielded, m)
 
     rows =
       Enum.map_join(m.boards, "", fn b ->
@@ -1698,6 +1699,15 @@ defmodule PairingsEngineWeb.PrintController do
       "<th style=\"text-align:center\">#{gettext("Result")}</th>" <>
       "<th>#{esc(team_print_name(teams, m.team_b_id))}</th><th class=\"num\">#{rating_header(tournament)}</th></tr></thead>" <>
       "<tbody>#{rows}</tbody></table>"
+  end
+
+  # " - avg. Elo 2051 - 1987": what each side fielded in the match.
+  defp avg_elo_text(fielded, %{match_id: id}) do
+    case Map.get(fielded, id) do
+      {nil, nil} -> ""
+      {a, b} -> " &middot; " <> gettext("avg. Elo") <> " #{a || "-"} - #{b || "-"}"
+      nil -> ""
+    end
   end
 
   defp team_pending_note(%{pending_boards: n}) when n > 0,
@@ -1760,12 +1770,16 @@ defmodule PairingsEngineWeb.PrintController do
     codes = tournament |> TeamStandings.effective_tiebreaks() |> Enum.reject(&(&1 == "MP"))
     series? = Enum.any?(entries, &(&1.team.series not in [nil, ""]))
 
+    fielded =
+      TeamStandings.latest_fielded_ratings(tournament, TeamStandings.matches(tournament, opts))
+
     head =
       "<th class=\"num\">#{gettext("Rank")}</th><th>#{gettext("Team")}</th>" <>
         if(series?, do: "<th>#{gettext("Series")}</th>", else: "") <>
         "<th class=\"num\">#{gettext("Played")}</th><th class=\"num\">#{gettext("W-D-L")}</th>" <>
         "<th class=\"num\">MP</th>" <>
-        Enum.map_join(codes, "", &"<th class=\"num\">#{esc(&1)}</th>")
+        Enum.map_join(codes, "", &"<th class=\"num\">#{esc(&1)}</th>") <>
+        "<th class=\"num\">#{gettext("Avg. Elo")}</th>"
 
     rows =
       Enum.map_join(entries, "", fn e ->
@@ -1776,7 +1790,7 @@ defmodule PairingsEngineWeb.PrintController do
           "<td class=\"num\"><strong>#{format_num(e.mp)}</strong></td>" <>
           Enum.map_join(codes, "", fn code ->
             "<td class=\"num\">#{format_num(Map.get(e.tiebreaks, code, 0.0))}</td>"
-          end) <> "</tr>"
+          end) <> "<td class=\"num\">#{Map.get(fielded, e.team.id) || "-"}</td></tr>"
       end)
 
     label = requested || PairingsEngine.Standings.rounds_paired(tournament.id)

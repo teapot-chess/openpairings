@@ -13,6 +13,10 @@ defmodule PairingsEngineWeb.TeamPrintController do
       with colours and ratings, a box for each board's result, the match
       score, and lines for both captains and the arbiter. `?match=<id>`
       prints a single match. Results already entered are filled in.
+    * `GET /t/:id/print/team-lineup-forms?round=n` - a blank line-up form for
+      each team of round `n` (default: the next round to pair): team,
+      opponent and board colours once the round is paired, board and reserve
+      rows to fill in, captain signature. `?team=<id>` prints one team's.
     * `GET /t/:id/print/team-rosters` - each team's board order: board, name,
       rating, FIDE ID, federation. `?team=<id>` prints one team.
     * `GET /t/:id/print/board-prizes` - per board number, the players ranked
@@ -73,6 +77,29 @@ defmodule PairingsEngineWeb.TeamPrintController do
   .ms-sig { flex: 1 1 0; border-top: 1px solid #000; padding-top: 3px; font-size: 11px; color: #333; }
   .ms-sig small { display: block; color: #666; font-size: 10px; }
   .ms-note { margin-top: 10px; font-size: 10.5px; color: #555; }
+  .ms-avg { margin-top: 8px; font-size: 11.5px; color: #333; }
+  """
+
+  @lineup_css """
+  @page { size: A4 portrait; margin: 12mm; }
+  .lineup-form { page-break-after: always; break-after: page; }
+  .lineup-form:last-child { page-break-after: auto; break-after: auto; }
+  .lf-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+             border-bottom: 2px solid #000; padding-bottom: 4px; font-size: 12px; }
+  .lf-head strong { font-size: 14px; }
+  .lineup-form h2 { font-size: 20px; margin: 14px 0 10px; }
+  .lf-line { display: flex; gap: 10px; align-items: baseline; font-size: 15px; margin: 8px 0;
+             border-bottom: 1px solid #888; padding-bottom: 3px; }
+  .lf-line span { min-width: 38mm; font-size: 11px; color: #555; text-transform: uppercase; }
+  .lf-blank { display: inline-block; min-width: 90mm; height: 1em; }
+  table.lf-boards { margin-top: 14px; }
+  table.lf-boards td { height: 12mm; border-bottom: 1px solid #888; }
+  table.lf-boards th { text-align: left; }
+  table.lf-boards tr.lf-reserve td { height: 10mm; }
+  .lf-sigs { display: flex; gap: 14mm; margin-top: 20mm; }
+  .lf-sig { flex: 1 1 0; border-top: 1px solid #000; padding-top: 3px; font-size: 11px; color: #333; }
+  .lf-sig small { display: block; color: #666; font-size: 10px; }
+  .lf-note { margin-top: 10px; font-size: 10.5px; color: #555; }
   """
 
   @roster_css """
@@ -238,6 +265,107 @@ defmodule PairingsEngineWeb.TeamPrintController do
     end)
   end
 
+  ## ---------- blank line-up forms ----------
+
+  @doc """
+  `GET /t/:id/print/team-lineup-forms?round=n&team=id` - see the module doc.
+  """
+  def lineup_forms(conn, %{"id" => id} = params) do
+    with_team_tournament(conn, id, fn tournament ->
+      number = Print.parse_round(params["round"]) || default_form_round(tournament)
+
+      opts =
+        case params["team"] && Integer.parse(params["team"]) do
+          {team_id, ""} -> [team_id: team_id]
+          nil -> []
+          _ -> [team_id: -1]
+        end
+
+      case TeamSheets.lineup_forms(tournament, number, opts) do
+        :error ->
+          Print.print_error(
+            conn,
+            404,
+            tournament,
+            gettext("Round %{n} has no team to fill in a line-up for", n: number)
+          )
+
+        {:ok, data} ->
+          body = Enum.map_join(data.forms, "", &lineup_form_html(&1, tournament, data))
+
+          Print.print_page(
+            conn,
+            tournament,
+            tournament.name,
+            gettext("Line-up forms - round %{n}", n: number),
+            body,
+            @lineup_css
+          )
+      end
+    end)
+  end
+
+  # The round the captains are about to fill in: the next one to be paired,
+  # or the last round once the schedule is complete.
+  defp default_form_round(tournament) do
+    min(Standings.rounds_paired(tournament.id) + 1, max(tournament.rounds_count || 1, 1))
+  end
+
+  defp lineup_form_html(form, tournament, %{
+         round: round,
+         date: date,
+         boards: boards,
+         reserves: reserves
+       }) do
+    meta =
+      [
+        gettext("Round %{n}", n: round),
+        form.match_number && gettext("Match %{n}", n: form.match_number),
+        date && Print.esc(date)
+      ]
+      |> Enum.reject(&(&1 in [nil, false]))
+      |> Enum.join(" &middot; ")
+
+    opponent =
+      if form.opponent,
+        do: Print.esc(form.opponent.name),
+        else: "<span class=\"lf-blank\"></span>"
+
+    rows =
+      Enum.map_join(1..boards, "", fn k ->
+        colour =
+          case form.colours && Enum.at(form.colours, k - 1) do
+            nil -> ""
+            c -> colour_text(c)
+          end
+
+        "<tr><td class=\"num\"><strong>#{k}</strong></td><td>#{colour}</td><td></td><td></td><td></td></tr>"
+      end)
+
+    reserve_rows =
+      Enum.map_join(1..reserves, "", fn k ->
+        "<tr class=\"lf-reserve\"><td class=\"num\">#{gettext("R%{n}", n: k)}</td><td></td><td></td><td></td><td></td></tr>"
+      end)
+
+    "<section class=\"lineup-form\" id=\"lineup-form-#{form.team.id}\">" <>
+      "<div class=\"lf-head\"><strong>#{Print.esc(tournament.name)}</strong><span>#{meta}</span></div>" <>
+      "<h2>#{gettext("Line-up")}</h2>" <>
+      "<p class=\"lf-line\"><span>#{gettext("Team")}</span><strong>#{Print.esc(form.team.name)}</strong></p>" <>
+      "<p class=\"lf-line\"><span>#{gettext("Playing against")}</span><strong>#{opponent}</strong></p>" <>
+      "<table class=\"lf-boards\"><thead><tr><th class=\"num\">#{gettext("Bd")}</th>" <>
+      "<th>#{gettext("Col.")}</th><th>#{gettext("Name")}</th><th class=\"num\">Elo</th><th class=\"num\">ID</th>" <>
+      "</tr></thead><tbody>#{rows}</tbody>" <>
+      "<thead><tr><th colspan=\"5\">#{gettext("Reserves")}</th></tr></thead><tbody>#{reserve_rows}</tbody></table>" <>
+      "<div class=\"lf-sigs\"><div class=\"lf-sig\">#{gettext("Captain")}#{captain_small(form.team)}</div>" <>
+      "<div class=\"lf-sig\">#{gettext("Date and time")}</div></div>" <>
+      "<p class=\"lf-note\">#{gettext("Hand this in to the arbiter before the round starts. The boards are filled from board 1 down.")}</p></section>"
+  end
+
+  defp captain_small(%Team{captain: captain}) when captain not in [nil, ""],
+    do: "<small>#{Print.esc(captain)}</small>"
+
+  defp captain_small(_team), do: ""
+
   defp match_opts(nil), do: []
 
   defp match_opts(value) do
@@ -274,15 +402,20 @@ defmodule PairingsEngineWeb.TeamPrintController do
     boards =
       "<table class=\"ms-boards\"><thead><tr>" <>
         "<th class=\"num\">#{gettext("Bd")}</th><th>#{gettext("Col.")}</th>" <>
-        "<th>#{Print.esc(a.name)}</th><th class=\"num\">Elo</th>" <>
+        "<th>#{Print.esc(a.name)}</th><th class=\"num\">Elo</th><th class=\"num\">ID</th>" <>
         "<th style=\"text-align:center\">#{gettext("Result")}</th>" <>
-        "<th>#{Print.esc(b.name)}</th><th class=\"num\">Elo</th><th>#{gettext("Col.")}</th>" <>
+        "<th>#{Print.esc(b.name)}</th><th class=\"num\">Elo</th><th class=\"num\">ID</th>" <>
+        "<th>#{gettext("Col.")}</th>" <>
         "</tr></thead><tbody>#{rows}</tbody></table>"
 
     score_box =
       if entered?,
         do: "#{points_text(m.gp_a)} - #{points_text(m.gp_b)}",
         else: "&nbsp;"
+
+    average =
+      "<p class=\"ms-avg\" id=\"match-sheet-avg-#{m.match_id}\">#{gettext("Average rating fielded")}: " <>
+        "#{Print.esc(a.name)} #{sheet.avg_a || "-"} &middot; #{Print.esc(b.name)} #{sheet.avg_b || "-"}</p>"
 
     total =
       "<div class=\"ms-total\"><span>#{gettext("Match score")}</span>" <>
@@ -295,7 +428,7 @@ defmodule PairingsEngineWeb.TeamPrintController do
         "<div class=\"ms-sig\">#{gettext("Arbiter")}" <>
         arbiter_name(tournament) <> "</div></div>"
 
-    "<section class=\"match-sheet\" id=\"match-sheet-#{m.match_id}\">#{head}#{title}#{boards}#{total}#{sigs}" <>
+    "<section class=\"match-sheet\" id=\"match-sheet-#{m.match_id}\">#{head}#{title}#{boards}#{average}#{total}#{sigs}" <>
       "<p class=\"ms-note\">#{gettext("Results are written from the first-named team's side: 1 - 0 is a win for %{team}.", team: Print.esc(a.name))}</p></section>"
   end
 
@@ -317,9 +450,11 @@ defmodule PairingsEngineWeb.TeamPrintController do
       "<td>#{colour_text(row.a_colour)}</td>" <>
       "<td class=\"ms-name\"><strong>#{Print.esc(seat_name(row.a_player))}</strong></td>" <>
       "<td class=\"num\">#{rating_text(row.a_player, row.a_rating)}</td>" <>
+      "<td class=\"num\">#{fide_id_text(row.a_player)}</td>" <>
       "<td style=\"text-align:center\"><span class=\"ms-result\">#{result_text(row)}</span></td>" <>
       "<td class=\"ms-name\"><strong>#{Print.esc(seat_name(row.b_player))}</strong></td>" <>
       "<td class=\"num\">#{rating_text(row.b_player, row.b_rating)}</td>" <>
+      "<td class=\"num\">#{fide_id_text(row.b_player)}</td>" <>
       "<td>#{colour_text(b_colour)}</td></tr>"
   end
 
@@ -328,6 +463,10 @@ defmodule PairingsEngineWeb.TeamPrintController do
 
   defp seat_name(nil), do: gettext("- no player -")
   defp seat_name(player), do: player.name
+
+  defp fide_id_text(nil), do: ""
+  defp fide_id_text(%{fide_id: id}) when id in [nil, "", 0], do: ""
+  defp fide_id_text(%{fide_id: id}), do: Print.esc(to_string(id))
 
   defp rating_text(nil, _), do: ""
   defp rating_text(_player, rating) when rating in [nil, 0], do: ""

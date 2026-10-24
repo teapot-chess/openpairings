@@ -70,7 +70,7 @@ defmodule PairingsEngine.TeamSwiss do
   require Logger
 
   alias Ainalrami.TeamPairing
-  alias PairingsEngine.{Repo, TeamRounds, TeamStandings, Tournaments}
+  alias PairingsEngine.{Exclusions, Repo, TeamRounds, TeamStandings, Tournaments}
   alias PairingsEngine.Pairing, as: Engine
   alias PairingsEngine.Tournaments.{Match, Round, Team, Tournament}
 
@@ -175,8 +175,11 @@ defmodule PairingsEngine.TeamSwiss do
       explain: true
     ]
 
+    {opts, keep_apart} = keep_apart_opts(opts, tournament, teams, number)
+
     case team_pairing_module().pair_round(engine_teams, opts) do
       {:ok, result} ->
+        soft_moved? = soft_pairs_moved?(engine_teams, opts, result, keep_apart)
         entries = entries(result, Map.new(engine_teams, &{&1.tpn, &1}))
 
         with {:ok, round} <- TeamRounds.create_round(tournament, teams, entries, number) do
@@ -186,11 +189,14 @@ defmodule PairingsEngine.TeamSwiss do
 
           # What the engine reported, kept as the round's account for the
           # rationale page (`PairingsEngine.TeamRoundExplanation`).
+          explanation =
+            result
+            |> explanation(engine_teams, teams, absent, opts)
+            |> with_keep_apart(keep_apart, soft_moved?)
+
           round =
             round
-            |> Ecto.Changeset.change(
-              explanation: explanation(result, engine_teams, teams, absent, opts)
-            )
+            |> Ecto.Changeset.change(explanation: explanation)
             |> Repo.update!()
 
           Tournaments.broadcast_tournament_change(tournament.id, :rounds)
@@ -206,6 +212,12 @@ defmodule PairingsEngine.TeamSwiss do
       # English/Dutch wording lives - never rendered here.
       {:error, reason} when reason in [:no_legal_pairing, :no_legal_bye] ->
         {:error, {:team_pairing, too_few_teams(reason, length(teams), number), number}}
+
+      # The teams kept apart make the round unpairable (`Ainalrami.
+      # TeamPairing` says which groups, and which of them lifted alone would
+      # let it pair). Named by team, for the Pairings page.
+      {:error, {:forbidden_pairs, info}} ->
+        {:error, {:team_forbidden, forbidden_info(info, teams, number)}}
 
       {:error, reason} ->
         {:error, {:team_pairing, reason, number}}
@@ -229,6 +241,75 @@ defmodule PairingsEngine.TeamSwiss do
       )
 
       {:error, {:team_pairing, :pairing_crashed, number}}
+  end
+
+  ## ---------- keeping teams apart ----------
+  #
+  # The tournament's team pairing rules (`PairingRule` "team_club" /
+  # "team_group", expanded by `Exclusions.team_groups/5` from the teams as
+  # they are now) as the engine's `:forbidden_pairs` (rules) and
+  # `:soft_pairs` (wishes) for this round. Neither option is passed when
+  # empty, so a tournament without rules runs the code it always ran.
+
+  defp keep_apart_opts(opts, tournament, teams, number) do
+    rules = Tournaments.list_pairing_rules(tournament.id)
+    hard = Exclusions.team_groups(rules, teams, number, tournament.rounds_count, false)
+    soft = Exclusions.team_groups(rules, teams, number, tournament.rounds_count, true)
+
+    opts =
+      opts
+      |> then(&if(hard == [], do: &1, else: Keyword.put(&1, :forbidden_pairs, hard)))
+      |> then(&if(soft == [], do: &1, else: Keyword.put(&1, :soft_pairs, soft)))
+
+    {opts, %{hard: hard, soft: soft}}
+  end
+
+  # Whether the wishes changed the round: the same field paired again with
+  # no wishes (the rules stay) seats other boards or gives the bye to
+  # another team. Soft pairs are not C.04.6, so such a round is a deviation
+  # (`Pairing.pairing_deviations/2`, the same check the individual Swiss
+  # makes). A second run that fails counts as moved: a round that cannot be
+  # shown to be the FIDE one is not claimed to be.
+  defp soft_pairs_moved?(_engine_teams, _opts, _result, %{soft: []}), do: false
+
+  defp soft_pairs_moved?(engine_teams, opts, result, _keep_apart) do
+    plain = team_pairing_module().pair_round(engine_teams, Keyword.delete(opts, :soft_pairs))
+
+    case plain do
+      {:ok, other} -> round_shape(other) != round_shape(result)
+      _ -> true
+    end
+  rescue
+    _ -> true
+  end
+
+  defp round_shape(result),
+    do: {result.pairs |> Enum.map(&{&1.white, &1.black}) |> Enum.sort(), result.bye}
+
+  # What the round was told to keep apart, and (for the FIDE guard) whether
+  # the wishes moved it; stored in the same `"sections"` shape the
+  # individual path leaves, so `Pairing.pairing_deviations/2` reads both.
+  defp with_keep_apart(explanation, %{hard: [], soft: []}, _moved?), do: explanation
+
+  defp with_keep_apart(explanation, %{hard: hard, soft: soft}, moved?) do
+    explanation
+    |> Map.put("keep_apart", %{"forbidden" => hard, "soft" => soft})
+    |> then(&if(moved?, do: Map.put(&1, "sections", [%{"soft_pairs_moved" => true}]), else: &1))
+  end
+
+  # The engine's refusal named by team, so the page can say who blocks the
+  # round: `groups` in force among this round's teams, `lifting` the ones
+  # that, lifted alone, let it pair.
+  defp forbidden_info(info, teams, number) do
+    names = Map.new(teams, &{&1.pairing_number, &1.name})
+    name = fn tpn -> Map.get(names, tpn, "##{tpn}") end
+
+    %{
+      round: number,
+      reason: info.reason,
+      groups: Enum.map(info.groups, &Enum.map(&1, name)),
+      lifting: Enum.map(info.lifting, &Enum.map(&1, name))
+    }
   end
 
   @doc """

@@ -158,6 +158,65 @@ are paired together, as one Swiss. When any team has one, the team standings
 (page and printout) gain a *Series* column. The club is stored and shown on the
 card.
 
+### Keeping teams apart
+
+Settings, **Forbidden pairings** has rules for teams, as it has for
+players: *Teams of the same club* (the club on each team's card, compared
+without regard to capitals or spaces at the edges; a team with no club is
+never grouped) and *Teams I choose* (a group that must not meet). Each is a
+**rule** or a **wish (if possible)**, for every round or a window of them.
+
+A rule is handed to the pairing as absolute: to the C.04.6 procedure a
+forbidden pair is a pair that has already met, so nothing else moves. A wish
+only decides between pairings the procedure ranks equal, after [C10], and
+never costs a colour, a floater or the bye. Neither is C.04.6, and the
+documents say so.
+
+If the rules leave a round with no pairing where it would pair without
+them, the round is not paired and *Pair round N* says which groups are in
+force and which of them, lifted on its own, would let the round through.
+
+> [!FIDE] FIDE mode
+> Team rules are treated as the players' are. Rules set before round 1 do not
+> leave FIDE mode (C.05 5.2). A wish that actually moves a match, or any rule
+> added, changed or removed once round 1 is paired, asks the two *Leave FIDE
+> mode?* questions first and is recorded for the report.
+
+The engine's TRF dialect writes them as `XXO team-forbidden 3 11 16 @1-2`
+and `XXO team-soft-pairs ...` (team numbers, rounds optional), so a pairing
+checker replays the file with them; a TRF with these records imports them
+back as rules for the named teams. A team event never writes `XXP` or `260`,
+which name players. The TRF26 report itself carries no team records, only the
+`### Prohibition` line of a rule changed once the event was under way.
+
+### Correcting the order of the teams
+
+Until round 4 is paired a team Swiss's team numbers can still be corrected,
+as players' numbers can ([Players and ratings](04-players-and-ratings.md),
+C.04.2 2.3). On the Teams page, **Team numbers…** opens the list:
+
+- **Exchange** swaps the numbers of two teams with the same team rating (the
+  rating the *Team rating for the order of the teams* option works out, or
+  the one typed on the card);
+- **Regenerate from ratings** renumbers every team by that rating, keeping the
+  order of teams of equal rating. If two or more numbers change, a
+  confirmation lists whose first.
+
+Rounds already paired used the old numbers, so a pairing checker will no
+longer reproduce them. Each change is written to the audit trail, and neither
+takes the tournament out of FIDE mode. Until round 4 the Pairings page warns
+above *Pair round N* when the numbers no longer follow the team ratings, and
+*Regenerate from ratings…* opens the list. From round 5 nothing renumbers. A
+team round robin is excluded: its table was drawn over the numbers.
+
+### Average rating fielded
+
+The average rating of the players a team actually fielded (unrated players
+are left out of the mean) is shown for each match on the Pairings page
+(*Avg. Elo*, both sides), on the match sheets and the printed team pairings,
+and in the team standings as the value of the team's latest match. It is for
+information only: the order of the teams and the pairing do not read it.
+
 ### Individual ranking
 
 On the Standings page of a team tournament, *Individual ranking* shows every
@@ -198,6 +257,17 @@ The Print page lists **team pairings**, **team standings**, **team cross table**
 **match result sheets**, **team rosters**, **board prizes** and the **individual ranking**
 ([Printing](09-printing.md)). The Standings page has the same as buttons:
 *Cross table*, *Match sheets*, *Rosters*, *Board prizes*; the individual ranking has its own view there.
+
+**Match result sheets** are one A4 page per match of a round: both line-ups
+with board, colour, player, rating and FIDE ID, a box for each result, the
+average rating each team fielded, the match score, and signature lines for
+both captains and the arbiter. **Line-up forms (blank)** are the other half
+of the paper: one page per team for a round, for the captains to fill in
+before the round. Once the round is paired a form already names the team, its
+opponent and the colour of each board; before that the opponent is left
+blank. It has a row for each board, rows for reserves and a captain's
+signature. Both are for one round (`?round=n`), and a single team or match can
+be printed on its own.
 
 ## Reporting and publishing
 

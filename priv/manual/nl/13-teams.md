@@ -147,6 +147,63 @@ op de kaart van het team. Een reeks is alleen een label: teams van alle reeksen 
 als één Zwitsers toernooi. Zodra een team er een heeft, krijgen de teamrangschikking (pagina en
 afdruk) een kolom *Reeks*. De club wordt bewaard en getoond op de kaart.
 
+### Teams uit elkaar houden {#keeping-teams-apart}
+
+Instellingen, **Verboden paringen** heeft regels voor teams, zoals voor spelers: *Teams van
+dezelfde club* (de club op de kaart van elk team, vergeleken zonder hoofdletters of spaties aan
+de rand; een team zonder club wordt nooit gegroepeerd) en *Teams die ik kies* (een groep die
+elkaar niet mag ontmoeten). Elke regel is een **regel** of een **wens (indien mogelijk)**, voor
+elke ronde of een reeks rondes.
+
+Een regel wordt absoluut aan de paring doorgegeven: voor de procedure van C.04.6 is een
+verboden paar een paar dat al tegen elkaar speelde, dus verder verandert er niets. Een wens
+beslist alleen tussen paringen die de procedure gelijk rangschikt, na [C10], en kost nooit een
+kleur, een floater of de bye. Geen van beide is C.04.6, en de documenten zeggen dat.
+
+Laten de regels een ronde zonder paring terwijl ze er zonder wel zou zijn, dan wordt de ronde
+niet gepaard en zegt de knop welke groepen gelden en welke ervan, alleen opgeheven, de ronde
+toch laat doorgaan.
+
+> [!FIDE] FIDE-modus
+> Teamregels worden behandeld zoals die van spelers. Regels die vóór ronde 1 zijn ingesteld,
+> halen het toernooi niet uit de FIDE-modus (C.05 5.2). Een wens die een match echt verplaatst,
+> of een regel die na ronde 1 wordt toegevoegd, gewijzigd of verwijderd, stelt eerst de twee
+> vragen van *FIDE-modus verlaten?* en wordt voor het rapport genoteerd.
+
+Het TRF-dialect van de engine schrijft ze als `XXO team-forbidden 3 11 16 @1-2` en
+`XXO team-soft-pairs ...` (teamnummers, rondes optioneel), zodat een paringscontrole het bestand
+ermee naspeelt; een TRF met die records importeert ze terug als regels voor de genoemde teams.
+Een teamtoernooi schrijft nooit `XXP` of `260`, die spelers noemen. Het TRF26-rapport zelf bevat
+geen teamrecords, alleen de `### Prohibition`-regel van een regel die tijdens het toernooi is
+gewijzigd.
+
+### De volgorde van de teams corrigeren {#correcting-the-order-of-the-teams}
+
+Tot ronde 4 gepaard is, kunnen de teamnummers van een Zwitsers teamtoernooi nog gecorrigeerd
+worden, zoals de nummers van spelers ([Spelers en ratings](04-players-and-ratings.md), C.04.2
+2.3). Op de pagina Teams opent **Teamnummers…** de lijst:
+
+- **Wisselen** ruilt de nummers van twee teams met dezelfde teamrating (de rating die de optie
+  *Teamrating voor de volgorde van de teams* uitrekent, of die op de kaart getypt is);
+- **Opnieuw aanmaken uit ratings** hernummert elk team op die rating, met behoud van de volgorde
+  van teams met gelijke rating. Veranderen er twee of meer nummers, dan toont een bevestiging
+  eerst wiens nummer verandert.
+
+Rondes die al gepaard zijn, gebruikten de oude nummers, dus een paringscontrole zal ze niet
+meer reproduceren. Elke wijziging komt in het auditspoor en geen van beide haalt het toernooi uit
+de FIDE-modus. Tot ronde 4 waarschuwt de pagina Paringen boven de knop om te paren wanneer de nummers
+de teamratings niet meer volgen, en opent *Opnieuw aanmaken uit ratings…* de lijst. Vanaf ronde 5
+verandert er niets meer. Een team-rondetoernooi is uitgesloten: zijn schema is over de nummers
+getekend.
+
+### Gemiddelde rating opgesteld {#average-rating-fielded}
+
+De gemiddelde rating van de spelers die een team echt opstelde (spelers zonder rating tellen niet
+mee in het gemiddelde) staat bij elke match op de pagina Paringen (*Gem. Elo*, beide kanten),
+op de matchbladen en de afgedrukte teamparingen, en in de teamrangschikking als de waarde van
+de laatste match van het team. Het is alleen ter informatie: de volgorde van de teams en de
+paring lezen het niet.
+
 ### Individuele rangschikking {#individual-ranking}
 
 Op de pagina Stand van een teamtoernooi toont *Individuele rangschikking* elke speler die gespeeld
@@ -183,6 +240,15 @@ De pagina Afdrukken somt **teamparingen**, **teamrangschikkingen**, **teamkruist
 **wedstrijdformulieren**, **teamopstellingen**, **bordprijzen** en de **individuele rangschikking** op
 ([Afdrukken](09-printing.md)). De pagina Stand heeft dezelfde als knoppen:
 *Kruistabel*, *Wedstrijdformulieren*, *Opstellingen*, *Bordprijzen*; de individuele rangschikking heeft daar een eigen weergave.
+
+**Matchresultaatbladen** zijn één A4-pagina per match van een ronde: beide opstellingen met bord,
+kleur, speler, rating en FIDE-ID, een vak voor elk resultaat, de gemiddelde rating die elk team
+opstelde, de matchscore en handtekeningregels voor beide captains en de arbiter.
+**Opstellingsformulieren (blanco)** zijn de andere helft van het papier: één pagina per team voor
+een ronde, door de captains in te vullen vóór de ronde. Is de ronde gepaard, dan noemt een
+formulier al het team, de tegenstander en de kleur van elk bord; daarvoor blijft de tegenstander
+leeg. Er staat een regel voor elk bord, regels voor reserves en een handtekening van de captain.
+Beide gelden voor één ronde (`?round=n`), en één team of match kan apart afgedrukt worden.
 
 ## Rapporteren en publiceren {#reporting-and-publishing}
 

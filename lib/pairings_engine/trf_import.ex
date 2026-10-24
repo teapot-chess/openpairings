@@ -35,7 +35,16 @@ defmodule PairingsEngine.TrfImport do
   use Gettext, backend: PairingsEngineWeb.Gettext
 
   alias PairingsEngine.{Encoding, Repo, SafeError, Tiebreaks, Tournaments}
-  alias PairingsEngine.Tournaments.{ForbiddenPairing, Tournament, Player, Round, Pairing}
+
+  alias PairingsEngine.Tournaments.{
+    ForbiddenPairing,
+    PairingRule,
+    Tournament,
+    Player,
+    Round,
+    Pairing
+  }
+
   alias PairingsEngine.Pairing, as: PairingCtx
 
   import Ecto.Query, only: [from: 2]
@@ -1988,9 +1997,9 @@ defmodule PairingsEngine.TrfImport do
   # against.
   defp import_teams(_tournament, %{teams: []}, _players_by_rank), do: {[], %{}}
 
-  defp import_teams(tournament, %{teams: teams}, players_by_rank) do
-    team_ids_by_number =
-      for team <- teams, into: %{} do
+  defp import_teams(tournament, %{teams: teams} = data, players_by_rank) do
+    created_teams =
+      for team <- teams do
         {:ok, created} =
           Tournaments.create_team(tournament, %{"name" => blank_to_default(team.name, "Team")})
 
@@ -2006,8 +2015,12 @@ defmodule PairingsEngine.TrfImport do
 
         keep_strength(tournament, created, Map.get(team, :strength))
 
-        {Map.get(team, :number), created.id}
+        {team, created.id}
       end
+
+    team_ids_by_number =
+      created_teams
+      |> Enum.map(fn {team, id} -> {Map.get(team, :number), id} end)
       |> Enum.reject(fn {number, _id} -> is_nil(number) end)
       |> Map.new()
 
@@ -2015,23 +2028,67 @@ defmodule PairingsEngine.TrfImport do
     # it rather than seeding by rating (`Tournaments.auto_seed_teams/1`).
     tournament |> Ecto.Changeset.change(teams_ordered_by_hand: true) |> Repo.update!()
 
+    # `XXO team-forbidden` / `team-soft-pairs` name teams by their number, or
+    # by their place in the file when a `013` team has none.
+    by_team_number =
+      created_teams
+      |> Enum.with_index(1)
+      |> Map.new(fn {{team, id}, position} -> {Map.get(team, :number) || position, id} end)
+
+    keep_apart_notes = import_team_keep_apart(tournament, data, by_team_number)
+
     notes =
-      if team_system?(tournament) do
-        []
-      else
-        [
-          note(
-            "The file's teams and their board orders were imported. Its games were imported as " <>
-              "individual games: the file does not say which boards formed which team match, and " <>
-              "this file does not describe a team round robin or a team Swiss to rebuild them for."
-          )
-        ]
-      end
+      keep_apart_notes ++
+        if team_system?(tournament) do
+          []
+        else
+          [
+            note(
+              "The file's teams and their board orders were imported. Its games were imported as " <>
+                "individual games: the file does not say which boards formed which team match, and " <>
+                "this file does not describe a team round robin or a team Swiss to rebuild them for."
+            )
+          ]
+        end
 
     {notes, team_ids_by_number}
   end
 
   defp import_teams(_tournament, _data, _players_by_rank), do: {[], %{}}
+
+  # `XXO team-forbidden` / `XXO team-soft-pairs` - the teams the file keeps
+  # apart - become team-group pairing rules (`PairingRule`): hard or soft, for
+  # the whole event or for the rounds the record names (`@1-2`). A club is
+  # not in a TRF, so a club rule comes back as the groups it made. Only into
+  # a team Swiss; a group naming a team the file does not have is skipped.
+  defp import_team_keep_apart(tournament, data, by_team_number) do
+    if Tournament.team?(tournament) do
+      rounds = declared_rounds(data)
+
+      for {key, soft?} <- [team_forbidden_pairs: false, team_soft_pairs: true],
+          group <- data.tournament[key] || [],
+          {numbers, first, last} = normalise_group(group),
+          ids = numbers |> Enum.map(&by_team_number[&1]) |> Enum.reject(&is_nil/1) |> Enum.uniq(),
+          length(ids) >= 2 do
+        window =
+          if first <= 1 and last in [:infinity, nil],
+            do: %{"window" => "all"},
+            else: %{
+              "window" => "range",
+              "window_from" => first,
+              "window_to" => if(is_integer(last), do: last, else: max(rounds, first))
+            }
+
+        attrs = Map.merge(%{"kind" => "team_group", "soft" => soft?, "team_ids" => ids}, window)
+
+        %PairingRule{tournament_id: tournament.id}
+        |> PairingRule.changeset(attrs)
+        |> Repo.insert!()
+      end
+    end
+
+    []
+  end
 
   # A `310` strength factor (columns 48-53) is the team's rating
   # (`PairingsEngine.TrfExport`). When it is not the rating this app works

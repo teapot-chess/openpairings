@@ -85,6 +85,10 @@ defmodule PairingsEngineWeb.AuditDescribeTest do
       %{"team_name" => "Brugse SK", "direction" => "up"},
       %{"team_name" => "Brugse SK", "direction" => "down"}
     ],
+    "team.numbers_changed" => [
+      %{"regenerated" => 3, "round" => 2},
+      %{"team_name" => "Brugse SK", "other_name" => "Gistelse SK", "round" => 1}
+    ],
     "player.pairing_numbers_changed" => [
       %{"regenerated" => 4, "round" => 2},
       %{"player_name" => "Bram Claes", "other_name" => "Ann Peeters", "round" => 0}

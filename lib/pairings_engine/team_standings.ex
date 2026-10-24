@@ -1060,6 +1060,51 @@ defmodule PairingsEngine.TeamStandings do
   end
 
   @doc """
+  The average rating of the players each side fielded in each match, for
+  `matches` (as `matches/2` returns them): `%{match_id => {avg_a, avg_b}}`,
+  a whole number, or nil for a side that seated nobody rated. A seated player
+  counts whatever the board's result (a forfeit win seats a player too); an
+  unrated one (`Player.rating/1` 0) is left out of the mean, not counted as
+  zero. Display only: nothing here decides a pairing or a rank.
+  """
+  def fielded_ratings(%Tournament{} = t, matches) do
+    ratings = t.id |> Tournaments.list_players() |> Map.new(&{&1.id, Player.rating(&1)})
+
+    for m <- matches, not m.bye?, into: %{} do
+      {m.match_id,
+       {fielded_average(m.boards, :a_player_id, ratings),
+        fielded_average(m.boards, :b_player_id, ratings)}}
+    end
+  end
+
+  @doc """
+  Each team's average fielded rating in the latest match it played of
+  `matches`: `%{team_id => avg | nil}`. The Standings page's "current" value.
+  """
+  def latest_fielded_ratings(%Tournament{} = t, matches) do
+    by_match = fielded_ratings(t, matches)
+
+    matches
+    |> Enum.reject(& &1.bye?)
+    |> Enum.sort_by(& &1.round)
+    |> Enum.reduce(%{}, fn m, acc ->
+      {a, b} = Map.fetch!(by_match, m.match_id)
+      acc |> Map.put(m.team_a_id, a) |> Map.put(m.team_b_id, b)
+    end)
+  end
+
+  defp fielded_average(boards, key, ratings) do
+    rated =
+      boards
+      |> Enum.map(&Map.get(&1, key))
+      |> Enum.reject(&is_nil/1)
+      |> Enum.map(&Map.get(ratings, &1, 0))
+      |> Enum.filter(&(&1 > 0))
+
+    if rated == [], do: nil, else: round(Enum.sum(rated) / length(rated))
+  end
+
+  @doc """
   The individual ranking of a team tournament: every player who played a
   game, whatever board and team, best first.
 

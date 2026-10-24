@@ -119,7 +119,9 @@ Er zijn twee manieren om eruit te gaan, en beide stellen dezelfde twee vragen.
   een uitgestelde partij vastleggen als *niet gespeeld in dit toernooi* op de
   pagina Exporteren; en een verboden paring of een paringsregel toevoegen,
   wijzigen of verwijderen nadat ronde 1 gepaard is
-  ([Pagina Verboden paringen](03-tournament-setup.md)).
+  ([Pagina Verboden paringen](03-tournament-setup.md)). Regels die teams uit elkaar houden in een
+  Zwitsers teamtoernooi ([Teams](13-teams.md#keeping-teams-apart)) tellen precies hetzelfde: vóór
+  ronde 1 ingesteld veranderen ze niets, een wens die een match verplaatst vraagt eerst.
 
 Voordat er iets wordt geschreven, toont het programma het dialoogvenster
 *FIDE-modus verlaten?* in twee stappen (dit is de dubbele bevestiging die de
