@@ -14,6 +14,13 @@ defmodule PairingsEngineWeb.TeamsLive do
   tournament's `team_rating_method`), which can be typed in by hand
   (`teams.rating_override`), and the rounds it sits out as a team
   (`Tournaments.set_team_absent/4`).
+
+  Before round 1 the order of the teams can also be drawn by lot
+  (`Tournaments.draw_team_order/1`). Offered only when the team rating is
+  typed in by hand (`team_rating_method` "manual"): with a rating method the
+  order is meant to follow the ratings - *Order by rating*, the regeneration
+  of team numbers after round 1 and the Pairings page's out-of-order warning
+  all say so - and a draw would be quietly argued with by all three.
   """
   use PairingsEngineWeb, :live_view
 
@@ -40,7 +47,10 @@ defmodule PairingsEngineWeb.TeamsLive do
        error: nil,
        form_nonce: 0,
        tpn: nil,
-       tpn_changes: nil
+       tpn_changes: nil,
+       # The "draw the order by lot" confirmation is open: there is an order
+       # set by hand (or by an earlier draw) that the draw would replace.
+       draw_confirm?: false
      )
      |> load()}
   end
@@ -272,7 +282,26 @@ defmodule PairingsEngineWeb.TeamsLive do
     end
   end
 
-  ## ---------- team numbers (C.04.2 2.3, until round 4 is paired) ----------
+  ## ---------- the order drawn by lot (C.04.6 1.1.2) ----------
+
+  # An order somebody set (arrows, or an earlier draw) is asked about before
+  # it is replaced; the default order by rating is not anybody's choice.
+  def handle_event("draw_teams", _params, socket) do
+    if socket.assigns.tournament.teams_ordered_by_hand,
+      do: {:noreply, assign(socket, draw_confirm?: true)},
+      else: draw_teams(socket)
+  end
+
+  def handle_event("draw_teams_confirm", _params, socket) do
+    if socket.assigns.draw_confirm?,
+      do: draw_teams(socket),
+      else: {:noreply, socket}
+  end
+
+  def handle_event("draw_teams_cancel", _params, socket),
+    do: {:noreply, assign(socket, draw_confirm?: false)}
+
+  ## ---------- team numbers (C.04.2 2.3, until round 4 - or the tournament's own limit - is paired) ----------
 
   def handle_event("open_tpn", _params, socket) do
     if socket.assigns.tpn_editable?,
@@ -520,6 +549,48 @@ defmodule PairingsEngineWeb.TeamsLive do
 
   defp team(socket, id), do: Tournaments.get_team(socket.assigns.tournament.id, id)
 
+  defp draw_teams(socket) do
+    t = socket.assigns.tournament
+
+    if draw_offered?(t) do
+      PairingsEngine.Snapshots.capture(t, "team.seeding_changed", socket.assigns.current_scope,
+        summary: gettext("Before drawing the order of the teams by lot")
+      )
+
+      case Tournaments.draw_team_order(t) do
+        {:ok, teams} ->
+          Audit.log(t.id, socket.assigns.current_scope, "team.seeding_changed", %{
+            drawn_by_lot: true,
+            order: Enum.map(teams, & &1.name)
+          })
+
+          {:noreply,
+           socket
+           |> assign(
+             tournament: Tournaments.get_tournament!(t.id),
+             draw_confirm?: false
+           )
+           |> ok(gettext("The order of the teams was drawn by lot."))
+           |> load()}
+
+        {:error, reason} ->
+          {:noreply, socket |> assign(draw_confirm?: false) |> fail(reason)}
+      end
+    else
+      {:noreply, assign(socket, draw_confirm?: false)}
+    end
+  end
+
+  # See the moduledoc: a lot only where no rating sort would argue with it.
+  defp draw_offered?(%Tournament{} = t), do: t.team_rating_method == "manual"
+
+  defp drawn_text(%DateTime{} = at),
+    do:
+      gettext("Drawn by lot on %{date} at %{time} UTC.",
+        date: Calendar.strftime(at, "%Y-%m-%d"),
+        time: Calendar.strftime(at, "%H:%M")
+      )
+
   # The other teams that hold the same rating as `team`: the ones its number
   # can be exchanged with.
   defp tpn_partners(order, ratings, team) do
@@ -581,8 +652,11 @@ defmodule PairingsEngineWeb.TeamsLive do
         "Only teams with the same rating can exchange numbers. To follow a rating change, regenerate the numbers."
       )
 
+  defp refusal(:too_few_teams),
+    do: gettext("A draw needs at least two teams.")
+
   defp refusal(:locked),
-    do: gettext("Round 4 is paired: the team numbers can no longer change (C.04.2).")
+    do: gettext("The team numbers can no longer change: the round that freezes them is paired.")
 
   defp refusal(:team_scheduled),
     do:
@@ -887,12 +961,70 @@ defmodule PairingsEngineWeb.TeamsLive do
             {gettext("Order by rating")}
           </button>
 
+          <button
+            :if={!@frozen? and @writable? and length(@teams) > 1 and draw_offered?(@tournament)}
+            type="button"
+            id="team-draw-lot"
+            class="pe-btn"
+            phx-click="draw_teams"
+            disabled={@draw_confirm?}
+          >
+            {gettext("Draw the order by lot")}
+          </button>
+
+          <p
+            :if={!@frozen? and length(@teams) > 1 and not draw_offered?(@tournament)}
+            id="team-draw-unavailable"
+            class="hint"
+          >
+            {gettext(
+              "To draw the team numbers by lot, set the team rating to Typed in for each team (Settings - Options - Teams). With a rating method the numbers are meant to follow the ratings, and ordering or renumbering by rating would undo the draw."
+            )}
+          </p>
+
+          <div
+            :if={@draw_confirm?}
+            id="team-draw-confirm"
+            class="prohib-alert is-warm"
+            role="alert"
+          >
+            <p>
+              <strong>
+                {gettext(
+                  "Replace the current order of the teams with one drawn by lot? The order set now cannot be brought back, except from the snapshot taken before the draw."
+                )}
+              </strong>
+            </p>
+
+            <button
+              type="button"
+              class="pe-btn primary"
+              id="team-draw-confirm-yes"
+              phx-click="draw_teams_confirm"
+            >
+              {gettext("Draw the order")}
+            </button>
+            <button
+              type="button"
+              class="pe-btn"
+              id="team-draw-confirm-no"
+              phx-click="draw_teams_cancel"
+            >
+              {gettext("Cancel")}
+            </button>
+          </div>
+
+          <p :if={@tournament.teams_drawn_at} id="team-drawn-note" class="hint">
+            {drawn_text(@tournament.teams_drawn_at)}
+          </p>
+
           <p :if={@teams == []} class="hint">{gettext("No teams yet.")}</p>
 
           <%!-- Team numbers after round 1, as the players' numbers: until
-                round 4 is paired two teams of equal rating can exchange
-                theirs and the numbers can be regenerated from the ratings
-                (C.04.2 2.3). Never a pairing setting: FIDE mode stays. --%>
+                round 4 (`TeamTpn.until_round/1`) is paired two teams of
+                equal rating can exchange theirs and the numbers can be
+                regenerated from the ratings (C.04.2 2.3). Correcting one is
+                no pairing setting: FIDE mode stays. --%>
           <button
             :if={@tpn_editable? and @writable? and @tpn == nil}
             type="button"
@@ -904,11 +1036,16 @@ defmodule PairingsEngineWeb.TeamsLive do
           </button>
 
           <p
-            :if={@frozen? and @paired >= 4 and @tournament.type == "team-swiss"}
+            :if={
+              @frozen? and @paired >= TeamTpn.until_round(@tournament) and
+                @tournament.type == "team-swiss"
+            }
             id="team-tpn-locked"
             class="hint"
           >
-            {gettext("Round 4 is paired: the team numbers can no longer be changed (C.04.2).")}
+            {gettext("Round %{round} is paired: the team numbers can no longer be changed.",
+              round: TeamTpn.until_round(@tournament)
+            )}
           </p>
         </div>
 
@@ -917,8 +1054,9 @@ defmodule PairingsEngineWeb.TeamsLive do
 
           <p class="hint">
             {gettext(
-              "Two teams of equal rating can exchange their numbers, and the numbers can be regenerated from the team ratings (%{method}). Both are possible only until round 4 is paired (C.04.2). Rounds already paired used the old numbers, so a pairing checker will no longer reproduce them. Neither takes the tournament out of FIDE mode.",
-              method: String.downcase(team_rating_method_text(@tournament.team_rating_method))
+              "Two teams of equal rating can exchange their numbers, and the numbers can be regenerated from the team ratings (%{method}). Both are possible only until round %{round} is paired (FIDE: round 4, C.04.2). Rounds already paired used the old numbers, so a pairing checker will no longer reproduce them. Neither takes the tournament out of FIDE mode.",
+              method: String.downcase(team_rating_method_text(@tournament.team_rating_method)),
+              round: TeamTpn.until_round(@tournament)
             )}
           </p>
 

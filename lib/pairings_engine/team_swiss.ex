@@ -46,9 +46,11 @@ defmodule PairingsEngine.TeamSwiss do
   (or had a bye) before, it is passed as `:absent`, so it keeps its place in
   Art. 4.3.1's arrival numbering.
 
-  Options: match points primary with game points for colours (Art. 1.2.2),
-  Type A colour preferences (Art. 1.7) - the FIDE defaults, and the only
-  ones offered - `round`/`expected_rounds` from the tournament, and the
+  Options: the primary score from `team_primary_score` (`score_mode/1`):
+  match points with game points for colours by default (Art. 1.2.2), game
+  points with match points for colours when the competition's rules say so
+  (Art. 1.2.1); Type A colour preferences (Art. 1.7) - the FIDE default, and
+  the only one offered - `round`/`expected_rounds` from the tournament, and the
   initial colour drawn by lot before round 1 (Art. 4.1,
   `Tournaments.ensure_initial_colour/2`).
 
@@ -160,11 +162,19 @@ defmodule PairingsEngine.TeamSwiss do
     end
   end
 
+  @doc """
+  The engine's `score_mode` for `tournament`: `:game_points` when its rules
+  make game points the primary score (`team_primary_score`, C.04.6 Art.
+  1.2.1), `:match_points` otherwise (Art. 1.2.2's default).
+  """
+  def score_mode(%Tournament{team_primary_score: "game_points"}), do: :game_points
+  def score_mode(%Tournament{}), do: :match_points
+
   defp pair_round(tournament, teams, field, number) do
     %{teams: engine_teams, absent: absent} = engine_input(tournament, teams, field, number)
 
     opts = [
-      score_mode: :match_points,
+      score_mode: score_mode(tournament),
       type: :a,
       round: number,
       expected_rounds: tournament.rounds_count,
@@ -180,7 +190,9 @@ defmodule PairingsEngine.TeamSwiss do
     case team_pairing_module().pair_round(engine_teams, opts) do
       {:ok, result} ->
         soft_moved? = soft_pairs_moved?(engine_teams, opts, result, keep_apart)
-        entries = entries(result, Map.new(engine_teams, &{&1.tpn, &1}))
+
+        entries =
+          entries(result, Map.new(engine_teams, &{&1.tpn, &1}), score_mode(tournament))
 
         with {:ok, round} <- TeamRounds.create_round(tournament, teams, entries, number) do
           if tournament.team_pairing_mode != "teams" do
@@ -338,10 +350,10 @@ defmodule PairingsEngine.TeamSwiss do
   end
 
   # C.04.2 Art. 3.6 for the order of the pairs; the bye last.
-  defp entries(result, by_tpn) do
+  defp entries(result, by_tpn, mode) do
     played =
       result.pairs
-      |> order_pairs(by_tpn)
+      |> order_pairs(by_tpn, mode)
       |> Enum.map(&{:pairing, &1.white, &1.black})
 
     played ++ if(result.bye, do: [{:bye, result.bye}], else: [])
@@ -349,14 +361,15 @@ defmodule PairingsEngine.TeamSwiss do
 
   @doc """
   Pairs `%{white: tpn, black: tpn, first_team: tpn}` in C.04.2 Art. 3.6's
-  recommended order: the higher match-point score of the pair's first team,
-  then the higher sum of both scores, then the smaller number of the first
-  team. `by_tpn` maps each number to its `%Ainalrami.TeamPairing.Team{}`.
+  recommended order: the higher score of the pair's first team, then the
+  higher sum of both scores, then the smaller number of the first team - the
+  primary score, `mode` (`score_mode/1`). `by_tpn` maps each number to its
+  `%Ainalrami.TeamPairing.Team{}`.
   Shared with the TRF import, which rebuilds a team Swiss's match numbers the
   way the pairing wrote them.
   """
-  def order_pairs(pairs, by_tpn) do
-    score = fn tpn -> by_tpn |> Map.fetch!(tpn) |> Map.fetch!(:match_points) end
+  def order_pairs(pairs, by_tpn, mode \\ :match_points) do
+    score = fn tpn -> by_tpn |> Map.fetch!(tpn) |> Map.fetch!(mode) end
 
     Enum.sort_by(pairs, fn p ->
       {-score.(p.first_team), -(score.(p.white) + score.(p.black)), p.first_team}
@@ -587,7 +600,14 @@ defmodule PairingsEngine.TeamSwiss do
 
     engine_teams =
       for team <- field do
-        team_struct(team, Map.fetch!(records, team.id), records, tpn, number)
+        team_struct(
+          team,
+          Map.fetch!(records, team.id),
+          records,
+          tpn,
+          number,
+          score_mode(tournament)
+        )
       end
 
     absent =
@@ -599,7 +619,7 @@ defmodule PairingsEngine.TeamSwiss do
     %{teams: engine_teams, absent: Enum.sort(absent)}
   end
 
-  defp team_struct(%Team{} = team, records, all_records, tpn, number) do
+  defp team_struct(%Team{} = team, records, all_records, tpn, number, mode) do
     played = Enum.filter(records, & &1.played?)
 
     %TeamPairing.Team{
@@ -610,7 +630,7 @@ defmodule PairingsEngine.TeamSwiss do
       colours: Enum.map(played, & &1.colour),
       had_pab?: Enum.any?(records, & &1.bye?),
       won_by_forfeit?: Enum.any?(records, &won_match_by_forfeit?/1),
-      floated_last_round?: floated?(records, all_records, number - 1)
+      floated_last_round?: floated?(records, all_records, number - 1, mode)
     }
   end
 
@@ -691,27 +711,27 @@ defmodule PairingsEngine.TeamSwiss do
 
   # C.04.6 Art. 1.5: "a team that plays against an opponent with a different
   # score". Read on the PAIRING: a team paired in round `previous` against a
-  # team on a different match-point score before that round floated, whether
+  # team on a different primary score before that round floated, whether
   # the match was then played or forfeited - the pairing is what floated it,
   # and [C7]/[C10] exist to spread pairings, not results. A bye has no
   # opponent and is not a float.
-  defp floated?(_records, _all, previous) when previous < 1, do: false
+  defp floated?(_records, _all, previous, _mode) when previous < 1, do: false
 
-  defp floated?(records, all_records, previous) do
+  defp floated?(records, all_records, previous, mode) do
     case Enum.find(records, &(&1.round == previous and not &1.bye?)) do
       nil ->
         false
 
       match ->
-        score_before(records, previous) !=
-          score_before(Map.get(all_records, match.opponent_id, []), previous)
+        score_before(records, previous, mode) !=
+          score_before(Map.get(all_records, match.opponent_id, []), previous, mode)
     end
   end
 
-  defp score_before(records, round) do
+  defp score_before(records, round, mode) do
     records
     |> Enum.filter(&(&1.round < round))
-    |> Enum.map(&(&1.mp || 0.0))
+    |> Enum.map(&if(mode == :game_points, do: &1.gp, else: &1.mp || 0.0))
     |> Enum.sum()
     |> round1()
   end

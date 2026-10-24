@@ -29,9 +29,14 @@ defmodule PairingsEngine.TeamStandings do
   result changes and the board statistics do not see them. The default,
   "seated", is Art. 11.1.2 to the letter.
 
-  Match points are the primary score (C.04.6 Art. 1.2.2's default, and the
+  Match points are the primary score by default (C.04.6 Art. 1.2.2, and the
   one every FIDE team event ranks on): the table is sorted by MP, then by the
-  configured tie-breaks in order.
+  configured tie-breaks in order. A competition whose rules make game points
+  the primary score (Art. 1.2.1, `team_primary_score` "game_points" - some
+  leagues rank board points first) is sorted by GP instead, and the team
+  Swiss is paired by the same score (`PairingsEngine.TeamSwiss.score_mode/1`),
+  so the table and the pairing never read different scores. `primary_code/1`
+  says which.
 
   ## Tie-breaks
 
@@ -44,9 +49,9 @@ defmodule PairingsEngine.TeamStandings do
 
     * `MP`, `GP` - the scores themselves (Art. 11.1). `GP` as a tie-break
       after MP is also what Art. 13.1 (MPvGP) describes.
-    * `DE` - Direct encounter (Art. 6) on match points, all of it: 6.2's
+    * `DE` - Direct encounter (Art. 6) on the primary score, all of it: 6.2's
       reapplication to a subset, 6.3's Swiss rule, 6.1.2's average of two
-      meetings. The number shown is the match points each team scored
+      meetings. The number shown is the primary score each team scored
       against the others of its group when all of them met, 0.0 otherwise;
       the order is Ainalrami's. A match decided without a game counts as a
       meeting only in a round robin (Art. 6.1.1 and 15.2), there and in the
@@ -137,6 +142,19 @@ defmodule PairingsEngine.TeamStandings do
   defp c07_of(code) do
     Map.get(@c07, code) || if PairingsEngine.Tiebreaks.factor_base(code), do: code
   end
+
+  @doc """
+  The code of `t`'s primary score, the one the table is sorted by first:
+  `"GP"` when its rules make game points primary (`team_primary_score`), `"MP"`
+  otherwise. The pages show this column in bold and the other one among the
+  tie-breaks.
+  """
+  def primary_code(%Tournament{} = t),
+    do: if(Tournament.team_game_points_primary?(t), do: "GP", else: "MP")
+
+  @doc "An entry's primary score (`primary_code/1`)."
+  def primary_value(entry, %Tournament{} = t),
+    do: if(primary_code(t) == "GP", do: entry.gp, else: entry.mp)
 
   @doc "The tie-break codes team standings can calculate."
   def supported_codes, do: @supported
@@ -589,14 +607,15 @@ defmodule PairingsEngine.TeamStandings do
       end)
 
     entries = if "DE" in codes, do: add_direct_encounter(entries, codes, t), else: entries
-    places = c07_places(event, codes)
+    places = c07_places(event, codes, t)
 
-    # Match points first - they count every finished match, a round still
-    # being played included - then C.07's order, which Ainalrami gives over
-    # the rounds that are complete. Once the round is over the two agree.
+    # The primary score first - match points count every finished match, a
+    # round still being played included, and game points every board - then
+    # C.07's order, which Ainalrami gives over the rounds that are complete.
+    # Once the round is over the two agree.
     entries
     |> Enum.sort_by(fn e ->
-      {if(e.annulled?, do: 1, else: 0), -e.mp, Map.get(places, e.team.id, 0),
+      {if(e.annulled?, do: 1, else: 0), -primary_value(e, t), Map.get(places, e.team.id, 0),
        sort_number(e.team.pairing_number), sort_number(e.team.seed), e.team.name, e.team.id}
     end)
     |> Enum.with_index(1)
@@ -844,7 +863,9 @@ defmodule PairingsEngine.TeamStandings do
       },
       game_points: %{win: t.points_win, draw: t.points_draw, loss: t.points_loss},
       predetermined?: Tournament.team_round_robin?(t),
-      total_rounds: t.rounds_count
+      total_rounds: t.rounds_count,
+      # The score a code without one of its own (DE, EDE) is read on.
+      primary: if(primary_code(t) == "GP", do: :gp, else: :mp)
     )
   end
 
@@ -953,16 +974,18 @@ defmodule PairingsEngine.TeamStandings do
 
   # `%{team_id => place}` under C.07 for the configured codes, from the
   # complete rounds; empty before the first round is over.
-  defp c07_places(%{rounds: 0}, _codes), do: %{}
+  defp c07_places(%{rounds: 0}, _codes, _t), do: %{}
 
-  defp c07_places(event, codes) do
+  defp c07_places(event, codes, t) do
     ranking =
       codes
       |> Enum.filter(&c07_of/1)
       |> Enum.reject(&(event.predetermined? and &1 in @buchholz))
       |> Enum.map(&c07_of/1)
 
-    case Ainalrami.Tiebreaks.rank(event, ["MPTS" | ranking]) do
+    primary = Map.fetch!(@c07, primary_code(t))
+
+    case Ainalrami.Tiebreaks.rank(event, [primary | ranking]) do
       {:ok, rows} -> Map.new(rows, &{&1.id, &1.rank})
       {:error, _} -> %{}
     end
@@ -971,7 +994,7 @@ defmodule PairingsEngine.TeamStandings do
   defp as_float(nil), do: 0.0
   defp as_float(v), do: v * 1.0
 
-  # C.07 Art. 6 over the teams tied on MP and on every tie-break listed ahead
+  # C.07 Art. 6 over the teams tied on the primary score and on every tie-break listed ahead
   # of DE - Art. 4.2 applies each tie-break "for each subgroup of participants
   # still tied", so an encounter with a team the earlier breaks already
   # separated does not belong in the sum.
@@ -979,7 +1002,9 @@ defmodule PairingsEngine.TeamStandings do
     before_de = Enum.take_while(codes, &(&1 != "DE"))
 
     entries
-    |> Enum.group_by(fn e -> {e.mp, Enum.map(before_de, &Map.get(e.tiebreaks, &1))} end)
+    |> Enum.group_by(fn e ->
+      {primary_value(e, t), Enum.map(before_de, &Map.get(e.tiebreaks, &1))}
+    end)
     |> Enum.flat_map(fn {_key, group} ->
       ids = MapSet.new(group, & &1.team.id)
 
@@ -996,7 +1021,7 @@ defmodule PairingsEngine.TeamStandings do
             e
             |> encounters(t)
             |> Enum.filter(&(&1.opponent_id in ids))
-            |> Enum.group_by(& &1.opponent_id, & &1.mp)
+            |> Enum.group_by(& &1.opponent_id, &encounter_score(&1, t))
             # Art. 6.1.2: two meetings with the same team count as their average.
             |> Enum.map(fn {_opp, mps} -> Enum.sum(mps) / length(mps) end)
             |> Enum.sum()
@@ -1009,6 +1034,10 @@ defmodule PairingsEngine.TeamStandings do
       end)
     end)
   end
+
+  # Direct encounter is on the primary score (C.07 Art. 13).
+  defp encounter_score(record, t),
+    do: if(primary_code(t) == "GP", do: record.gp, else: record.mp)
 
   # The matches C.07 Art. 6 counts between tied teams, read the way
   # Ainalrami ranks them (`Ainalrami.Tiebreaks.DirectEncounter`): a match

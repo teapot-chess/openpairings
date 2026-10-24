@@ -165,6 +165,12 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
   And for team pairing rules (team-extras): every pairing rule in a JSON
   export gains `team_ids` (empty in the scenarios). With that key taken out
   the regenerated file is equal, term for term, to the one before.
+
+  And for the team options (team-options): every JSON export gains
+  `tournament.team_primary_score` ("match_points"),
+  `tournament.team_tpn_until_round` (4) and `tournament.teams_drawn_at`
+  (nil). With those keys taken out the regenerated file is equal, term for
+  term, to the one before.
   """
   use PairingsEngineWeb.ConnCase, async: false
 

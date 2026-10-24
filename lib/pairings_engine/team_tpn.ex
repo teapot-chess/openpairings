@@ -4,8 +4,15 @@ defmodule PairingsEngine.TeamTpn do
   rating: an exchange between two teams of equal team rating, and a
   regeneration from the current team ratings. The team counterpart of
   `PairingsEngine.Tpn`, on the same terms (C.04.2 Art. 2.3, which C.04.6 Art.
-  1.1 adopts for team numbers): allowed only until round 4 is paired, never in
-  a team round robin, whose Berger table was drawn over the numbers.
+  1.1.3 refers to for team numbers): allowed only until round 4 is paired,
+  never in a team round robin, whose Berger table was drawn over the numbers.
+
+  "Round 4" is the tournament's `team_tpn_until_round`, 4 by default. C.04.6
+  Art. 1.1.3 lets the Chief Arbiter decide otherwise, so a competition can
+  set a later round; that is not C.04.2's rule, so it takes the tournament
+  out of FIDE mode (`PairingsEngine.Compliance`). An earlier one is merely
+  strict. Adding a team in a later round is a late entry, numbered by
+  `PairingsEngine.TeamSwiss`, and has nothing to do with this.
 
   ## What a team's rating is
 
@@ -31,8 +38,9 @@ defmodule PairingsEngine.TeamTpn do
   1..N. A regeneration of numbers that already follow the ratings writes
   nothing and answers `{:unchanged, order}`.
 
-  None of this is a pairing setting: it never touches
-  `fide_compliance_lost_round`, so the tournament stays in FIDE mode.
+  Correcting a number is not a pairing setting: it never touches
+  `fide_compliance_lost_round`, so the tournament stays in FIDE mode. The
+  limit it is allowed until is.
   """
 
   import Ecto.Query
@@ -41,20 +49,20 @@ defmodule PairingsEngine.TeamTpn do
   alias PairingsEngine.{Repo, Tournaments}
   alias PairingsEngine.Tournaments.{Team, Tournament}
 
-  # C.04.2: the numbers may be corrected only before round 4 is paired.
-  @last_round_before_lock 3
-
   @doc "Whether this is a tournament whose team numbers can be corrected at all: a team Swiss."
   def applies?(%Tournament{} = t), do: Tournament.team_swiss?(t)
 
   @doc """
-  Whether they can be corrected now: a team Swiss with at least one round and
-  at most three paired.
+  Whether they can be corrected now: a team Swiss with at least one round
+  paired and its `team_tpn_until_round` (4 by default, C.04.2) not yet.
   """
   def editable?(%Tournament{} = t) do
     paired = Engine.paired_rounds_count(t.id)
-    applies?(t) and paired >= 1 and paired <= @last_round_before_lock
+    applies?(t) and paired >= 1 and paired < until_round(t)
   end
+
+  @doc "The round whose pairing freezes `t`'s team numbers (`team_tpn_until_round`)."
+  def until_round(%Tournament{} = t), do: Tournament.team_tpn_until_round(t)
 
   @doc "The numbering as it stands, `[{team, number}]` in number order (numbered teams only)."
   def order(%Tournament{} = t) do
@@ -94,8 +102,8 @@ defmodule PairingsEngine.TeamTpn do
 
   @doc """
   Exchanges the numbers of two teams of the same rating. Refused:
-  `{:error, :different_ratings}`, `{:error, :locked}` (round 4 paired, or no
-  round yet), `{:error, :not_swiss}`, `{:error, :not_found}`.
+  `{:error, :different_ratings}`, `{:error, :locked}` (`until_round/1`
+  paired, or no round yet), `{:error, :not_swiss}`, `{:error, :not_found}`.
   Returns `{:ok, order}`.
   """
   def exchange(%Tournament{} = t, a_id, b_id) do

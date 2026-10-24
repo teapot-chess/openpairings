@@ -1785,12 +1785,16 @@ defmodule PairingsEngine.TrfExport do
   # are what the table calls CUSTOM.
   #
   # A team event's code names its colour rule and its primary/secondary
-  # score, which this app always pairs the same way regardless of what an
-  # arbiter chooses (Type A colour preferences, match points primary, game
-  # points secondary - `Ainalrami.TeamPairing.Colour.first_team/4`,
-  # `PairingsEngine.TeamSwiss`), so it is always `FIDE_TEAM_TYPEA_MP_GP`
-  # (there is no OTHER code this app could honestly write). A team round
-  # robin's cycle count is written the same way the individual one below is.
+  # score. The colour rule is always Type A here, and the secondary score
+  # always takes part in colour allocation
+  # (`Ainalrami.TeamPairing.Colour.first_team/4`); the primary score is the
+  # tournament's `team_primary_score` (C.04.6 Art. 1.2.1), so the code is
+  # `FIDE_TEAM_TYPEA_MP_GP` by default and `FIDE_TEAM_TYPEA_GP_MP` for a
+  # competition that ranks game points first - FIDE's table has both, and
+  # `TrfImport.system_attrs/1` reads the primary score back from it. A team
+  # round robin's cycle count is written the same way the individual one
+  # below is; the Berger code has no place for a primary score, which a
+  # round robin's pairing never reads anyway.
   defp tournament_type_code(t) do
     baku = if t.acceleration == "baku", do: "_BAKU", else: ""
     team? = t.type in ["team-swiss", "team-roundrobin"]
@@ -1798,6 +1802,9 @@ defmodule PairingsEngine.TrfExport do
     cond do
       team? and t.pairing_system == "round_robin" ->
         "BERGER_TEAM_ROUNDROBIN_G#{t.rr_cycles || 1}"
+
+      team? and Tournament.team_game_points_primary?(t) ->
+        "FIDE_TEAM_TYPEA_GP_MP" <> baku
 
       team? ->
         "FIDE_TEAM_TYPEA_MP_GP" <> baku

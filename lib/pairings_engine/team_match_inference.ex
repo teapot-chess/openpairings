@@ -75,7 +75,7 @@ defmodule PairingsEngine.TeamMatchInference do
   largest match the file shows. Match numbers follow the order the pairing
   itself writes: by lower team number in a round robin
   (`TeamRoundRobin`), C.04.2 Art. 3.6's order in a team Swiss
-  (`TeamSwiss.order_pairs/2`, from the rebuilt history of earlier rounds).
+  (`TeamSwiss.order_pairs/3`, from the rebuilt history of earlier rounds).
   Board numbers run on through the round, `(match - 1) x boards + board`.
   """
 
@@ -696,6 +696,8 @@ defmodule PairingsEngine.TeamMatchInference do
   # this app comes back with the same match numbers.
   defp order_matches(t, numbered, tpn, number, matches) do
     if swiss?(t) do
+      mode = TeamSwiss.score_mode(t)
+
       by_tpn =
         t
         |> TeamSwiss.engine_input(numbered, numbered, number)
@@ -706,10 +708,10 @@ defmodule PairingsEngine.TeamMatchInference do
       |> Enum.map(fn m ->
         a = Map.fetch!(by_tpn, tpn[m.team_a])
         b = Map.fetch!(by_tpn, tpn[m.team_b])
-        {first, _} = Colour.first_team(a, b, :match_points, true)
+        {first, _} = Colour.first_team(a, b, mode, true)
         %{white: a.tpn, black: b.tpn, first_team: first.tpn, match: m}
       end)
-      |> TeamSwiss.order_pairs(by_tpn)
+      |> TeamSwiss.order_pairs(by_tpn, mode)
       |> Enum.map(& &1.match)
     else
       Enum.sort_by(matches, &min(tpn[&1.team_a], tpn[&1.team_b]))

@@ -91,6 +91,16 @@ defmodule PairingsEngine.Compliance do
       is not the one a FIDE checker reproduces, so the pairing marks it then
       (`Pairing.pairing_deviations/2`), as it does an organiser's bye
       exclusion that moves the bye.
+    * **A team Swiss's primary score** (`team_primary_score`). C.04.6 Art.
+      1.2.1 leaves it to the competition's rules to say whether match points
+      or game points are the primary score; 1.2.2 only gives the default.
+      Game points primary is FIDE's own option, and TRF26's `192` has a code
+      for it (`FIDE_TEAM_TYPEA_GP_MP`). Changing it once round 1 is paired is
+      a scoring change, and that is a FIDE-mode lock
+      (`Tournaments.fide_locked_fields/1`), like the match points.
+    * **Drawing the team order by lot** (`Tournaments.draw_team_order/1`).
+      C.04.6 Art. 1.1.2: the competition's rules describe how team numbers
+      are given, otherwise the Chief Arbiter decides. A lot is one way.
     * **`rr_match_format`.** It reorders a fixed Berger schedule; every
       pairing in it is still a Berger pairing and everybody still meets
       everybody with the same colours. It changes the order of rounds, not
@@ -98,9 +108,12 @@ defmodule PairingsEngine.Compliance do
 
   The line that survived all of that: **a departure is a setting that
   changes who plays whom, or what a game is worth, away from what the FIDE
-  rules allow.** The first four below change who plays whom - the fourth,
+  rules allow.** The first five below change who plays whom - the fourth,
   late entrants numbered after the field rather than by rating (C.04.2 2.4,
   VCL4THP Q156), by giving them a pairing number the Dutch system would not;
+  the fifth, team numbers that stay correctable after round 4 is paired
+  (C.04.2 2.3), by letting a later round be paired on numbers FIDE has
+  already frozen;
   the postponed outcomes and the three scoring entries change what a game is
   worth. All of them default to the FIDE value. The late-entrant one has a
   grandfathered twin: `"end"`, the same numbering a migration gave every
@@ -151,6 +164,11 @@ defmodule PairingsEngine.Compliance do
       setting: :late_entry_numbering,
       code: :late_entrants_after_field,
       restore_to: ["rating"]
+    },
+    %{
+      setting: :team_tpn_until_round,
+      code: :team_numbers_corrected_late,
+      restore_to: [4, 3, 2]
     },
     %{
       setting: :postponed_requester_outcome,
@@ -262,6 +280,20 @@ defmodule PairingsEngine.Compliance do
   # (`Tournament`'s `@late_entry_numberings`).
   defp departed?(:late_entrants_after_field, t),
     do: swiss?(t) and t.late_entry_numbering == "after"
+
+  # Team numbers correctable after round 4 is paired. C.04.2 Art. 2.3: "No
+  # modification of a TPN for this reason is allowed after the fourth round
+  # has been paired." C.04.6 Art. 1.1.3 adds "unless the Chief Arbiter
+  # decides otherwise", which an arbiter may read as room for a later
+  # limit; a setting that makes that the default for the whole event is
+  # still not the FIDE rule, and a checker reproducing round 5 on numbers
+  # changed in round 5 would say so. A team Swiss only - a team round robin
+  # never renumbers - and an EARLIER limit is merely strict, not a departure.
+  # Adding teams later is a late entry (2.4) and is not touched by this.
+  defp departed?(:team_numbers_corrected_late, t),
+    do:
+      Tournament.team_swiss?(t) and
+        Tournament.team_tpn_until_round(t) > Tournament.fide_team_tpn_until_round()
 
   # A postponed game counts as a draw until it is played - VCL4THP Q167 fails
   # a program that allows any other provisional score. A club may still want

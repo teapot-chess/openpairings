@@ -435,6 +435,12 @@ defmodule PairingsEngineWeb.AuditLive do
         round: value(d, "round")
       )
 
+  def describe("team.seeding_changed", %{"drawn_by_lot" => true} = d),
+    do:
+      gettext("Drew the order of the teams by lot: %{order}.",
+        order: Enum.join(List.wrap(d["order"]), ", ")
+      )
+
   def describe("team.seeding_changed", %{"by_rating" => true}),
     do: gettext("Ordered the teams by rating.")
 

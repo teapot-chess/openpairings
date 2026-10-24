@@ -65,7 +65,9 @@ defmodule PairingsEngineWeb.ComplianceNoticeTest do
           # than a win.
           %Tournament{pairing_system: "swiss", points_draw: 0.75, bye_value: 1.5},
           # Standard scoring with a bye no game can give.
-          %Tournament{pairing_system: "swiss", bye_value: 0.25}
+          %Tournament{pairing_system: "swiss", bye_value: 0.25},
+          # Team numbers still correctable after round 4.
+          %Tournament{type: "team-swiss", pairing_system: "swiss", team_tpn_until_round: 6}
         ]
         |> Enum.flat_map(&Enum.map(Compliance.check(&1), fn d -> d.code end))
         |> MapSet.new()

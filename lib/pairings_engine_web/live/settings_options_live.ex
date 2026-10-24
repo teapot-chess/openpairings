@@ -287,7 +287,16 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
       end
 
     teams =
-      if Tournament.team?(tournament), do: [:team_rating_method, :team_unrated_rating], else: []
+      cond do
+        Tournament.team_swiss?(tournament) ->
+          [:team_rating_method, :team_unrated_rating, :team_tpn_until_round]
+
+        Tournament.team?(tournament) ->
+          [:team_rating_method, :team_unrated_rating]
+
+        true ->
+          []
+      end
 
     changed_count(tournament, [:initial_order_tiebreak | by_system] ++ teams)
   end
@@ -702,8 +711,7 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
                     max={Tournament.max_rr_cycles()}
                     step="1"
                     disabled={@rr_cycles_locked?}
-                  />
-                  <.locked_overlay field={:rr_cycles} locked?={@rr_cycles_locked?} />
+                  /> <.locked_overlay field={:rr_cycles} locked?={@rr_cycles_locked?} />
                 </div>
 
                 <.locked_hint_message
@@ -940,6 +948,31 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
                   value={@tournament.team_unrated_rating}
                   min="0"
                   max="4000"
+                />
+              </.setting_field>
+
+              <%!-- Next to the team rating because it is about the same
+                    numbers: how long the Teams page may still correct them.
+                    A team Swiss only - a round robin never renumbers. A later
+                    round than FIDE's leaves FIDE mode, through the page's
+                    usual two-step gate (`fide_gate/5`). --%>
+              <.setting_field
+                :if={Tournament.team_swiss?(@tournament)}
+                class="tset-adv"
+                label={gettext("Team numbers can be corrected until round")}
+                hint={
+                  gettext(
+                    "Until this round is paired, two teams of equal rating can exchange their numbers and the numbers can be regenerated from the ratings (Teams page). FIDE freezes them once round 4 is paired (C.04.2 Art. 2.3); a later round takes the tournament out of FIDE mode, an earlier one does not. Adding a team in a later round is always possible: that is a late entry, not a correction."
+                  )
+                }
+              >
+                <input
+                  id="team-tpn-until-round"
+                  type="number"
+                  name="tournament[team_tpn_until_round]"
+                  value={Tournament.team_tpn_until_round(@tournament)}
+                  min="2"
+                  max="99"
                 />
               </.setting_field>
             </.setting_group>

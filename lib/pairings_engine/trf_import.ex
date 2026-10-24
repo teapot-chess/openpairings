@@ -1121,12 +1121,15 @@ defmodule PairingsEngine.TrfImport do
   # A code this app has no system for (Dubov, Burstein, a CUSTOM_*) leaves
   # the defaults alone rather than guessing; the settings the file could not
   # fill are the arbiter's to set, and `infer_type/1` has already read the
-  # plain-language `092` line. A team code (always `FIDE_TEAM*` - the table
-  # reserves the word TEAM for exactly those) says the same choice this app
-  # always makes anyway (Type A colours, match points primary -
-  # `PairingsEngine.TrfExport`'s own writer), so none of its variants change
-  # anything here; a team ROUND ROBIN code still reaches the general
-  # `ROUNDROBIN` branch below for its cycle count.
+  # plain-language `092` line. A team Swiss code (`FIDE_TEAM*`) names its
+  # primary score, which is read into `team_primary_score` - `GP_MP` and `GP`
+  # make game points primary (C.04.6 Art. 1.2.1), everything else is match
+  # points, Art. 1.2.2's default and what the bare `FIDE_TEAM` stands for.
+  # Its colour rule (Type A, Type B, none) and whether the secondary score
+  # takes part are not read: this app pairs Type A with the secondary score
+  # always, as `PairingsEngine.TrfExport`'s own writer says. A team ROUND
+  # ROBIN code still reaches the general `ROUNDROBIN` branch below for its
+  # cycle count.
   defp system_attrs(nil), do: %{}
 
   defp system_attrs(code) do
@@ -1151,11 +1154,23 @@ defmodule PairingsEngine.TrfImport do
         String.contains?(base, "ROUNDROBIN") ->
           %{pairing_system: "round_robin", rr_cycles: berger_cycles(base)}
 
+        String.starts_with?(base, "FIDE_TEAM") ->
+          %{team_primary_score: team_primary_score(base)}
+
         true ->
           %{}
       end
 
     if baku?, do: Map.put(system, :acceleration, "baku"), else: system
+  end
+
+  # Parsed (`Ainalrami.TypeCode`) rather than read off the suffix: `_MP_GP`
+  # ends in `_GP` too, and a suffix test made every default code game points.
+  defp team_primary_score(base) do
+    case Ainalrami.TypeCode.parse(base) do
+      {:ok, %{score_mode: :game_points}} -> "game_points"
+      _ -> "match_points"
+    end
   end
 
   # `BERGER_ROUNDROBIN_Gn` - all games repeated n times. This app plays 1 to

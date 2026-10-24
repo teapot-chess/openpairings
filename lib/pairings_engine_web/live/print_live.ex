@@ -212,7 +212,7 @@ defmodule PairingsEngineWeb.PrintLive do
           },
           %{
             name: gettext("Team standings"),
-            desc: gettext("Teams ranked by match points, with the team tie-breaks."),
+            desc: gettext("Teams ranked by their primary score, with the team tie-breaks."),
             href: if(rounds_paired > 0, do: ~p"/t/#{tournament.id}/print/team-standings")
           },
           %{
@@ -444,10 +444,12 @@ defmodule PairingsEngineWeb.PrintLive do
         <label for="print-category" class="font-semibold">{gettext("Print for")}</label>
         <select id="print-category" name="category" class="pe-select">
           <option value="" selected={@category == nil}>{gettext("All players")}</option>
+
           <option :for={name <- @tournament.categories} value={name} selected={@category == name}>
             {name}
           </option>
         </select>
+
         <span class="hint">
           {gettext(
             "Applies to the player list, cards, pairings, result slips, score sheets, standings and cross table."
@@ -491,8 +493,7 @@ defmodule PairingsEngineWeb.PrintLive do
                       checked={@options[key]}
                       phx-click="toggle_option"
                       phx-value-key={key}
-                    />
-                    {option_label(key)}
+                    /> {option_label(key)}
                   </label>
                 </span>
               </td>

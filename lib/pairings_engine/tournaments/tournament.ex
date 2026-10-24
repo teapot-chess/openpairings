@@ -63,6 +63,13 @@ defmodule PairingsEngine.Tournaments.Tournament do
   # How a team's rating is worked out for seeding (docs/team-tournaments.md,
   # "Team rating"): see `PairingsEngine.Tournaments.team_rating/2`.
   @team_rating_methods ~w(olympiad first_boards roster manual)
+  # Which of a team Swiss's two scores is the primary one, the one it is
+  # paired and ranked by (C.04.6 Art. 1.2.1): "match_points", Art. 1.2.2's
+  # default, or "game_points" for the leagues that rank board points first.
+  # The other is the secondary score, used for colours (Art. 4.2.2).
+  @team_primary_scores ~w(match_points game_points)
+  # C.04.2 Art. 2.3: team numbers may be corrected until round 4 is paired.
+  @fide_team_tpn_until_round 4
   # How far the automation moves each round's public level for the arbiter
   # (Settings -> OpenResults, "Automatically:") - since 2026-09-28 one
   # cumulative ladder, the same four levels as the per-round control on the
@@ -898,6 +905,25 @@ defmodule PairingsEngine.Tournaments.Tournament do
     # floor, 1400 (Rating Regulations 2024 Art. 7.1.4, 7.2.1).
     field :team_unrated_rating, :integer, default: 1400
 
+    # See `@team_primary_scores`. Read by `PairingsEngine.TeamSwiss` (the
+    # engine's `score_mode`) and `PairingsEngine.TeamStandings` (the order of
+    # the table), so the two cannot disagree. FIDE allows either, so it is no
+    # departure; it locks once round 1 is paired in FIDE mode, like the rest
+    # of the scoring (`Tournaments.fide_locked_fields/1`).
+    field :team_primary_score, :string, default: "match_points"
+
+    # Team numbers can be corrected (`PairingsEngine.TeamTpn`) until this
+    # round is paired. 4 is FIDE's (`@fide_team_tpn_until_round`); a later
+    # round is a FIDE-mode departure (`PairingsEngine.Compliance`), an
+    # earlier one is merely strict.
+    field :team_tpn_until_round, :integer, default: 4
+
+    # When the order of the teams was last drawn by lot
+    # (`Tournaments.draw_team_order/1`), so the Teams page can say the
+    # numbers came from a draw. Cleared by any other change of the order.
+    # Never cast.
+    field :teams_drawn_at, :utc_datetime
+
     # The arbiter has moved a team by hand (`Tournaments.move_team/3`), so
     # pairing round 1 keeps the order rather than seeding the teams by
     # rating (`Tournaments.auto_seed_teams/1`). Never cast.
@@ -1469,6 +1495,8 @@ defmodule PairingsEngine.Tournaments.Tournament do
       :team_board_order,
       :team_rating_method,
       :team_unrated_rating,
+      :team_primary_score,
+      :team_tpn_until_round,
       :initial_colour,
       :rating_method,
       :initial_order_tiebreak,
@@ -1526,6 +1554,11 @@ defmodule PairingsEngine.Tournaments.Tournament do
     |> validate_inclusion(:team_board_order, @team_board_orders)
     |> validate_inclusion(:team_forfeit_board_points, @team_forfeit_board_points)
     |> validate_inclusion(:team_rating_method, @team_rating_methods)
+    |> validate_inclusion(:team_primary_score, @team_primary_scores)
+    |> validate_number(:team_tpn_until_round,
+      greater_than_or_equal_to: 2,
+      less_than_or_equal_to: 99
+    )
     |> validate_inclusion(:norm_event_type, @norm_event_types)
     |> validate_number(:team_unrated_rating,
       greater_than_or_equal_to: 0,
@@ -2547,6 +2580,25 @@ defmodule PairingsEngine.Tournaments.Tournament do
 
   @doc "The values `team_rating_method` takes."
   def team_rating_methods, do: @team_rating_methods
+
+  @doc "The values `team_primary_score` takes."
+  def team_primary_scores, do: @team_primary_scores
+
+  @doc """
+  Whether game points are a team event's primary score
+  (`team_primary_score` "game_points", C.04.6 Art. 1.2.1; for a team round
+  robin, C.07 Art. 13's "primary score"). Always false for an individual
+  tournament.
+  """
+  def team_game_points_primary?(%{team_primary_score: "game_points"} = t), do: team?(t)
+  def team_game_points_primary?(_t), do: false
+
+  @doc "C.04.2 Art. 2.3's last round: team numbers can be corrected until it is paired."
+  def fide_team_tpn_until_round, do: @fide_team_tpn_until_round
+
+  @doc "The round until whose pairing `t`'s team numbers can be corrected, 4 when unset."
+  def team_tpn_until_round(%{team_tpn_until_round: n}) when is_integer(n), do: n
+  def team_tpn_until_round(_t), do: @fide_team_tpn_until_round
 
   @doc "The values `norm_event_type` takes."
   def norm_event_types, do: @norm_event_types
