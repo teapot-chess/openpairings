@@ -17,6 +17,9 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+## [0.105.0] - 2026-10-24
+
+- [Change] **The printouts are signed by the author, not by the testers.** The footer on every printed sheet now says who made the program and where it lives; the thanks to the people whose feedback shaped it moved to Settings, About, where credits are read rather than photocopied. About gains the author's line above them.
 - [Change] **Adding a tie-break is a builder, not a list of two hundred.** Settings, Tie-breaks now asks in two steps: the tie-break itself from a short list of base ones, then only the adjustments it accepts - cut or median, forfeits counted, fore, Koya limit, match or game points for teams, and SSSC's normalising factor as a free whole number from 1. A preview shows the code and its name before you add it, and a combination already in the list says so instead of quietly doing it twice. Combinations that have an old spelling (`BH/C1` is `BHC1`, `BH/M1` is `MBH`, `ARO/C1` is `AROC1`, team `BH:MP` is `BH`) are stored under it, so tournaments saved before keep reading the same.
 - [Security] plug_crypto 2.2.0 to 2.2.1, which closes EEF-CVE-2026-105963. The audit step was right to complain.
 
