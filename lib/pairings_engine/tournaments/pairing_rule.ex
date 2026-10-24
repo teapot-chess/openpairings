@@ -31,7 +31,7 @@ defmodule PairingsEngine.Tournaments.PairingRule do
 
   @type t :: %__MODULE__{}
 
-  @kinds ~w(club federation group)
+  @kinds ~w(club federation group team_club team_group)
   @windows ~w(all first last range)
 
   schema "pairing_rules" do
@@ -40,6 +40,7 @@ defmodule PairingsEngine.Tournaments.PairingRule do
     field :soft, :boolean, default: false
     field :names, {:array, :string}, default: []
     field :player_ids, {:array, :integer}, default: []
+    field :team_ids, {:array, :integer}, default: []
     field :window, :string, default: "all"
     field :window_rounds, :integer
     field :window_from, :integer
@@ -63,6 +64,7 @@ defmodule PairingsEngine.Tournaments.PairingRule do
       :soft,
       :names,
       :player_ids,
+      :team_ids,
       :window,
       :window_rounds,
       :window_from,
@@ -74,7 +76,30 @@ defmodule PairingsEngine.Tournaments.PairingRule do
     |> validate_inclusion(:window, @windows)
     |> validate_window()
     |> validate_group()
+    |> validate_team_group()
     |> clear_unused()
+  end
+
+  @doc "The kinds a team tournament takes: teams of one club, or named teams."
+  def team_kinds, do: ~w(team_club team_group)
+
+  @doc "Whether `kind` keeps teams apart rather than players."
+  def team_kind?(kind), do: kind in ["team_club", "team_group"]
+
+  defp validate_team_group(changeset) do
+    if get_field(changeset, :kind) == "team_group" do
+      ids = changeset |> get_field(:team_ids) |> Kernel.||([]) |> Enum.uniq()
+
+      changeset
+      |> put_change(:team_ids, ids)
+      |> then(fn cs ->
+        if length(ids) < 2,
+          do: add_error(cs, :team_ids, "choose at least two teams"),
+          else: cs
+      end)
+    else
+      changeset
+    end
   end
 
   # "Chess Club, , chess club " is one club, as the old exclusion list read.
@@ -146,8 +171,9 @@ defmodule PairingsEngine.Tournaments.PairingRule do
     window = get_field(changeset, :window)
 
     changeset
-    |> then(&if(kind == "group", do: put_change(&1, :names, []), else: &1))
+    |> then(&if(kind in ["group", "team_group"], do: put_change(&1, :names, []), else: &1))
     |> then(&if(kind != "group", do: put_change(&1, :player_ids, []), else: &1))
+    |> then(&if(kind != "team_group", do: put_change(&1, :team_ids, []), else: &1))
     |> then(&if(window in ["first", "last"], do: &1, else: put_change(&1, :window_rounds, nil)))
     |> then(
       &if(window == "range",

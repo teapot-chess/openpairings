@@ -1829,6 +1829,30 @@ defmodule PairingsEngineWeb.SettingsSupport do
         round: round
       )
 
+  # The teams kept apart (Settings - Forbidden pairings) leave the round no
+  # pairing, where it would pair without them. Says which groups are in force
+  # and which of them, lifted on its own, would let it through.
+  def error_text({:team_forbidden, %{round: round, groups: groups, lifting: lifting}}) do
+    in_force = Enum.map_join(groups, "; ", &Enum.join(&1, ", "))
+
+    case lifting do
+      [] ->
+        gettext(
+          "Round %{round} can't be paired while these teams are kept apart: %{groups}. Without them it would pair, but no single group is the whole reason: it takes more than one to block the round. Remove or soften some of them under Settings - Forbidden pairings.",
+          round: round,
+          groups: in_force
+        )
+
+      _ ->
+        gettext(
+          "Round %{round} can't be paired while these teams are kept apart: %{groups}. Lifting any one of these would let it pair: %{lifting}. Remove or soften one under Settings - Forbidden pairings.",
+          round: round,
+          groups: in_force,
+          lifting: Enum.map_join(lifting, "; ", &Enum.join(&1, ", "))
+        )
+    end
+  end
+
   def error_text({:team_pairing, :pairing_crashed, _round}),
     do:
       gettext(

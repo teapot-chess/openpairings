@@ -110,7 +110,10 @@ There are two ways out, and both ask the same two questions.
   counted in the pairing; recording a postponed game as *not played in
   this event* on the Export page; and adding, changing or removing a
   forbidden pairing or a pairing rule once round 1 is paired
-  ([Forbidden pairings page](03-tournament-setup.md)).
+  ([Forbidden pairings page](03-tournament-setup.md)). Rules that keep teams
+  apart in a team Swiss ([Teams](13-teams.md#keeping-teams-apart)) count
+  exactly the same: set before round 1 they change nothing, a wish that moves
+  a match asks first.
 
 Before anything is written the program shows the dialog *Leave FIDE mode?*
 in two steps (this is the double confirmation that the FIDE tournament

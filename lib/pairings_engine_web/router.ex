@@ -204,6 +204,7 @@ defmodule PairingsEngineWeb.Router do
     get "/t/:id/print/team-standings", PrintController, :team_standings
     get "/t/:id/print/team-crosstable", TeamPrintController, :cross_table
     get "/t/:id/print/team-match-sheets", TeamPrintController, :match_sheets
+    get "/t/:id/print/team-lineup-forms", TeamPrintController, :lineup_forms
     get "/t/:id/print/team-rosters", TeamPrintController, :rosters
     get "/t/:id/print/board-prizes", TeamPrintController, :board_prizes
     get "/t/:id/print/player-ranking", TeamPrintController, :player_ranking

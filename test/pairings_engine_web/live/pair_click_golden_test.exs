@@ -161,6 +161,10 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
   And for the team board order (koppeltornooi): every JSON export gains
   `tournament.team_board_order` ("roster"). With that key taken out the
   regenerated file is equal, term for term, to the one before.
+
+  And for team pairing rules (team-extras): every pairing rule in a JSON
+  export gains `team_ids` (empty in the scenarios). With that key taken out
+  the regenerated file is equal, term for term, to the one before.
   """
   use PairingsEngineWeb.ConnCase, async: false
 

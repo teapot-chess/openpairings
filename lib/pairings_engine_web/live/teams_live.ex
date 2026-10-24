@@ -19,7 +19,7 @@ defmodule PairingsEngineWeb.TeamsLive do
 
   import PairingsEngineWeb.SettingsSupport, only: [error_text: 1]
 
-  alias PairingsEngine.{Audit, Plugins, TeamStandings, Tournaments}
+  alias PairingsEngine.{Audit, Plugins, TeamStandings, TeamTpn, Tournaments}
   alias PairingsEngine.Pairing, as: Engine
   alias PairingsEngine.Tournaments.{Player, Team, Tournament}
 
@@ -38,7 +38,9 @@ defmodule PairingsEngineWeb.TeamsLive do
        page_title: gettext("%{name} · Teams", name: tournament.name),
        note: nil,
        error: nil,
-       form_nonce: 0
+       form_nonce: 0,
+       tpn: nil,
+       tpn_changes: nil
      )
      |> load()}
   end
@@ -56,8 +58,27 @@ defmodule PairingsEngineWeb.TeamsLive do
          |> push_navigate(to: ~p"/")}
 
       tournament ->
-        {:noreply, socket |> assign(tournament: tournament) |> load()}
+        {:noreply, socket |> assign(tournament: tournament) |> load() |> refresh_tpn()}
     end
+  end
+
+  # `?tpn=1` (the Pairings page's "Regenerate from ratings…") opens the list
+  # of team numbers, as `?tpn=1` does on the Players page.
+  @impl true
+  def handle_params(params, _uri, socket) do
+    if params["tpn"] == "1" and socket.assigns.tpn_editable? do
+      {:noreply, assign(socket, tpn: TeamTpn.order(socket.assigns.tournament))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp refresh_tpn(%{assigns: %{tpn: nil}} = socket), do: socket
+
+  defp refresh_tpn(socket) do
+    if socket.assigns.tpn_editable?,
+      do: assign(socket, tpn: TeamTpn.order(socket.assigns.tournament)),
+      else: assign(socket, tpn: nil, tpn_changes: nil)
   end
 
   defp load(socket) do
@@ -85,6 +106,7 @@ defmodule PairingsEngineWeb.TeamsLive do
           {team.id, Tournaments.team_rating_display(t, team, roster)}
         end),
       paired: Engine.paired_rounds_count(t.id),
+      tpn_editable?: TeamTpn.editable?(t),
       # What a plugin can put on each team's roster from its own data
       # (`PairingsEngine.Plugins.roster_candidates/3`); empty without one.
       roster_sources:
@@ -249,6 +271,74 @@ defmodule PairingsEngineWeb.TeamsLive do
         {:noreply, fail(socket, reason)}
     end
   end
+
+  ## ---------- team numbers (C.04.2 2.3, until round 4 is paired) ----------
+
+  def handle_event("open_tpn", _params, socket) do
+    if socket.assigns.tpn_editable?,
+      do: {:noreply, assign(socket, tpn: TeamTpn.order(socket.assigns.tournament))},
+      else: {:noreply, socket}
+  end
+
+  def handle_event("close_tpn", _params, socket),
+    do: {:noreply, assign(socket, tpn: nil, tpn_changes: nil)}
+
+  def handle_event("tpn_exchange", %{"a" => a, "b" => b}, socket) do
+    with {a_id, ""} <- Integer.parse(to_string(a)),
+         {b_id, ""} <- Integer.parse(to_string(b)),
+         %Team{} = team_a <- team(socket, a_id),
+         %Team{} = team_b <- team(socket, b_id) do
+      t = socket.assigns.tournament
+      capture_numbers(socket, gettext("Before exchanging two team numbers"))
+
+      case TeamTpn.exchange(t, a_id, b_id) do
+        {:ok, order} ->
+          Audit.log(t.id, socket.assigns.current_scope, "team.numbers_changed", %{
+            team_name: team_a.name,
+            other_name: team_b.name,
+            round: Engine.paired_rounds_count(t.id)
+          })
+
+          {:noreply,
+           socket
+           |> ok(
+             gettext("Exchanged the numbers of %{team} and %{other}.",
+               team: team_a.name,
+               other: team_b.name
+             )
+           )
+           |> load()
+           |> assign(tpn: order)}
+
+        {:unchanged, _order} ->
+          {:noreply, socket}
+
+        {:error, reason} ->
+          {:noreply, fail(socket, reason)}
+      end
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_event("tpn_exchange", _params, socket), do: {:noreply, socket}
+
+  # A regeneration that moves two or more numbers waits for a confirmation
+  # listing them (the TEC manual's Level 3, as for the players' numbers);
+  # one that moves at most one goes ahead.
+  def handle_event("tpn_regenerate", _params, socket) do
+    changes = TeamTpn.regeneration_changes(socket.assigns.tournament)
+
+    if length(changes) >= 2,
+      do: {:noreply, assign(socket, tpn_changes: changes)},
+      else: apply_regeneration(socket, changes)
+  end
+
+  def handle_event("tpn_regenerate_confirm", _params, socket),
+    do: apply_regeneration(socket, socket.assigns.tpn_changes || [])
+
+  def handle_event("tpn_regenerate_cancel", _params, socket),
+    do: {:noreply, assign(socket, tpn_changes: nil)}
 
   def handle_event("add_player", %{"team_id" => team_id, "player_id" => player_id}, socket) do
     with %Team{} = team <- team(socket, team_id),
@@ -430,6 +520,51 @@ defmodule PairingsEngineWeb.TeamsLive do
 
   defp team(socket, id), do: Tournaments.get_team(socket.assigns.tournament.id, id)
 
+  # The other teams that hold the same rating as `team`: the ones its number
+  # can be exchanged with.
+  defp tpn_partners(order, ratings, team) do
+    Enum.filter(order, fn {other, _n} ->
+      other.id != team.id and Map.get(ratings, other.id) == Map.get(ratings, team.id)
+    end)
+  end
+
+  defp capture_numbers(socket, summary) do
+    PairingsEngine.Snapshots.capture(
+      socket.assigns.tournament,
+      "team.numbers_changed",
+      socket.assigns.current_scope,
+      summary: summary
+    )
+  end
+
+  defp apply_regeneration(socket, changes) do
+    t = socket.assigns.tournament
+    capture_numbers(socket, gettext("Before renumbering the teams by rating"))
+
+    case TeamTpn.regenerate(t) do
+      {:ok, order} ->
+        Audit.log(t.id, socket.assigns.current_scope, "team.numbers_changed", %{
+          regenerated: length(changes),
+          round: Engine.paired_rounds_count(t.id)
+        })
+
+        {:noreply,
+         socket
+         |> ok(gettext("Renumbered the teams by rating."))
+         |> load()
+         |> assign(tpn: order, tpn_changes: nil)}
+
+      {:unchanged, order} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("The numbers already follow the ratings. Nothing changed."))
+         |> assign(tpn: order, tpn_changes: nil)}
+
+      {:error, reason} ->
+        {:noreply, socket |> assign(tpn_changes: nil) |> fail(reason)}
+    end
+  end
+
   defp direction("up"), do: :up
   defp direction("down"), do: :down
 
@@ -439,6 +574,15 @@ defmodule PairingsEngineWeb.TeamsLive do
 
   defp fail(socket, reason),
     do: socket |> put_flash(:error, refusal(reason)) |> assign(note: nil, error: nil)
+
+  defp refusal(:different_ratings),
+    do:
+      gettext(
+        "Only teams with the same rating can exchange numbers. To follow a rating change, regenerate the numbers."
+      )
+
+  defp refusal(:locked),
+    do: gettext("Round 4 is paired: the team numbers can no longer change (C.04.2).")
 
   defp refusal(:team_scheduled),
     do:
@@ -744,6 +888,122 @@ defmodule PairingsEngineWeb.TeamsLive do
           </button>
 
           <p :if={@teams == []} class="hint">{gettext("No teams yet.")}</p>
+
+          <%!-- Team numbers after round 1, as the players' numbers: until
+                round 4 is paired two teams of equal rating can exchange
+                theirs and the numbers can be regenerated from the ratings
+                (C.04.2 2.3). Never a pairing setting: FIDE mode stays. --%>
+          <button
+            :if={@tpn_editable? and @writable? and @tpn == nil}
+            type="button"
+            id="team-tpn-open"
+            class="pe-btn"
+            phx-click="open_tpn"
+          >
+            {gettext("Team numbers…")}
+          </button>
+
+          <p
+            :if={@frozen? and @paired >= 4 and @tournament.type == "team-swiss"}
+            id="team-tpn-locked"
+            class="hint"
+          >
+            {gettext("Round 4 is paired: the team numbers can no longer be changed (C.04.2).")}
+          </p>
+        </div>
+
+        <div :if={@tpn != nil} id="team-tpn" class="card">
+          <h2>{gettext("Team numbers")}</h2>
+
+          <p class="hint">
+            {gettext(
+              "Two teams of equal rating can exchange their numbers, and the numbers can be regenerated from the team ratings (%{method}). Both are possible only until round 4 is paired (C.04.2). Rounds already paired used the old numbers, so a pairing checker will no longer reproduce them. Neither takes the tournament out of FIDE mode.",
+              method: String.downcase(team_rating_method_text(@tournament.team_rating_method))
+            )}
+          </p>
+
+          <ol class="prohib-list" id="team-tpn-list">
+            <li
+              :for={{team, number} <- @tpn}
+              id={"team-tpn-row-#{team.id}"}
+              class="prohib-row"
+            >
+              <span class="prohib-row-main">
+                <strong>{number}.</strong> {team.name}
+                <span class="hint">
+                  {if @ratings[team.id], do: @ratings[team.id], else: gettext("no rating")}
+                </span>
+              </span>
+
+              <form
+                :if={tpn_partners(@tpn, @ratings, team) != []}
+                id={"team-tpn-exchange-form-#{team.id}"}
+                phx-submit="tpn_exchange"
+                class="prohib-row-actions"
+              >
+                <input type="hidden" name="a" value={team.id} />
+                <select
+                  name="b"
+                  id={"team-tpn-partner-#{team.id}"}
+                  class="pe-select"
+                  aria-label={gettext("Exchange the number of %{team} with", team: team.name)}
+                >
+                  <option :for={{other, n} <- tpn_partners(@tpn, @ratings, team)} value={other.id}>
+                    {n}. {other.name}
+                  </option>
+                </select>
+                <button type="submit" class="pe-btn" id={"team-tpn-exchange-#{team.id}"}>
+                  {gettext("Exchange")}
+                </button>
+              </form>
+            </li>
+          </ol>
+
+          <div :if={@tpn_changes} id="team-tpn-confirm" class="prohib-alert is-warm" role="alert">
+            <p>
+              <strong>
+                {gettext("Renumber the teams by rating? These numbers change:")}
+              </strong>
+            </p>
+
+            <ul>
+              <li :for={{team, old, new} <- @tpn_changes} id={"team-tpn-change-#{team.id}"}>
+                {gettext("%{name}: %{old} becomes %{new}", name: team.name, old: old, new: new)}
+              </li>
+            </ul>
+
+            <button
+              type="button"
+              class="pe-btn primary"
+              id="team-tpn-confirm-yes"
+              phx-click="tpn_regenerate_confirm"
+            >
+              {gettext("Renumber")}
+            </button>
+            <button
+              type="button"
+              class="pe-btn"
+              id="team-tpn-confirm-no"
+              phx-click="tpn_regenerate_cancel"
+            >
+              {gettext("Cancel")}
+            </button>
+          </div>
+
+          <div class="actions">
+            <button
+              type="button"
+              id="team-tpn-regenerate"
+              class="pe-btn"
+              phx-click="tpn_regenerate"
+              disabled={@tpn_changes != nil}
+            >
+              {gettext("Regenerate from ratings")}
+            </button>
+            <button type="button" id="team-tpn-close" class="pe-btn" phx-click="close_tpn">
+              {gettext("Close")}
+            </button>
+          </div>
         </div>
 
         <section

@@ -63,6 +63,11 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
 
     by_id = Map.new(players, &{&1.id, &1})
     rules = Tournaments.list_pairing_rules(tournament.id)
+
+    # A team Swiss keeps TEAMS apart (Ainalrami 0.46.0): its rules are about
+    # clubs of teams and named teams, and the page shows no players.
+    team_event? = Tournament.team_swiss?(tournament)
+    teams = if team_event?, do: Tournaments.list_teams(tournament.id), else: []
     {groups, field_rules} = Enum.split_with(rules, &(&1.kind == "group"))
 
     assign(socket,
@@ -71,8 +76,15 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
       pairs: Tournaments.list_forbidden_pairings(tournament.id),
       field_rules: field_rules,
       groups: groups,
-      effects: Map.new(rules, &{&1.id, Exclusions.effect(&1, players)}),
-      check: RestrictionCheck.next_round(tournament),
+      effects:
+        Map.new(
+          rules,
+          &{&1.id,
+           Exclusions.effect(&1, if(PairingRule.team_kind?(&1.kind), do: teams, else: players))}
+        ),
+      team_event?: team_event?,
+      teams: teams,
+      check: if(team_event?, do: nil, else: RestrictionCheck.next_round(tournament)),
       paired: PairingsEngine.Pairing.paired_rounds_count(tournament.id),
       departs?: Tournaments.prohibition_change_departs?(tournament)
     )
@@ -220,7 +232,7 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
     with :proceed <- ask(socket, "add_rule", payload) do
       t = socket.assigns.tournament
 
-      case Tournaments.add_pairing_rule(t, rule_attrs(params)) do
+      case Tournaments.add_pairing_rule(t, rule_attrs(params, socket.assigns.team_event?)) do
         {:ok, rule} ->
           {:noreply,
            socket
@@ -259,7 +271,11 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
     with :proceed <- ask(socket, "update_rule", payload) do
       t = socket.assigns.tournament
 
-      case Tournaments.update_pairing_rule(t, socket.assigns.editing_rule, rule_attrs(params)) do
+      case Tournaments.update_pairing_rule(
+             t,
+             socket.assigns.editing_rule,
+             rule_attrs(params, socket.assigns.team_event?)
+           ) do
         {:ok, rule} ->
           {:noreply,
            socket
@@ -391,7 +407,8 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
       rule: Exclusions.describe(rule),
       kind: rule.kind,
       soft: rule.soft,
-      player_ids: rule.player_ids
+      player_ids: rule.player_ids,
+      team_ids: rule.team_ids
     }
 
   defp picker_error(:same_player), do: gettext("Choose at least two players.")
@@ -400,12 +417,15 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
   defp picker_error(%Ecto.Changeset{} = cs), do: error_text(cs)
   defp picker_error(reason), do: error_text(reason)
 
+  defp rule_error(:invalid_team), do: gettext("Choose teams from this tournament.")
+  defp rule_error(:not_a_team_event), do: gettext("Team rules are for team tournaments.")
   defp rule_error(%Ecto.Changeset{} = cs), do: error_text(cs)
   defp rule_error(reason), do: error_text(reason)
 
   @rule_defaults %{
     "kind" => "club",
     "names" => "",
+    "team_ids" => [],
     "soft" => "false",
     "window" => "all",
     "window_rounds" => "",
@@ -420,6 +440,7 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
     do: %{
       "kind" => rule.kind,
       "names" => Enum.join(rule.names, ", "),
+      "team_ids" => Enum.map(rule.team_ids || [], &to_string/1),
       "soft" => to_string(rule.soft),
       "window" => rule.window,
       "window_rounds" => to_string(rule.window_rounds || ""),
@@ -427,12 +448,29 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
       "window_to" => to_string(rule.window_to || "")
     }
 
-  defp rule_attrs(params) do
-    kind = if params["kind"] in ["club", "federation"], do: params["kind"], else: "club"
+  defp rule_attrs(params, team_event?) do
+    kind =
+      if params["kind"] in ["club", "federation" | PairingRule.team_kinds()],
+        do: params["kind"],
+        else: "club"
+
+    # The form's default is "club"; on a team event that means the teams'.
+    kind = if team_event? and kind in ["club", "federation"], do: "team_club", else: kind
+
+    team_ids =
+      params["team_ids"]
+      |> List.wrap()
+      |> Enum.flat_map(fn id ->
+        case Integer.parse(to_string(id)) do
+          {n, ""} -> [n]
+          _ -> []
+        end
+      end)
 
     %{
       "kind" => kind,
       "names" => Exclusions.normalize_list(params["names"] || ""),
+      "team_ids" => team_ids,
       "soft" => params["soft"] == "true",
       "window" => params["window"] || "all",
       "window_rounds" => blank_nil(params["window_rounds"]),
@@ -461,9 +499,20 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
 
   defp kind_label("club"), do: gettext("Same club")
   defp kind_label("federation"), do: gettext("Same federation")
+  defp kind_label("team_club"), do: gettext("Teams of the same club")
+  defp kind_label("team_group"), do: gettext("Teams who must not meet")
   defp kind_label(_), do: gettext("Group")
 
-  defp rule_title(rule) do
+  defp rule_title(%{kind: "team_group"} = rule, teams) do
+    names =
+      teams
+      |> Enum.filter(&(&1.id in (rule.team_ids || [])))
+      |> Enum.map_join(", ", & &1.name)
+
+    kind_label(rule.kind) <> ": " <> names
+  end
+
+  defp rule_title(rule, _teams) do
     case rule.names do
       [] -> kind_label(rule.kind)
       names -> kind_label(rule.kind) <> ": " <> Enum.join(names, ", ")
@@ -512,6 +561,11 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
       ngettext("%{count} pair", "%{count} pairs", pairs) <>
         " " <> ngettext("in %{count} federation", "among %{count} federations", groups)
 
+  defp effect_text(%{kind: "team_club"}, %{pairs: pairs, groups: groups}),
+    do:
+      ngettext("%{count} pair", "%{count} pairs", pairs) <>
+        " " <> ngettext("in %{count} club", "among %{count} clubs", groups)
+
   defp effect_text(_rule, %{pairs: pairs}), do: ngettext("%{count} pair", "%{count} pairs", pairs)
 
   defp player_line(%Player{} = p, tournament) do
@@ -538,7 +592,7 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
   # Whether this page, as rendered for this tournament right now, has any
   # `tset-adv` element, so the "Show advanced settings" switch is drawn only
   # when it has something to show. The wishes card is advanced while there are no wishes; with some, it is the page's point.
-  defp has_advanced?(assigns), do: assigns.wish_count == 0
+  defp has_advanced?(assigns), do: not assigns.team_event? and assigns.wish_count == 0
 
   @impl true
   def render(assigns) do
@@ -601,7 +655,7 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
           {engine_note(@tournament)}
         </p>
 
-        <div class="card" id="restrictions-effect">
+        <div :if={!@team_event?} class="card" id="restrictions-effect">
           <h2>{gettext("Effect on the next round")}</h2>
 
           <%= if @check.round do %>
@@ -666,9 +720,15 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
         <div class="card" id="restrictions-rules">
           <h2>{gettext("Rules")}</h2>
 
-          <p class="hint" style="margin-top: 0">
+          <p :if={!@team_event?} class="hint" style="margin-top: 0">
             {gettext(
               "Keep players of the same club or federation apart without naming them: a rule follows the players as they are when a round is paired, so a late entrant or a corrected club is covered without touching it."
+            )}
+          </p>
+
+          <p :if={@team_event?} id="team-rules-hint" class="hint" style="margin-top: 0">
+            {gettext(
+              "Keep teams apart: teams of the same club (the club on each team's card), or teams you name. A rule is never seated; a wish (if possible) only breaks ties between pairings FIDE's rules rank equal, and never costs a colour, a float or the bye. Neither is part of C.04.6."
             )}
           </p>
 
@@ -677,6 +737,8 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
               <%= if @editing_rule == rule.id do %>
                 <.rule_fields
                   form={@edit_form}
+                  teams={@teams}
+                  team_event?={@team_event?}
                   id={"edit-rule-form-#{rule.id}"}
                   submit="update_rule"
                   change="edit_rule_change"
@@ -686,7 +748,7 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
                 />
               <% else %>
                 <div class="prohib-row-main">
-                  <span class="prohib-row-title">{rule_title(rule)}</span>
+                  <span class="prohib-row-title">{rule_title(rule, @teams)}</span>
                   <span class={["pe-tag", if(rule.soft, do: "pe-tag-muted", else: "pe-tag-ok")]}>
                     {if rule.soft, do: gettext("if possible"), else: gettext("rule")}
                   </span>
@@ -710,7 +772,9 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
                     id={"remove-rule-#{rule.id}"}
                     phx-click="remove_rule"
                     phx-value-id={rule.id}
-                    data-confirm={gettext("Remove the rule \"%{rule}\"?", rule: rule_title(rule))}
+                    data-confirm={
+                      gettext("Remove the rule \"%{rule}\"?", rule: rule_title(rule, @teams))
+                    }
                   >
                     {gettext("Remove")}
                   </button>
@@ -725,6 +789,8 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
 
           <.rule_fields
             form={@rule_form}
+            teams={@teams}
+            team_event?={@team_event?}
             id="add-rule-form"
             submit="add_rule"
             change="rule_change"
@@ -733,7 +799,7 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
           />
         </div>
 
-        <div class="card" id="restrictions-players">
+        <div :if={!@team_event?} class="card" id="restrictions-players">
           <h2>{gettext("Players who must not meet")}</h2>
 
           <p class="hint" style="margin-top: 0">
@@ -931,7 +997,11 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
           </p>
         </div>
 
-        <div class={["card", @wish_count == 0 && "tset-adv"]} id="restrictions-wishes">
+        <div
+          :if={!@team_event?}
+          class={["card", @wish_count == 0 && "tset-adv"]}
+          id="restrictions-wishes"
+        >
           <h2>{gettext("How hard to try the wishes")}</h2>
 
           <p class="hint" style="margin-top: 0">
@@ -971,6 +1041,8 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
   defp soft_position_label(other), do: other
 
   attr :form, :any, required: true
+  attr :teams, :list, default: []
+  attr :team_event?, :boolean, default: false
   attr :id, :string, required: true
   attr :submit, :string, required: true
   attr :change, :string, required: true
@@ -983,18 +1055,48 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
     <.form for={@form} id={@id} phx-submit={@submit} phx-change={@change} class="prohib-rule-form">
       <div class="prohib-rule-grid">
         <.setting_field label={gettext("Keep apart")}>
-          <select name="rule[kind]" class="pe-select">
-            <option value="club" selected={@form[:kind].value == "club"}>
-              {gettext("Players of the same club")}
-            </option>
+          <select name="rule[kind]" class="pe-select" id={"#{@id}-kind"}>
+            <%= if @team_event? do %>
+              <option value="team_club" selected={@form[:kind].value in ["team_club", "club"]}>
+                {gettext("Teams of the same club")}
+              </option>
 
-            <option value="federation" selected={@form[:kind].value == "federation"}>
-              {gettext("Players of the same federation")}
-            </option>
+              <option value="team_group" selected={@form[:kind].value == "team_group"}>
+                {gettext("Teams I choose")}
+              </option>
+            <% else %>
+              <option value="club" selected={@form[:kind].value == "club"}>
+                {gettext("Players of the same club")}
+              </option>
+
+              <option value="federation" selected={@form[:kind].value == "federation"}>
+                {gettext("Players of the same federation")}
+              </option>
+            <% end %>
           </select>
         </.setting_field>
 
         <.setting_field
+          :if={@team_event? and @form[:kind].value == "team_group"}
+          label={gettext("Teams")}
+        >
+          <div class="prohib-chips" id={"#{@id}-teams"}>
+            <label :for={team <- @teams} class="pe-check">
+              <input
+                type="checkbox"
+                name="rule[team_ids][]"
+                id={"#{@id}-team-#{team.id}"}
+                value={team.id}
+                checked={to_string(team.id) in List.wrap(@form[:team_ids].value)}
+              />
+              <span>{team.name}</span>
+              <span :if={team.club != ""} class="hint">({team.club})</span>
+            </label>
+          </div>
+        </.setting_field>
+
+        <.setting_field
+          :if={!@team_event? or @form[:kind].value != "team_group"}
           label={gettext("Only these (optional)")}
           hint={gettext("Comma-separated. Empty means every club or federation.")}
         >

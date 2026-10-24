@@ -264,14 +264,78 @@ defmodule PairingsEngine.TeamSheets do
       teams = t.id |> Tournaments.list_teams() |> Map.new(&{&1.id, &1})
       # `TeamStandings.matches/2` carries the boards without their players.
       pairings = Map.new(round.pairings, &{&1.id, &1})
+      fielded = TeamStandings.fielded_ratings(t, matches)
 
       {:ok,
        %{
          round: number,
          date: round_date(t, number),
-         sheets: Enum.map(matches, &sheet(&1, teams, pairings))
+         sheets: Enum.map(matches, &sheet(&1, teams, pairings, fielded))
        }}
     end
+  end
+
+  @doc """
+  The blank line-up forms of round `number`, one per team that plays it, for
+  the captains to fill in: `{:ok, %{round, date, boards, reserves, forms}}`.
+
+  A form is `%{team, opponent, match_number, colours}` - the team, its
+  opponent (nil before the round is paired), the match's number, and the
+  colour the team has on each board `1..boards` (a list of `:white | :black`,
+  nil before the round is paired). Once the round is paired a form is made
+  for every team of every match, in match order, the first-named team first;
+  before that, for every team in the round (`Tournaments.team_in_round?/2`),
+  in team-number order. `:team_id` keeps one team's form (`:error` when it has
+  none).
+  """
+  def lineup_forms(%Tournament{} = t, number, opts \\ []) do
+    teams = Tournaments.list_teams(t.id)
+    boards = max(t.team_boards || 1, 1)
+    round = Tournaments.get_round(t.id, number)
+
+    forms =
+      case round && match_pairs(t, number, teams) do
+        [_ | _] = pairs ->
+          Enum.flat_map(pairs, fn {m, a, b} ->
+            colours =
+              for k <- 1..boards,
+                  do: if(PairingsEngine.TeamRounds.team_a_white?(k), do: :white, else: :black)
+
+            other = Enum.map(colours, &if(&1 == :white, do: :black, else: :white))
+
+            [
+              %{team: a, opponent: b, match_number: m.number, colours: colours},
+              %{team: b, opponent: a, match_number: m.number, colours: other}
+            ]
+          end)
+
+        _ ->
+          teams
+          |> Enum.filter(&Tournaments.team_in_round?(&1, number))
+          |> Enum.map(&%{team: &1, opponent: nil, match_number: nil, colours: nil})
+      end
+
+    forms =
+      case Keyword.get(opts, :team_id) do
+        nil -> forms
+        id -> Enum.filter(forms, &(&1.team.id == id))
+      end
+
+    if forms == [],
+      do: :error,
+      else:
+        {:ok,
+         %{round: number, date: round_date(t, number), boards: boards, reserves: 4, forms: forms}}
+  end
+
+  defp match_pairs(t, number, teams) do
+    by_id = Map.new(teams, &{&1.id, &1})
+
+    t
+    |> TeamStandings.matches(through_round: number)
+    |> Enum.filter(&(&1.round == number and not &1.bye?))
+    |> Enum.map(&{&1, Map.get(by_id, &1.team_a_id), Map.get(by_id, &1.team_b_id)})
+    |> Enum.reject(fn {_m, a, b} -> is_nil(a) or is_nil(b) end)
   end
 
   defp filter_match(matches, nil), do: matches
@@ -284,12 +348,16 @@ defmodule PairingsEngine.TeamSheets do
     end
   end
 
-  defp sheet(m, teams, pairings) do
+  defp sheet(m, teams, pairings, fielded) do
+    {avg_a, avg_b} = Map.get(fielded, m.match_id, {nil, nil})
+
     %{
       match: m,
       number: m.number,
       team_a: Map.get(teams, m.team_a_id),
       team_b: Map.get(teams, m.team_b_id),
+      avg_a: avg_a,
+      avg_b: avg_b,
       rows: Enum.map(m.boards, &sheet_row(&1, pairings))
     }
   end

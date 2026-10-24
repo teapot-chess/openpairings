@@ -237,6 +237,15 @@ defmodule PairingsEngineWeb.PrintLive do
               )
           },
           %{
+            id: "print-team-lineup-forms",
+            name: gettext("Line-up forms (blank)"),
+            desc:
+              gettext(
+                "One form per team for the next round, for the captains to fill in: team, opponent, board colours, board and reserve rows, signature."
+              ),
+            href: ~p"/t/#{tournament.id}/print/team-lineup-forms"
+          },
+          %{
             id: "print-team-rosters",
             name: gettext("Team rosters"),
             desc: gettext("Each team's board order with ratings, FIDE IDs and federations."),

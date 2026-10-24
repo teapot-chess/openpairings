@@ -4950,6 +4950,33 @@ defmodule PairingsEngine.Tournaments do
     end
   end
 
+  # A team rule (`PairingRule.team_kind?/1`) belongs to a team tournament and
+  # names its teams: nil when the rule is fine, else the refusal. The
+  # members are ids from an event payload, so they are checked against the
+  # tournament like a group's players are.
+  defp team_rule_refusal(tournament, changeset) do
+    kind = Ecto.Changeset.get_field(changeset, :kind)
+
+    cond do
+      not PairingRule.team_kind?(kind) ->
+        nil
+
+      not Tournament.team?(tournament) ->
+        {:error, :not_a_team_event}
+
+      true ->
+        ids = Ecto.Changeset.get_field(changeset, :team_ids) || []
+
+        count =
+          Repo.aggregate(
+            from(t in Team, where: t.tournament_id == ^tournament.id and t.id in ^ids),
+            :count
+          )
+
+        if count == length(Enum.uniq(ids)), do: nil, else: {:error, :invalid_team}
+    end
+  end
+
   # One player's half of `both_players_belong_to_tournament?/3`. Same reason
   # it exists: an id from an event payload is attacker-controlled, and
   # authorising the tournament at mount proves nothing about the row.
@@ -5058,6 +5085,9 @@ defmodule PairingsEngine.Tournaments do
       ) ->
         {:error, :invalid_player}
 
+      refusal = team_rule_refusal(tournament, changeset) ->
+        refusal
+
       true ->
         prohibition_write(tournament, opts, fn ->
           with {:ok, rule} <- Repo.insert(changeset) do
@@ -5090,6 +5120,9 @@ defmodule PairingsEngine.Tournaments do
           Ecto.Changeset.get_field(changeset, :player_ids)
         ) ->
           {:error, :invalid_player}
+
+        refusal = team_rule_refusal(tournament, changeset) ->
+          refusal
 
         true ->
           late = late_prohibition_round(tournament)
@@ -5152,12 +5185,24 @@ defmodule PairingsEngine.Tournaments do
       "soft" => row.soft
     }
 
+  defp team_numbers(%PairingRule{kind: "team_group", team_ids: [_ | _] = ids}),
+    do:
+      Repo.all(
+        from t in Team, where: t.id in ^ids, select: t.pairing_number, order_by: t.pairing_number
+      )
+      |> Enum.reject(&is_nil/1)
+
+  defp team_numbers(_rule), do: []
+
   defp rule_change(action, %PairingRule{} = rule),
     do: %{
       "action" => action,
       "what" => "rule",
       "rule" => PairingsEngine.Exclusions.describe(rule),
       "players" => if(rule.kind == "group", do: rule.player_ids, else: []),
+      # By team number, as the TRF names them (`record_prohibition_change/2`
+      # only writes once round 1 is paired, so the numbers exist).
+      "teams" => team_numbers(rule),
       "soft" => rule.soft
     }
 

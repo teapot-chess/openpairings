@@ -471,6 +471,8 @@ defmodule PairingsEngineWeb.PairingsLive do
         # Pairing numbers that no longer follow the ratings, while they can
         # still be corrected (round 4 not paired). A warning, not a lock.
         tpn_out_of_order: if(t.archived_at, do: [], else: Tpn.warning(t)),
+        team_tpn_out_of_order:
+          if(t.archived_at, do: [], else: PairingsEngine.TeamTpn.out_of_place(t)),
         # The same once round 4 is paired and C.04.2 2.3 has closed: nothing
         # to do about it, so a note, for the arbiter who is asked why.
         tpn_locked: if(t.archived_at, do: [], else: Tpn.locked_out_of_place(t)),
@@ -499,6 +501,7 @@ defmodule PairingsEngineWeb.PairingsLive do
         unattached_boards: unattached_boards(t, round)
       )
       |> put_explanation_state(round)
+      |> assign_fielded(t)
       |> NextRoundPreviewPanel.refresh()
       |> assign_announcements()
       |> assign_board_reports()
@@ -567,6 +570,27 @@ defmodule PairingsEngineWeb.PairingsLive do
     else
       []
     end
+  end
+
+  # "2051 - 1987": each side's average fielded rating, "-" for a side with no
+  # rated player and for a bye.
+  defp fielded_text(fielded, %{bye?: false, match_id: id}) do
+    {a, b} = Map.get(fielded, id, {nil, nil})
+    "#{a || "-"} - #{b || "-"}"
+  end
+
+  defp fielded_text(_fielded, _match), do: "-"
+
+  # The average rating each side of the round's matches fielded
+  # (`TeamStandings.fielded_ratings/2`), beside the matches. Display only.
+  defp assign_fielded(socket, t) do
+    fielded =
+      case socket.assigns.team_matches do
+        [] -> %{}
+        matches -> PairingsEngine.TeamStandings.fielded_ratings(t, matches)
+      end
+
+    assign(socket, team_fielded: fielded)
   end
 
   # Boards of a round paired as teams that belong to no match - added by hand
@@ -4369,11 +4393,17 @@ defmodule PairingsEngineWeb.PairingsLive do
     round_number = socket.assigns.round_number
     parent = self()
 
-    Snapshots.capture(tournament, "pairing.round_paired", socket.assigns.current_scope,
-      summary: "Before pairing round #{round_number}"
-    )
+    # The run the Level-4 question interrupted already has its restore point
+    # (and a wish that moves a match is such a question: `Pairing.
+    # guard_team_departures/2`).
+    unless socket.assigns.fide_gate_confirmed do
+      Snapshots.capture(tournament, "pairing.round_paired", socket.assigns.current_scope,
+        summary: "Before pairing round #{round_number}"
+      )
+    end
 
     acknowledged = socket.assigns.pair_acknowledged
+    guard? = not socket.assigns.fide_gate_confirmed
 
     # Under a slot (`PairingsEngine.EngineSlots`): at most a few runs on the
     # whole machine, one per tournament however many tabs ask, and stopped
@@ -4384,7 +4414,12 @@ defmodule PairingsEngineWeb.PairingsLive do
         EngineSlots.run(
           :pairing,
           tournament.id,
-          fn -> Engine.pair_next_round(tournament, acknowledged: acknowledged) end,
+          fn ->
+            Engine.pair_next_round(tournament,
+              acknowledged: acknowledged,
+              fide_departure_guard: guard?
+            )
+          end,
           timeout: EngineSlots.pairing_timeout(),
           on_queued: fn -> send(parent, {:team_pairing_queued, tournament.id}) end
         )
@@ -6928,6 +6963,39 @@ defmodule PairingsEngineWeb.PairingsLive do
         </.link>
       </div>
 
+      <%!-- The team Swiss's version: team numbers that no longer follow the
+            team ratings (`TeamTpn.out_of_place/1`), correctable until round
+            4 is paired. Pairing is not held up by it. --%>
+      <div :if={@team_tpn_out_of_order != []} id="team-tpn-out-of-order" class="tpn-order-warning">
+        <p class="tpn-order-warning-head">
+          <.icon name="hero-exclamation-triangle-micro" class="setup-line-icon" />
+          <span>
+            {gettext(
+              "These team numbers do not follow the team ratings. They can be corrected until round 4 is paired (C.04.2); pairing is still possible."
+            )}
+          </span>
+        </p>
+
+        <ul class="tpn-order-warning-list">
+          <li :for={row <- @team_tpn_out_of_order} id={"team-tpn-out-of-order-#{row.team.id}"}>
+            {gettext("%{name} (%{rating}): number %{number}, by rating %{expected}",
+              name: row.team.name,
+              rating: row.rating,
+              number: row.number,
+              expected: row.expected
+            )}
+          </li>
+        </ul>
+
+        <.link
+          id="team-tpn-out-of-order-regenerate"
+          class="pe-btn"
+          navigate={~p"/t/#{@tournament.id}/teams?tpn=1"}
+        >
+          {gettext("Regenerate from ratings…")}
+        </.link>
+      </div>
+
       <%!-- The same finding once round 4 is paired: C.04.2 2.3 no longer
             lets anybody correct it, so no button and no dialog - a note,
             folded, for the arbiter who has to explain a seeding. --%>
@@ -8239,6 +8307,14 @@ defmodule PairingsEngineWeb.PairingsLive do
 
               <th scope="col" class="num">{gettext("Boards")}</th>
 
+              <th
+                scope="col"
+                class="num"
+                title={gettext("Average rating of the players each team fielded")}
+              >
+                {gettext("Avg. Elo")}
+              </th>
+
               <th scope="col">{gettext("Team (White on board 1)")}</th>
 
               <th scope="col" class="num">{gettext("Game points")}</th>
@@ -8266,6 +8342,10 @@ defmodule PairingsEngineWeb.PairingsLive do
               </td>
 
               <td class="num">{match_board_range(m.boards)}</td>
+
+              <td class="num" id={"match-avg-elo-#{m.match_id}"}>
+                {fielded_text(@team_fielded, m)}
+              </td>
 
               <td><strong>{match_team_name(@teams_by_id, m.team_a_id)}</strong></td>
 

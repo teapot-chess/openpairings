@@ -369,9 +369,16 @@ defmodule PairingsEngine.TrfExport do
 
   defp prohibition_item(%{"what" => "rule"} = c, tpn) do
     text =
-      case c["players"] do
-        [_ | _] = ids ->
+      case {c["players"], c["teams"]} do
+        {[_ | _] = ids, _} ->
           String.replace_prefix(c["rule"] || "group", "group", "group " <> tpns(ids, tpn))
+
+        {_, [_ | _] = numbers} ->
+          String.replace_prefix(
+            c["rule"] || "team group",
+            "team group",
+            "team group " <> Enum.join(numbers, "-")
+          )
 
         _ ->
           c["rule"] || "rule"
@@ -827,9 +834,18 @@ defmodule PairingsEngine.TrfExport do
           time_control_code: PairingsEngine.RateOfPlay.trf26_code(tournament.rate_of_play),
           point_system: point_system,
           free_points: free_point_records(players, tournament),
+          # A team event names no players to keep apart: `XXP`/`260` are
+          # refused in a team Swiss file (Ainalrami 0.46.0), which keeps
+          # TEAMS apart with `XXO team-forbidden` / `team-soft-pairs`.
           forbidden_pairs:
-            forbidden_groups(tournament, players, dialect, last_round) ++
-              rule_groups(tournament, players, dialect, last_round),
+            if(Tournament.team?(tournament),
+              do: [],
+              else:
+                forbidden_groups(tournament, players, dialect, last_round) ++
+                  rule_groups(tournament, players, dialect, last_round)
+            ),
+          team_forbidden_pairs: team_keep_apart(tournament, dialect, false),
+          team_soft_pairs: team_keep_apart(tournament, dialect, true),
           team_point_system: team_point_system(tournament, dialect),
           team_pab: team_pab(tournament, rounds, dialect),
           forfeited_matches:
@@ -2210,6 +2226,41 @@ defmodule PairingsEngine.TrfExport do
     next = last_round + 1
     if next >= first and (is_nil(to) or next <= to), do: [ranks], else: []
   end
+
+  ## ---------- teams kept apart: `XXO team-forbidden` / `team-soft-pairs` ----------
+  #
+  # A team Swiss's pairing rules (`Exclusions.team_group_spans/4`: teams of
+  # the same club, named groups) as groups of team numbers, with the rounds a
+  # rule holds for when it is not the whole event (`3 11 16 @1-2`). Not
+  # FIDE's, so only the engine dialect carries them - the spelling
+  # `ainalrami -c` replays; the TRF26 report says nothing of them but the
+  # `###` line of a rule changed once the event was under way. Written only
+  # for a team Swiss: a round robin pairs by its table, and Ainalrami refuses
+  # the records anywhere else.
+  defp team_keep_apart(tournament, :engine, soft?) do
+    if Tournament.team_swiss?(tournament) do
+      rules = Tournaments.list_pairing_rules(tournament.id)
+
+      # The engine dialect's `013` records carry no number: a team is its
+      # place in the file, which is the order `list_teams/1` writes them in.
+      teams =
+        tournament.id
+        |> Tournaments.list_teams()
+        |> Enum.with_index(1)
+        |> Enum.map(fn {team, n} -> %{team | pairing_number: n} end)
+
+      PairingsEngine.Exclusions.team_group_spans(
+        rules,
+        teams,
+        tournament.rounds_count || 0,
+        soft?
+      )
+    else
+      []
+    end
+  end
+
+  defp team_keep_apart(_tournament, _dialect, _soft?), do: []
 
   ## ---------- National Rating Support: `172` and the federation's records ----------
   #

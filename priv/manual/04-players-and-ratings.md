@@ -202,6 +202,10 @@ for. Pressing *Pair round N* for rounds 2 to 4 then asks first
 ([Pairing a round](06-pairing.md), *When the pairing numbers do not follow the
 ratings*).
 
+A team Swiss's team numbers can be corrected the same way until round 4 is
+paired, from the Teams page ([Correcting the order of the
+teams](13-teams.md#correcting-the-order-of-the-teams)).
+
 **Starting numbers of a round robin.** Before round 1 **Starting numbers**
 (Players page, **More**) opens the list the Berger tables pair by. Press **Order by rating**
 (highest rating first; equal ratings by title, then the tie-break set in the

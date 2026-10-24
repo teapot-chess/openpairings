@@ -496,7 +496,9 @@ defmodule PairingsEngineWeb.StandingsLive do
         team_tiebreaks: TeamStandings.effective_tiebreaks(tournament),
         team_dropped: TeamStandings.dropped_tiebreaks_with_reasons(tournament),
         teams_by_id: Map.new(teams, &{&1.id, &1}),
-        board_stats: TeamStandings.board_stats(tournament)
+        board_stats: TeamStandings.board_stats(tournament),
+        team_fielded:
+          TeamStandings.latest_fielded_ratings(tournament, TeamStandings.matches(tournament))
       )
     else
       assign(socket,
@@ -505,7 +507,8 @@ defmodule PairingsEngineWeb.StandingsLive do
         team_tiebreaks: [],
         team_dropped: [],
         teams_by_id: %{},
-        board_stats: []
+        board_stats: [],
+        team_fielded: %{}
       )
     end
   end
@@ -901,6 +904,7 @@ defmodule PairingsEngineWeb.StandingsLive do
         dropped={@team_dropped}
         teams_by_id={@teams_by_id}
         board_stats={@board_stats}
+        team_fielded={@team_fielded}
         team_view={@team_view}
         series_labels={@series_labels}
         selected_series={@selected_series}
@@ -1373,6 +1377,7 @@ defmodule PairingsEngineWeb.StandingsLive do
   attr :dropped, :list, required: true
   attr :teams_by_id, :map, required: true
   attr :board_stats, :list, required: true
+  attr :team_fielded, :map, default: %{}
   attr :team_view, :atom, default: :teams
   attr :series_labels, :list, default: []
   attr :selected_series, :string, default: nil
@@ -1499,6 +1504,15 @@ defmodule PairingsEngineWeb.StandingsLive do
             >
               {code}
             </th>
+
+            <th
+              scope="col"
+              class="num"
+              id="team-avg-elo-head"
+              title={gettext("Average rating of the players the team fielded in its latest match")}
+            >
+              {gettext("Avg. Elo")}
+            </th>
           </tr>
         </thead>
 
@@ -1552,6 +1566,10 @@ defmodule PairingsEngineWeb.StandingsLive do
 
             <td :for={code <- Enum.reject(@tiebreaks, &(&1 == "MP"))} class="num">
               {format_tb(Map.get(entry.tiebreaks, code, 0.0))}
+            </td>
+
+            <td class="num" id={"team-avg-elo-#{entry.team.id}"}>
+              {Map.get(@team_fielded, entry.team.id) || "-"}
             </td>
           </tr>
         </tbody>
