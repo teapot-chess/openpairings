@@ -132,6 +132,12 @@ defmodule PairingsEngine.TeamStandings do
   """
   def c07_codes, do: @c07
 
+  # C.07's spelling of a code, `nil` for one team standings does not know. An
+  # SSSC with any normalising factor is its own spelling.
+  defp c07_of(code) do
+    Map.get(@c07, code) || if PairingsEngine.Tiebreaks.factor_base(code), do: code
+  end
+
   @doc "The tie-break codes team standings can calculate."
   def supported_codes, do: @supported
 
@@ -153,7 +159,9 @@ defmodule PairingsEngine.TeamStandings do
         do: {code, reason}
   end
 
-  defp drop_reason(code, _t) when code not in @supported, do: :not_calculable
+  defp drop_reason(code, _t) when code not in @supported do
+    if PairingsEngine.Tiebreaks.factor_base(code), do: nil, else: :not_calculable
+  end
 
   # C.07 Article 8: "Buchholz ... must not be used in round-robins".
   defp drop_reason(code, t) when code in @buchholz do
@@ -546,13 +554,13 @@ defmodule PairingsEngine.TeamStandings do
     event = entries |> Enum.reject(& &1.annulled?) |> ainalrami_event(matches, t)
 
     values =
-      for code <- codes, Map.has_key?(@c07, code), code not in ~w(DE BB), into: %{} do
-        {code, ainalrami_values(event, @c07[code])}
+      for code <- codes, c07_of(code), code not in ~w(DE BB), into: %{} do
+        {code, ainalrami_values(event, c07_of(code))}
       end
 
     working =
       for code <- codes, code in @with_working, into: %{} do
-        {code, ainalrami_working(event, @c07[code])}
+        {code, ainalrami_working(event, c07_of(code))}
       end
 
     entries =
@@ -950,9 +958,9 @@ defmodule PairingsEngine.TeamStandings do
   defp c07_places(event, codes) do
     ranking =
       codes
-      |> Enum.filter(&Map.has_key?(@c07, &1))
+      |> Enum.filter(&c07_of/1)
       |> Enum.reject(&(event.predetermined? and &1 in @buchholz))
-      |> Enum.map(&@c07[&1])
+      |> Enum.map(&c07_of/1)
 
     case Ainalrami.Tiebreaks.rank(event, ["MPTS" | ranking]) do
       {:ok, rows} -> Map.new(rows, &{&1.id, &1.rank})

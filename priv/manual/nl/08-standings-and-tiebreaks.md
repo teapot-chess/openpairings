@@ -69,7 +69,14 @@ berekeningen worden gedaan door dezelfde engine die de Zwitserse rondes paart.
   *Eigen* voor elke lijst die je zelf samenstelt. Een nieuw toernooi begint met de
   standaard van FIDE voor het type: individueel Zwitsers BHC1, BH, SB, DE, WIN, PS;
   individueel rondetoernooi DE, WIN, SB, KS; teamevenementen MP, GP, DE, BB, SB.
-- **Tiebreak toevoegen…** voegt er een toe uit de onderstaande lijst; **Omhoog
+- **Tiebreak toevoegen** is een kleine bouwer. Stap 1: kies de tiebreak zelf uit
+  de korte lijst basistiebreaks (Buchholz, Sonneborn-Berger, Progressieve score
+  enzovoort). Stap 2: alleen de aanpassingen die die tiebreak kent verschijnen: een
+  cut of mediaan, *Forfaits tellen als partijen*, *Fore*, de Koya-grens, bij
+  teamevenementen de scoregrondslag (wedstrijdpunten of partijpunten) en, voor
+  SSSC, een normaliseringsfactor (elk geheel getal vanaf 1). Een voorbeeld toont de
+  code en de naam die eruit komen; **Tiebreak toevoegen** zet hem in de lijst en is
+  grijs, met een reden, als die combinatie er al in staat. **Omhoog
   verplaatsen** en **Omlaag verplaatsen** wijzigen de volgorde (de eerste past als
   eerste toe); **Verwijderen** haalt er een weg. Zonder tiebreak delen gelijke
   spelers een plaats.
@@ -81,8 +88,8 @@ berekeningen worden gedaan door dezelfde engine die de Zwitserse rondes paart.
 
 ### De beschikbare tiebreaks {#the-available-tie-breaks}
 
-Alle individuele tiebreaks van C.07 kunnen worden gekozen. De lijst *Tiebreak
-toevoegen…* is hieronder gegroepeerd; de codes zijn die van C.07 zelf. Waar een
+Alle individuele tiebreaks van C.07 kun je bouwen. De tiebreaklijst van de
+bouwer is hieronder gegroepeerd; de codes zijn die van C.07 zelf. Waar een
 tiebreak op de rating is gebaseerd, wordt een ongerate speler geteld zoals beschreven
 onder *Regels die het programma toepast*.
 
@@ -161,7 +168,7 @@ en `212`, dus een bestand gaat de deur uit en komt terug met dezelfde codes. De
 toevoeging `/P` betekent "forfaits tellen als partijen tegen de tegenstander met
 wie je gepaard was" en bestaat voor Buchholz, Fore-Buchholz, Sonneborn-Berger,
 de vier uitgebreide Sonneborn-Bergers (EMMSB, EMGSB, EGMSB, EGGSB), de
-uitgebreide directe ontmoetingen en SSSC. SSSC accepteert ook `/K4` of `/K5`: de
+uitgebreide directe ontmoetingen en SSSC. SSSC accepteert ook `/K<n>`, met elk geheel getal vanaf 1: de
 normaliseringsfactor die het reglement van de wedstrijd voorschrijft, in plaats
 van de berekende (C.07 artikel 13.4.2 b). Teamevenementen bieden daarnaast de
 vormen van de tabel op wedstrijdpunten en partijpunten (`BH:MP/C1/P`, `FB:GP`,

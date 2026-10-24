@@ -18,6 +18,7 @@ defmodule PairingsEngine.TiebreakTableCodesTest do
   alias PairingsEngine.{Pairing, Repo, Standings, TeamStandings, Tiebreaks, Tournaments}
   alias PairingsEngine.{TrfExport, TrfImport}
   alias PairingsEngine.Standings.AinalramiBridge
+  alias PairingsEngine.Tiebreaks.Builder
   alias PairingsEngine.Tournaments.Tournament
 
   @individual ~w(
@@ -61,21 +62,103 @@ defmodule PairingsEngine.TiebreakTableCodesTest do
     for %{code: code} <- Tiebreaks.selectable(type), code != "EXT", do: Map.get(c07, code, code)
   end
 
+  # A table code as the app stores it: through the alias the app has always
+  # used for it, if there is one.
+  defp stored_valid?(table_code, type) do
+    c07 =
+      if type in ~w(team-swiss team-roundrobin),
+        do: TeamStandings.c07_codes(),
+        else: AinalramiBridge.codes()
+
+    reverse = for {code, spelled} <- c07, into: %{}, do: {String.upcase(spelled), code}
+    up = String.upcase(table_code)
+    Tiebreaks.valid?(Map.get(reverse, up, up), type)
+  end
+
+  # Every state of the builder: each family with every modifier it accepts.
+  defp builder_states(type) do
+    for {_group, list} <- Builder.families(type),
+        {family, _label} <- list,
+        spec = Builder.spec(type, family),
+        ref <- Map.get(spec, :refs, [""]),
+        cut <- Map.get(spec, :cuts, [""]),
+        variant <- Map.get(spec, :variants, [""]),
+        limit <- Map.get(spec, :limits, [""]),
+        forfeits <- if(spec[:forfeits?], do: ["false", "true"], else: ["false"]),
+        fore <- if(spec[:fore?], do: ["false", "true"], else: ["false"]),
+        reversed <- if(spec[:reversed?], do: ["false", "true"], else: ["false"]),
+        factor <- if(spec[:factor?], do: ["", "4", "5"], else: [""]) do
+      %{
+        "family" => family,
+        "ref" => ref,
+        "cut" => cut,
+        "variant" => variant,
+        "limit" => limit,
+        "forfeits" => forfeits,
+        "fore" => fore,
+        "reversed" => reversed,
+        "factor" => factor
+      }
+    end
+  end
+
   describe "the table" do
     test "is 158 codes, as Ainalrami counts them" do
       assert length(@individual ++ @team) == 158
     end
 
-    test "every individual code is selectable in an individual tournament" do
-      offered = MapSet.new(offered_c07("swiss"), &String.upcase/1)
-      assert Enum.reject(@individual, &MapSet.member?(offered, String.upcase(&1))) == []
+    test "every individual code is a valid tie-break of an individual tournament" do
+      assert Enum.reject(@individual, &stored_valid?(&1, "swiss")) == []
     end
 
-    test "every team code is selectable in a team tournament, round robin or Swiss" do
+    test "every team code is a valid tie-break of a team tournament, round robin or Swiss" do
       for type <- ~w(team-swiss team-roundrobin) do
-        offered = MapSet.new(offered_c07(type), &String.upcase/1)
-        assert Enum.reject(@team, &MapSet.member?(offered, String.upcase(&1))) == [], type
+        assert Enum.reject(@team, &stored_valid?(&1, type)) == [], type
       end
+    end
+
+    test "the builder can compose every code of the table" do
+      for {type, table} <- [{"swiss", @individual}, {"team-swiss", @team}] do
+        reachable =
+          for state <- builder_states(type),
+              {:ok, code} <- [Builder.compose(type, state)],
+              into: MapSet.new(),
+              do: String.upcase(Builder.c07(type, code))
+
+        assert Enum.reject(table, &MapSet.member?(reachable, String.upcase(&1))) == [], type
+      end
+    end
+
+    test "every combination the builder offers is a valid tie-break for its tournament" do
+      for type <- ~w(swiss roundrobin team-swiss team-roundrobin),
+          state <- builder_states(type) do
+        assert {:ok, code} = Builder.compose(type, state), "#{type}: #{inspect(state)}"
+        assert Tiebreaks.valid?(code, type)
+        assert Tiebreaks.get(code), code
+      end
+    end
+
+    test "a normalising factor is any whole number from 1, and nothing else" do
+      assert {:ok, "SSSC/K12"} =
+               Builder.compose("team-swiss", %{"family" => "SSSC", "factor" => "12"})
+
+      assert {:error, :factor} =
+               Builder.compose("team-swiss", %{"family" => "SSSC", "factor" => "0"})
+
+      assert Tiebreaks.valid?("SSSC/F/P/K99", "team-roundrobin")
+      refute Tiebreaks.valid?("SSSC/K0", "team-roundrobin")
+      refute Tiebreaks.valid?("SSSC/K4", "swiss")
+      refute Tiebreaks.valid?("BH/K4", "team-swiss")
+    end
+
+    test "composed codes land on the stored aliases" do
+      assert {:ok, "BHC1"} = Builder.compose("swiss", %{"family" => "BH", "cut" => "C1"})
+      assert {:ok, "MBH"} = Builder.compose("swiss", %{"family" => "BH", "cut" => "M1"})
+      assert {:ok, "AROC1"} = Builder.compose("swiss", %{"family" => "ARO", "cut" => "C1"})
+      assert {:ok, "BH"} = Builder.compose("team-swiss", %{"family" => "BH", "ref" => "MP"})
+      assert {:ok, "BHC2"} = Builder.compose("team-swiss", %{"family" => "BH", "cut" => "C2"})
+      assert {:ok, "SB"} = Builder.compose("team-swiss", %{"family" => "SB"})
+      assert {:ok, "MP"} = Builder.compose("team-swiss", %{"family" => "MP"})
     end
 
     test "every offered code is one Ainalrami parses back to itself" do

@@ -76,8 +76,7 @@ defmodule PairingsEngine.Tiebreaks.TableCodes do
     sssc =
       for f <- ["", "/F"],
           p <- ["", "/P"],
-          k <- ["", "/K4", "/K5"],
-          code = "SSSC#{f}#{p}#{k}",
+          code = "SSSC#{f}#{p}",
           code != "SSSC",
           do: code
 
@@ -93,7 +92,8 @@ defmodule PairingsEngine.Tiebreaks.TableCodes do
       for code <- team_codes(), do: entry(code, :team)
   end
 
-  defp entry(code, scope) do
+  @doc "The catalogue entry for one code (also SSSC with any normalising factor)."
+  def entry(code, scope) do
     {family, ref, mods} = split(code)
 
     %{
