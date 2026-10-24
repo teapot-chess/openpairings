@@ -227,7 +227,8 @@ defmodule PairingsEngineWeb.LongEventAndCorrectionLiveTest do
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/settings")
       refute has_element?(lv, "#long-event-rating-tiebreaks")
 
-      lv |> element(~s(select[name="code"])) |> render_change(%{"code" => "ARO"})
+      lv |> element("#tb-family") |> render_change(%{"family" => "ARO"})
+      lv |> element("#tb-add") |> render_click()
       assert has_element?(lv, "#long-event-rating-tiebreaks")
     end
 

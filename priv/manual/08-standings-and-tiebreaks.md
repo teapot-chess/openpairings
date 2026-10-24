@@ -66,7 +66,14 @@ calculations are done by the same engine that pairs the Swiss rounds.
   your own. A new tournament starts with the default of FIDE for its type:
   individual Swiss BHC1, BH, SB, DE, WIN, PS; individual round robin DE, WIN,
   SB, KS; team events MP, GP, DE, BB, SB.
-- **Add a tiebreak…** adds one from the list below; **Move up** and **Move
+- **Add a tiebreak** is a small builder. Step 1: pick the tie-break itself from
+  the short list of base ones (Buchholz, Sonneborn-Berger, Progressive score
+  and so on). Step 2: only the adjustments that tie-break accepts appear: a cut
+  or median, *Forfeits count as games*, *Fore*, the Koya limit, for team
+  events the score basis (match points or game points) and, for SSSC, a
+  normalising factor (any whole number from 1). A preview shows the resulting
+  code and name; **Add tie-break** puts it in the list, and is greyed out
+  with a reason when that combination is already there. **Move up** and **Move
   down** change the order (the first one applies first); **Remove** takes one
   out. Without a tie-break, tied players share a place.
 - The list can be changed until the first round is paired.
@@ -77,8 +84,8 @@ calculations are done by the same engine that pairs the Swiss rounds.
 
 ### The available tie-breaks
 
-All the individual tie-breaks of C.07 can be selected. The *Add a tiebreak…*
-list is grouped as below; the codes are C.07's own. Where a tie-break is
+All the individual tie-breaks of C.07 can be built. The tie-break list of the
+builder is grouped as below; the codes are C.07's own. Where a tie-break is
 based on the rating, an unrated player is counted as described under *Rules
 the program applies*.
 
@@ -112,6 +119,8 @@ the program applies*.
 | FB/M1, FB/M2 | Fore Median Buchholz, Median-2 | Fore Buchholz without the highest and lowest, or the two highest and two lowest. |
 | AOB | Average of opponents' Buchholz | Average Buchholz of the opponents met over the board. |
 | AOB/F | Average of opponents' Fore Buchholz | The same with Fore Buchholz. |
+| BH/P, BH/C1/P, BH/C2/P, BH/M1/P, BH/M2/P | Buchholz and its cuts and medians, forfeits counted | A forfeit counts as a game against the opponent it was scheduled with, at that opponent's real score, instead of Article 16's virtual opponent. |
+| FB/P, FB/C1/P, FB/C2/P, FB/M1/P, FB/M2/P | Fore Buchholz and its cuts and medians, forfeits counted | The same for Fore Buchholz. |
 
 **Sonneborn-Berger and Koya**
 
@@ -122,6 +131,7 @@ the program applies*.
 | KS | Koya system | Score against opponents who scored 50% or more. |
 | KS/L1, KS/L2 | Koya system, limit 50% + ½ or + 1 | The qualifying limit raised by half a point or a point. |
 | KS/L-1, KS/L-2 | Koya system, limit 50% - ½ or - 1 | The qualifying limit lowered by half a point or a point. |
+| SB/P, SB/C1/P, SB/C2/P | Sonneborn-Berger and its cuts, forfeits counted | A forfeit counts as a game against its scheduled opponent, weighted by that opponent's real score. |
 
 **Progressive score**
 
@@ -147,6 +157,18 @@ the program applies*.
 Team events have their own list: MP (match points), GP (game points), EMGSB,
 EGMSB, EGGSB, BH:GP, EDE, TBR, BBE, SSSC, BB (see [Teams](13-teams.md)). They
 are the last group of the list.
+
+Every code in FIDE's "Mandatory Tie-Breaks - TRF26" table can be picked, under
+the spelling the table uses: that spelling is also what the TRF `202` and `212`
+lines carry, so a file goes out and comes back with the same codes. The suffix
+`/P` means "forfeits count as games against the scheduled opponent" and exists
+for Buchholz, Fore Buchholz, Sonneborn-Berger, the four extended
+Sonneborn-Bergers (EMMSB, EMGSB, EGMSB, EGGSB), the extended direct encounters
+and SSSC. SSSC also takes `/K<n>`, with any whole number from 1: the normalising factor
+the competition's rules state, in place of the computed one (C.07 Article 13.4.2 b).
+Team events additionally offer the table's match-point and game-point forms
+(`BH:MP/C1/P`, `FB:GP`, `PS:MP`, `KS:GP/L1`, `AOB:MP/F`, `WIN:MP`, `MPVGP` and
+the rest).
 
 ### Rules the program applies
 

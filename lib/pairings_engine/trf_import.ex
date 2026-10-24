@@ -1209,7 +1209,8 @@ defmodule PairingsEngine.TrfImport do
 
     {kept, dropped} =
       Enum.split_with(split, fn {_raw, {code, _unrated}} ->
-        MapSet.member?(known, Map.get(ours, code, code))
+        stored = Map.get(ours, code, code)
+        MapSet.member?(known, stored) or Tiebreaks.factor_base(stored) != nil
       end)
 
     unrated = Enum.find_value(kept, fn {_raw, {_code, unrated}} -> unrated end)

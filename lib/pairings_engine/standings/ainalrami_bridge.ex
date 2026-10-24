@@ -64,6 +64,9 @@ defmodule PairingsEngine.Standings.AinalramiBridge do
                   FB/M1 FB/M2 KS/L1 KS/L2 KS/L-1 KS/L-2 PS/C1 PS/C2 PTP REP RTNG RTNG/R
                   SB/C1 SB/C2 STD TPN TPN/R TPR)
 
+  # FIDE's Mandatory Tie-Breaks table (TRF26): `/P`, forfeits counted as games.
+  @c07_spelled @c07_spelled ++ PairingsEngine.Tiebreaks.TableCodes.individual_codes()
+
   @codes Enum.reduce(@c07_spelled, @codes, &Map.put(&2, &1, &1))
 
   @doc "OpenPairings' tie-break codes, and the C.07 code each is."

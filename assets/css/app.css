@@ -9155,3 +9155,63 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; opacity: 0.6;
 
 .inline-rename .pe-input { min-width: 10rem; flex: 1 1 12rem; }
 .inline-rename .error-note { flex-basis: 100%; margin: 0; }
+
+/* tie-break builder (Settings): family first, then only its modifiers */
+.tb-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.tb-step { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.tb-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 12px;
+}
+.tb-field { display: flex; flex-direction: column; gap: 4px; }
+.tb-field-label, .tb-field > label { font-size: 13px; color: var(--text-soft); }
+.tb-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.tb-seg-btn {
+  padding: 6px 12px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.tb-seg-btn:hover { border-color: var(--accent); }
+.tb-seg-btn.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tb-flags { display: flex; flex-direction: column; gap: 6px; }
+.tb-flags label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.tb-flags input { width: auto; accent-color: var(--accent); }
+.tb-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-height: 28px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(127, 127, 127, .08);
+}
+.tb-preview code { font-weight: 700; }
+.tb-add-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tb-add:disabled { opacity: .5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .tb-seg-btn { transition: none; }
+}

@@ -142,7 +142,9 @@ number, the players who sat there, with games, points, percentage and performanc
 
 MP (match points), GP (game points), DE (direct encounter), BB (board points
 weighted by board), SB, BH:GP, EMGSB, EGMSB, EGGSB, EDE (extended direct
-encounter), TBR (top board results), BBE (bottom board elimination), SSSC.
+encounter), TBR (top board results), BBE (bottom board elimination), SSSC. The rest
+of FIDE's Mandatory Tie-Breaks table is offered too, `/P` and `/K<n>` forms
+included; [Standings and tie-breaks](08-standings-and-tiebreaks.md) lists the suffixes.
 The unplayed-game handling of C.07 Article 16 applies to byes, forfeited
 matches and withdrawn teams in a team Swiss.
 

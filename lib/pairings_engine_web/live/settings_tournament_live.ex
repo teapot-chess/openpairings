@@ -20,6 +20,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
   import PairingsEngineWeb.Components.ArbiterCombo
 
   alias PairingsEngine.{Audit, PeriodRatings, Tournaments, Tiebreaks}
+  alias PairingsEngine.Tiebreaks.Builder
   alias PairingsEngine.Authz
   alias PairingsEngine.Tournaments.Tournament
   alias PairingsEngineWeb.Live.ArbiterCombo
@@ -68,6 +69,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
        owner?: owner?,
        page_title: "#{tournament.name} · " <> gettext("Settings"),
        tiebreaks: tournament.tiebreaks,
+       tb_state: Builder.initial(tournament.type),
        fide_locked: Tournaments.fide_locked_fields(tournament),
        type_locked?: Tournaments.round_one_paired?(tournament.id),
        note: nil,
@@ -155,10 +157,33 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
     {:noreply, assign(socket, tiebreaks: List.delete(socket.assigns.tiebreaks, code), note: nil)}
   end
 
-  def handle_event("tb_add", %{"code" => ""}, socket), do: {:noreply, socket}
+  # The builder: every change re-reads the whole form, so what is shown is
+  # always what the server composed.
+  def handle_event("tb_family", %{"family" => family}, socket),
+    do: {:noreply, tb_update(socket, %{"family" => family})}
 
-  def handle_event("tb_add", %{"code" => code}, socket) do
-    {:noreply, assign(socket, tiebreaks: socket.assigns.tiebreaks ++ [code], note: nil)}
+  def handle_event("tb_set", %{"field" => field, "value" => value}, socket),
+    do: {:noreply, tb_update(socket, %{field => value})}
+
+  def handle_event("tb_toggle", %{"field" => field}, socket) do
+    on = if socket.assigns.tb_state[field] == "true", do: "false", else: "true"
+    {:noreply, tb_update(socket, %{field => on})}
+  end
+
+  def handle_event("tb_factor", %{"factor" => value}, socket),
+    do: {:noreply, tb_update(socket, %{"factor" => value})}
+
+  def handle_event("tb_add_built", _params, socket) do
+    type = socket.assigns.tournament.type
+    state = socket.assigns.tb_state
+
+    with {:ok, code} <- Builder.compose(type, state),
+         false <- code in socket.assigns.tiebreaks do
+      {:noreply,
+       assign(socket, tiebreaks: socket.assigns.tiebreaks ++ [code], tb_state: state, note: nil)}
+    else
+      _ -> {:noreply, assign(socket, tb_state: state)}
+    end
   end
 
   def handle_event("tb_reset", _params, socket) do
@@ -715,7 +740,60 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
   # the breaks `PairingsEngine.TeamStandings` calculates. Offering anything
   # else is offering a column of noughts that decides nothing. See
   # PairingsEngine.Tiebreaks.
-  defp grouped_tiebreaks(selected, type), do: Tiebreaks.selectable_grouped(type, selected)
+  defp tb_families(type), do: Builder.families(type)
+
+  # A change of family starts from that family's defaults; any other change
+  # keeps the rest of the state, and `Builder.normalize/2` drops what the
+  # family does not accept.
+  defp tb_update(socket, change) do
+    type = socket.assigns.tournament.type
+    base = if Map.has_key?(change, "family"), do: %{}, else: socket.assigns.tb_state
+    assign(socket, tb_state: Builder.normalize(type, Map.merge(base, change)))
+  end
+
+  # `{:ok, code}` / `{:error, reason}` for the builder as it stands, with the
+  # reason an Add button that cannot be pressed gives.
+  defp tb_candidate(type, state, selected) do
+    case Builder.compose(type, state) do
+      {:ok, code} ->
+        if code in selected,
+          do: {:error, :duplicate, code},
+          else: {:ok, code}
+
+      {:error, :factor} ->
+        {:error, :factor, nil}
+
+      _ ->
+        {:error, :invalid, nil}
+    end
+  end
+
+  defp tb_reason(:duplicate), do: gettext("Already in the list.")
+  defp tb_reason(:factor), do: gettext("The normalising factor is a whole number from 1.")
+  defp tb_reason(:invalid), do: gettext("This combination is not a tie-break.")
+
+  defp tb_spec(type, state), do: Builder.spec(type, state["family"]) || %{}
+
+  defp tb_cut_label(""), do: gettext("None")
+  defp tb_cut_label("C1"), do: gettext("Cut-1")
+  defp tb_cut_label("C2"), do: gettext("Cut-2")
+  defp tb_cut_label("M1"), do: gettext("Median-1")
+  defp tb_cut_label("M2"), do: gettext("Median-2")
+
+  defp tb_limit_label(""), do: gettext("50%")
+  defp tb_limit_label("L1"), do: gettext("50% + 1/2")
+  defp tb_limit_label("L2"), do: gettext("50% + 1")
+  defp tb_limit_label("L-1"), do: gettext("50% - 1/2")
+  defp tb_limit_label("L-2"), do: gettext("50% - 1")
+
+  defp tb_variant_label(""), do: gettext("Direct encounter only")
+  defp tb_variant_label("BT"), do: gettext("then Board Count and Top Board Results")
+  defp tb_variant_label("BB"), do: gettext("then Board Count and Bottom Board Elimination")
+  defp tb_variant_label("T"), do: gettext("then Top Board Results")
+  defp tb_variant_label("B"), do: gettext("then Bottom Board Elimination")
+
+  defp tb_ref_label("MP"), do: gettext("Match points")
+  defp tb_ref_label("GP"), do: gettext("Game points")
 
   defp tb_group_label(:results), do: gettext("Results and games")
   defp tb_group_label(:buchholz), do: gettext("Buchholz")
@@ -726,6 +804,199 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
 
   defp tb_name(code), do: (Tiebreaks.get(code) || %{name: code}).name
   defp tb_desc(code), do: (Tiebreaks.get(code) || %{description: ""}).description
+
+  attr :state, :map, required: true
+  attr :type, :string, required: true
+  attr :selected, :list, required: true
+
+  # Adding a tie-break in two steps: the family, then only the modifiers it
+  # accepts, with the code that comes out shown before it is added. The
+  # controls sit inside the settings form, so they are plain inputs with
+  # their own events rather than a form of their own (forms do not nest).
+  defp tb_builder(assigns) do
+    spec = tb_spec(assigns.type, assigns.state)
+    candidate = tb_candidate(assigns.type, assigns.state, assigns.selected)
+
+    assigns =
+      assign(assigns,
+        spec: spec,
+        candidate: candidate,
+        families: tb_families(assigns.type)
+      )
+
+    ~H"""
+    <div id="tiebreak-builder" class="tb-builder">
+      <p class="tb-step">
+        <span class="tb-step-n">1</span> {gettext("Choose the tie-break")}
+      </p>
+      <select
+        id="tb-family"
+        name="family"
+        class="pe-select"
+        style="width: auto; max-width: 100%"
+        phx-change="tb_family"
+        aria-label={gettext("Tie-break")}
+      >
+        <optgroup :for={{group, list} <- @families} label={tb_group_label(group)}>
+          <option :for={{id, label} <- list} value={id} selected={@state["family"] == id}>
+            {id} - {label}
+          </option>
+        </optgroup>
+      </select>
+
+      <p
+        :if={
+          @spec[:cuts] || @spec[:refs] || @spec[:limits] || @spec[:variants] || @spec[:forfeits?] ||
+            @spec[:fore?] || @spec[:factor?] || @spec[:reversed?]
+        }
+        class="tb-step"
+      >
+        <span class="tb-step-n">2</span> {gettext("Adjust it")}
+      </p>
+
+      <.tb_choice
+        :if={@spec[:refs] && length(@spec[:refs]) > 1}
+        id="tb-ref"
+        field="ref"
+        label={gettext("Score basis")}
+        value={@state["ref"]}
+        options={for r <- @spec[:refs], do: {r, tb_ref_label(r)}}
+      />
+      <.tb_choice
+        :if={@spec[:variants]}
+        id="tb-variant"
+        field="variant"
+        label={gettext("Then")}
+        value={@state["variant"]}
+        options={for v <- @spec[:variants], do: {v, tb_variant_label(v)}}
+      />
+      <.tb_choice
+        :if={@spec[:cuts]}
+        id="tb-cut"
+        field="cut"
+        label={gettext("Cut or median")}
+        value={@state["cut"]}
+        options={for c <- @spec[:cuts], do: {c, tb_cut_label(c)}}
+      />
+      <.tb_choice
+        :if={@spec[:limits]}
+        id="tb-limit"
+        field="limit"
+        label={gettext("Koya limit")}
+        value={@state["limit"]}
+        options={for l <- @spec[:limits], do: {l, tb_limit_label(l)}}
+      />
+
+      <div class="tb-flags">
+        <label :if={@spec[:forfeits?]} for="tb-forfeits">
+          <input
+            type="checkbox"
+            id="tb-forfeits"
+            checked={@state["forfeits"] == "true"}
+            phx-click="tb_toggle"
+            phx-value-field="forfeits"
+          /> {gettext("Forfeits count as games")}
+        </label>
+        <label :if={@spec[:fore?]} for="tb-fore">
+          <input
+            type="checkbox"
+            id="tb-fore"
+            checked={@state["fore"] == "true"}
+            phx-click="tb_toggle"
+            phx-value-field="fore"
+          /> {gettext("Fore (the last round counted as a draw)")}
+        </label>
+        <label :if={@spec[:reversed?]} for="tb-reversed">
+          <input
+            type="checkbox"
+            id="tb-reversed"
+            checked={@state["reversed"] == "true"}
+            phx-click="tb_toggle"
+            phx-value-field="reversed"
+          /> {gettext("Reversed (the lower, the better)")}
+        </label>
+      </div>
+
+      <div :if={@spec[:factor?]} class="tb-field">
+        <label for="tb-factor">{gettext("Normalising factor (optional)")}</label>
+        <input
+          type="number"
+          inputmode="numeric"
+          id="tb-factor"
+          name="factor"
+          min="1"
+          step="1"
+          class="pe-input"
+          style="width: 7em"
+          value={@state["factor"]}
+          phx-change="tb_factor"
+          onkeydown="if (event.key === 'Enter') event.preventDefault()"
+        />
+      </div>
+
+      <div id="tb-preview" class="tb-preview">
+        <%= case @candidate do %>
+          <% {:ok, code} -> %>
+            <code id="tb-preview-code">{Builder.c07(@type, code)}</code>
+            <span id="tb-preview-name">{tb_name(code)}</span>
+          <% {:error, _reason, code} when is_binary(code) -> %>
+            <code id="tb-preview-code">{Builder.c07(@type, code)}</code>
+            <span id="tb-preview-name">{tb_name(code)}</span>
+          <% _ -> %>
+            <span id="tb-preview-name">&nbsp;</span>
+        <% end %>
+      </div>
+
+      <div class="tb-add-row">
+        <button
+          type="button"
+          id="tb-add"
+          class="pe-btn tb-add"
+          phx-click="tb_add_built"
+          disabled={match?({:error, _, _}, @candidate)}
+        >
+          {gettext("Add tie-break")}
+        </button>
+        <span
+          :if={match?({:error, _, _}, @candidate)}
+          id="tb-add-reason"
+          class="hint"
+          role="status"
+        >
+          {tb_reason(elem(@candidate, 1))}
+        </span>
+      </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :field, :string, required: true
+  attr :label, :string, required: true
+  attr :value, :string, required: true
+  attr :options, :list, required: true
+
+  defp tb_choice(assigns) do
+    ~H"""
+    <div class="tb-field" id={@id}>
+      <span class="tb-field-label">{@label}</span>
+      <div class="tb-seg" role="group" aria-label={@label}>
+        <button
+          :for={{val, text} <- @options}
+          type="button"
+          id={"#{@id}-#{if(val == "", do: "none", else: String.downcase(val))}"}
+          class={["tb-seg-btn", @value == val && "is-on"]}
+          aria-pressed={to_string(@value == val)}
+          phx-click="tb_set"
+          phx-value-field={@field}
+          phx-value-value={val}
+        >
+          {text}
+        </button>
+      </div>
+    </div>
+    """
+  end
 
   @impl true
   def render(assigns) do
@@ -962,26 +1233,9 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
                 )}
               </p>
 
+              <.tb_builder state={@tb_state} type={@tournament.type} selected={@tiebreaks} />
+
               <div class="actions" style="flex-wrap: wrap">
-                <select
-                  phx-change="tb_add"
-                  name="code"
-                  style="width: auto"
-                  class="pe-select"
-                  aria-label={gettext("Add a tiebreak…")}
-                >
-                  <option value="">{gettext("Add a tiebreak…")}</option>
-
-                  <optgroup
-                    :for={{group, tbs} <- grouped_tiebreaks(@tiebreaks, @tournament.type)}
-                    label={tb_group_label(group)}
-                  >
-                    <option :for={tb <- tbs} value={tb.code}>
-                      {tb.code} - {tb.name}
-                    </option>
-                  </optgroup>
-                </select>
-
                 <button type="button" class="pe-btn" phx-click="tb_reset">{gettext(
                   "Reset to FIDE default"
                 )}</button>

@@ -497,15 +497,17 @@ defmodule PairingsEngine.Tiebreaks do
     "RTNG/R" => :rating
   }
 
-  @catalogue Enum.map(@base_catalogue, fn tb ->
-               group = Map.get(@groups, tb.code, :team)
+  # The rest of FIDE's Mandatory Tie-Breaks table is generated, see
+  # `PairingsEngine.Tiebreaks.TableCodes`.
+  @catalogue Enum.map(@base_catalogue ++ PairingsEngine.Tiebreaks.TableCodes.entries(), fn tb ->
+               group = Map.get(tb, :group) || Map.get(@groups, tb.code, :team)
 
                Map.merge(tb, %{
                  group: group,
                  rating?: group == :rating,
                  buchholz?:
                    tb.code in ~w(BH BHC1 BHC2 MBH) or
-                     String.starts_with?(tb.code, ["BH/", "FB", "AOB"])
+                     String.starts_with?(tb.code, ["BH/", "BH:", "FB", "AOB"])
                })
              end)
 
@@ -579,7 +581,34 @@ defmodule PairingsEngine.Tiebreaks do
     end
   end
 
-  def get(code), do: Enum.find(@catalogue, &(&1.code == code))
+  def get(code) do
+    Enum.find(@catalogue, &(&1.code == code)) ||
+      if factor_base(code), do: PairingsEngine.Tiebreaks.TableCodes.entry(code, :team)
+  end
+
+  @factor ~r|^(SSSC(?:/[FP])*)/K([1-9][0-9]{0,5})$|
+
+  @doc """
+  The catalogue code underneath an SSSC code with a normalising factor
+  (`SSSC/F/K7` is `SSSC/F`), or `nil` for any other code. The factor is any
+  whole number from 1 (C.07 Article 13.4.2 b), so those codes are not listed.
+  """
+  def factor_base(code) when is_binary(code) do
+    case Regex.run(@factor, code) do
+      [_, base, _n] -> if Enum.any?(@catalogue, &(&1.code == base)), do: base
+      _ -> nil
+    end
+  end
+
+  def factor_base(_), do: nil
+
+  @doc "Whether a tournament of `type` can be given `code` as a tie-break."
+  def valid?(code, type) when is_binary(code) do
+    base = factor_base(code) || code
+    Enum.any?(selectable(type), &(&1.code == base))
+  end
+
+  def valid?(_code, _type), do: false
 
   def fide_defaults(type), do: Map.get(@fide_defaults, type, [])
 

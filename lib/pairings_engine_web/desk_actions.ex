@@ -1174,9 +1174,7 @@ defmodule PairingsEngineWeb.DeskActions do
   defp check_tiebreaks(_t, nil), do: :ok
 
   defp check_tiebreaks(t, codes) when is_list(codes) do
-    known = t.type |> Tiebreaks.selectable() |> Enum.map(& &1.code)
-
-    if codes != [] and Enum.all?(codes, &(is_binary(&1) and &1 in known)) and
+    if codes != [] and Enum.all?(codes, &Tiebreaks.valid?(&1, t.type)) and
          codes == Enum.uniq(codes),
        do: :ok,
        else: {:error, :unknown_tiebreak}
