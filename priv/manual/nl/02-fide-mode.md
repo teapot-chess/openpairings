@@ -142,11 +142,9 @@ doet:
 
 - **Het is definitief.** Het toernooi kan nooit meer terug naar de FIDE-modus,
   ook niet als je elke instelling terugzet.
-- Het toernooi legt vast vanaf welke ronde het niet in de FIDE-modus zat, en de
-  TRF26-kopieën van het rapport zeggen dat in een commentaarregel (`FIDE mode
-  exited @ Round N`), zodat wie het bestand controleert weet waar hij nauwkeuriger
-  moet kijken. (Het bestand dat *Versturen…* maakt, bevat alleen records, geen
-  commentaarregels; zie [Versturen naar FIDE](10-fide-report.md).)
+- Het toernooi legt vast vanaf welke ronde het niet in de FIDE-modus zat. (Het
+  TRF26-bestand bevat alleen records, geen commentaarregels, of het nu verstuurd
+  werd of als kopie is gedownload; zie [Versturen naar FIDE](10-fide-report.md).)
 - De vergrendelde instellingen en de afgesloten rondes kunnen daarna worden
   gewijzigd, en het programma stopt niet langer een wijziging die de FIDE-regels
   verbieden.

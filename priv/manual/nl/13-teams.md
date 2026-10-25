@@ -194,8 +194,7 @@ Het TRF-dialect van de engine schrijft ze als `XXO team-forbidden 3 11 16 @1-2` 
 `XXO team-soft-pairs ...` (teamnummers, rondes optioneel), zodat een paringscontrole het bestand
 ermee naspeelt; een TRF met die records importeert ze terug als regels voor de genoemde teams.
 Een teamtoernooi schrijft nooit `XXP` of `260`, die spelers noemen. Het TRF26-rapport zelf bevat
-geen teamrecords, alleen de `### Prohibition`-regel van een regel die tijdens het toernooi is
-gewijzigd.
+geen teamrecords.
 
 ### De volgorde van de teams corrigeren {#correcting-the-order-of-the-teams}
 

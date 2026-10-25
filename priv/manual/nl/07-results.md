@@ -77,8 +77,7 @@ de paringen die ermee zijn gemaakt niet meer veranderen (C.04.2:4.3). Onder elk
 afgerond bord van zo'n ronde registreert **Corrigeren voor de rating…** het juiste
 resultaat alleen voor het ratingverslag: de paringen en de stand houden het
 resultaat dat ze gebruikten, het FIDE-verslag bevat het gecorrigeerde resultaat, en
-de TRF26-kopie ervan voegt een regel `### Rating correction @ Round r` toe die
-zegt welk resultaat het evenement gebruikte. Het gewone wijzigen van het resultaat
+zowel het verstuurde bestand als een kopie ervan bevat het gecorrigeerde resultaat. Het gewone wijzigen van het resultaat
 van het bord verwijdert de correctie.
 
 Wanneer het laatste resultaat van een ronde binnen is, kan de volgende ronde worden
@@ -296,12 +295,11 @@ Exporteren toont de openstaande partijen. Een bestand met alleen de rondes
 ervoor wordt nog wel gemaakt, en OpenResults blijft de stand tonen, gemarkeerd
 als niet definitief. Voer het resultaat in, of druk naast de partij op **Niet
 gespeeld in dit toernooi**. Die tweede weg vraagt het twee keer (ze haalt het
-toernooi voorgoed uit de FIDE-modus), en het verslag zegt dan in een
-`###`-regel om welke partij het gaat. De partij blijft uitgesteld: het bestand
+toernooi voorgoed uit de FIDE-modus). De partij blijft uitgesteld: het bestand
 voor de rating schrijft ze als niet gespeeld (`0000 - Z`), en wordt ze later
 toch gespeeld, dan gaat het echte resultaat naar de FIDE in een apart bestand
 voor de uitgestelde partijen, omdat een partij die in een andere ratingperiode
 is gespeeld, als apart toernooi wordt gerapporteerd. Buiten de FIDE-modus wordt
-een uitgestelde partij zonder vragen als `?` in de TRF-kopieën en als niet
-gespeeld in het bestand voor de rating geschreven. Zie
+een uitgestelde partij zonder vragen als niet gespeeld geschreven, in het bestand
+voor de rating en in de kopie ervan. Zie
 [Versturen naar FIDE](10-fide-report.md).

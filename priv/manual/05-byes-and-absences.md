@@ -100,7 +100,7 @@ would give is already picked (counting the two limits), so for most absences
 - Picking a full-point bye shows the same notice as on the Pairings page:
   the pairing regulations do not describe it, and it should stay
   exceptional. The player cannot get the pairing-allocated bye later, and
-  once the round is paired the report adds its `### FPB` line.
+  once the round is paired the report writes it as `F`.
 
 The same question comes up in a round already paired: **Mark absent for
 this round** on the Pairings page (see [Byes by hand](#byes-by-hand)) shows
@@ -173,7 +173,7 @@ offers:
 - **Put in an empty seat**, **Swap with…**, **Delete this board**.
 - **Give a full-point bye…** (on a player of the *Not playing* list): the
   player scores a win for the round without playing. The FIDE report writes
-  it as `F`, with a `### FPB @ Round r` line, and the player cannot get the
+  it as `F`, and the player cannot get the
   pairing-allocated bye in a later round. **Take back the full-point bye…**
   makes the player absent again.
 

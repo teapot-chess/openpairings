@@ -390,7 +390,7 @@ wishes, and the page says so.
 > first round. So in FIDE mode set them before round 1 is paired. Once it
 > is, adding, changing or removing a pair or a rule (or changing how hard
 > the wishes are tried) asks twice and then takes the tournament out of FIDE
-> mode; the TRF copies list each change as a `### Prohibition` line. A
+> mode; the tournament records the change. A
 > player who joins later and falls under a rule is not a change.
 
 > [!FIDE] Departure from FIDE mode

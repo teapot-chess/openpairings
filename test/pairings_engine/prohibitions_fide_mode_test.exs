@@ -79,7 +79,9 @@ defmodule PairingsEngine.ProhibitionsFideModeTest do
     )
   end
 
-  defp copy(t), do: t |> Repo.reload!() |> TrfExport.export(nil, copy: true) |> elem(1)
+  # The plain TRF26 report, where the `###` notes live: a download copy is
+  # the file for rating and has none.
+  defp copy(t), do: t |> Repo.reload!() |> TrfExport.export(nil, []) |> elem(1)
 
   describe "before round 1 is paired" do
     test "hard and soft pairs, rules and groups are all allowed, and nothing is recorded" do

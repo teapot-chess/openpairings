@@ -111,10 +111,8 @@ follows the choice of the file:
 
 A confirmed import creates the tournament with the rounds exactly as the file
 records them. What the import adjusted and every rule it found broken are kept
-with the tournament and in its audit log. For each such round the TRF copies of
-the report carry a comment line, `### Import @ Round r: ...`, so whoever checks
-the file sees where the pairings were not the program's own. (The file made by
-*Send…* has records only and no such line.)
+with the tournament and in its audit log. (The TRF file has records only and
+no comment line about it.)
 
 ### JSON backup
 
@@ -197,8 +195,8 @@ Settings, **Export** (the page *Export / backup*):
 
 The TRF26 file for the rating office. A table lists every paired round with
 its state (being played, ready to send, sent) and a tick; **Download a copy
-(not for rating)** and **All rounds (TRF copy, not for rating)** give copies,
-and **Send…** gives the file for the rating office and marks the games as
+(not for rating)** and **All rounds (TRF copy, not for rating)** give a copy of
+that same file with a few comment lines saying so, and **Send…** gives the file for the rating office and marks the games as
 sent. This is a part of the reporting procedure and is explained in
 [Sending to FIDE](10-fide-report.md).
 
@@ -210,8 +208,7 @@ the type of tournament (192, for example `FIDE_DUTCH_2025` for a Swiss,
 `CUSTOM_SWISS` for Keizer), the tie-breaks (202), the rate of play (222), the
 virtual points (250), the prohibited pairings (260), a bye granted for a
 round that is not yet paired (240) and the administrative extra points (299).
-Notes the program wants a human reader of the file to see are written as `###`
-comment lines in copies. Each paired round can also be selected by
+A copy adds `###` comment lines at the top saying it is a copy. Each paired round can also be selected by
 `?rounds=1-5` in the address of the download (ranges and single rounds, such
 as `1-3,6`).
 

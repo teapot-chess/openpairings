@@ -165,7 +165,7 @@ defmodule PairingsEngine.PostponedFideModeTest do
       assert {:ok, %{left_fide_mode: false}} = PostponedGames.report_not_played(t, postponed.id)
     end
 
-    test "the rating file writes it as not played; the TRF26 copy names it in a ### line" do
+    test "the rating file writes it as not played; the plain TRF26 report names it in a ### line" do
       {t, postponed} = with_open_game()
       {:ok, _} = PostponedGames.report_not_played(t, postponed.id)
       t = Repo.reload!(t)
@@ -174,7 +174,9 @@ defmodule PairingsEngine.PostponedFideModeTest do
       assert rating =~ "0000 - Z"
       refute rating =~ "###"
 
-      {:ok, copy} = TrfExport.export(t, [1], copy: true)
+      # The notes are the report's own; the copy is the file for rating and
+      # carries none of them.
+      {:ok, copy} = TrfExport.export(t, [1], [])
       tpn = Map.new(Tournaments.list_players(t.id), &{&1.id, &1.pairing_number})
       pair = "#{tpn[postponed.white_player_id]}-#{tpn[postponed.black_player_id]}"
 

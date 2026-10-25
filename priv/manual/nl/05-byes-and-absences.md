@@ -96,7 +96,7 @@ antwoord verschilt.
 - Een bye van een vol punt kiezen toont dezelfde melding als op de pagina Paringen:
   de paringsregels beschrijven hem niet, en hij moet uitzonderlijk blijven. De
   speler kan later geen door de paring toegekende bye meer krijgen, en zodra de
-  ronde is gepaard, voegt het rapport de regel `### FPB` toe.
+  ronde is gepaard, schrijft het rapport hem als `F`.
 
 Dezelfde vraag komt terug in een ronde die al is gepaard: **Markeren als afwezig
 voor deze ronde** op de pagina Paringen (zie [Byes met de hand](#byes-by-hand))
@@ -169,7 +169,7 @@ een speler in de ronde) biedt:
 - **Op een lege plaats zetten**, **Wisselen met…**, **Dit bord verwijderen…**.
 - **Bye van een vol punt geven…** (aan een speler van de *Lijst met niet-spelenden*):
   de speler scoort een winst voor de ronde zonder te spelen. Het FIDE-rapport schrijft
-  dat als `F`, met een regel `### FPB @ Round r`, en de speler kan in een latere ronde
+  dat als `F`, en de speler kan in een latere ronde
   geen door de paring toegekende bye meer krijgen. **Bye van een vol punt intrekken…**
   maakt de speler weer afwezig.
 

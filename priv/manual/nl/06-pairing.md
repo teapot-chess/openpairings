@@ -524,12 +524,10 @@ kleuren maar zonder de volgorde van de borden:
   de controleur staat, en de regelwaarschuwingen die nog gelden. Kies **Verder
   aanpassen** om terug te gaan, of vink *Ik begrijp het - houd mijn paringen en
   leg de wijziging vast* aan en druk op **Afronden en vastleggen**. De ronde
-  behoudt je borden en legt de wijziging vast. De TRF-kopieën van het verslag
-  bevatten die als commentaarregel:
-  `### MPA @ Round r: <checker's boards> => <the round's boards>`. Opnieuw afronden
-  van een sessie vervangt de regel van die ronde, of verwijdert hem wanneer de
-  borden nu met de engine overeenkomen. Het bestand dat *Versturen…* maakt,
-  bevat alleen records, dus het heeft geen zo'n regel ([Versturen naar FIDE](10-fide-report.md)).
+  behoudt je borden en legt de wijziging vast. Opnieuw afronden
+  van een sessie vervangt de vastlegging van die ronde, of verwijdert ze wanneer de
+  borden nu met de engine overeenkomen. Het TRF-bestand bevat alleen records,
+  dus het heeft er geen commentaarregel over ([Versturen naar FIDE](10-fide-report.md)).
 - **De controleur kan de ronde niet beoordelen** (het is een controle op het
   Nederlandse systeem, dus een teams-, rondetoernooi-, Keizer-, per-categorie- of
   Zwitsers-matchformaatronde valt buiten zijn bereik): als de borden verschillen van
@@ -575,9 +573,8 @@ de Berger-tabel, en controleert of de rondes die in de cyclus overblijven nog
 iedereen die elkaar nog niet ontmoette precies één keer kunnen paren (een
 speler die in een even veld buiten de ronde blijft, kan bijvoorbeeld niet meer
 bijbenen). Wijkt de ronde af van de tabel, dan toont de dialoog de borden van
-de tabel, de verschillen, elke overtreding en de regel die de TRF krijgt,
-bijvoorbeeld `### MPA @ Round 1: 1-4 2-3 => 1-2 3-4` (startnummers; `5=BYE`
-voor de speler die uitrust). Zoals bij een Zwitserse ronde behoudt het vinkje
+de tabel, de verschillen en elke overtreding, met de borden in startnummers
+(`5=BYE` voor de speler die uitrust). Zoals bij een Zwitserse ronde behoudt het vinkje
 *Ik begrijp het - mijn paringen behouden en de wijziging vastleggen* ze. Ook de
 eerdere rondes van een rondetoernooi kunnen zo met de hand worden gewijzigd,
 en worden op dezelfde manier beoordeeld.
