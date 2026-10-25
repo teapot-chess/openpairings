@@ -184,7 +184,7 @@ defmodule PairingsEngine.TrfImport do
   # measured before it is read.
   defp build_structs_with_data(content) do
     with :ok <- check_bounds(content),
-         decoded = decode_content(content),
+         decoded = content |> decode_content() |> blank_unplayed(),
          :ok <- check_single_document(decoded),
          :ok <- check_no_stray_results(decoded),
          {readable, odd_results} = rewrite_unrecognised_results(decoded),
@@ -313,6 +313,49 @@ defmodule PairingsEngine.TrfImport do
       end)
 
     {rewritten, Enum.map(rewrites, &Map.delete(&1, :edits))}
+  end
+
+  ## ---------- boards an ITDX file lists as unplayed ----------
+  #
+  # `?` says a game has no result, and cannot say why. An ITDX file made here
+  # names the boards that were paired and not yet played in an
+  # `### Unplayed @ Round r: w-b ...` line (`TrfExport`), and those boards
+  # are blanked here before the parser sees them: a paired board with no
+  # result, which the import has always kept as a board still being played.
+  # Every other `?` stays a postponed game. A file without the line (every
+  # other program's) is read exactly as before.
+  defp blank_unplayed(text) do
+    seats =
+      for [_, round, list] <- Regex.scan(~r/^### Unplayed @ Round (\d+): ([\d\- ]+)/m, text),
+          pair <- String.split(list),
+          rank <- String.split(pair, "-"),
+          {rank, ""} <- [Integer.parse(rank)],
+          into: MapSet.new(),
+          do: {rank, String.to_integer(round)}
+
+    if MapSet.size(seats) == 0 do
+      text
+    else
+      ~r/\r\n|\n|\r/
+      |> Regex.split(text, include_captures: true)
+      |> Enum.map_join(fn piece ->
+        with "001" <> _ <- piece,
+             {rank, ""} <- Integer.parse(trf_cell(piece, 4, 4)) do
+          seats
+          |> Enum.filter(&(elem(&1, 0) == rank))
+          |> Enum.reduce(piece, fn {_, round}, acc ->
+            offset = @result_first_col + (round - 1) * 10
+
+            case acc do
+              <<head::binary-size(^offset), "?", tail::binary>> -> head <> " " <> tail
+              _ -> acc
+            end
+          end)
+        else
+          _ -> piece
+        end
+      end)
+    end
   end
 
   defp odd_offset(round), do: @result_first_col + (round - 1) * 10

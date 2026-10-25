@@ -492,7 +492,8 @@ included but board order not:
   press **Finish and record**. The round keeps your boards and records the
   alteration with the round. Finishing a session again replaces the record of
   that round, or removes it when the boards now agree with the engine. The TRF
-  file contains records only, so it has no comment line about it
+  file for the rating office contains records only, so it has no comment line
+  about it; the copy and the ITDX file do
   ([Sending to FIDE](10-fide-report.md)).
 - **The checker cannot judge the round** (it is a Dutch-system check, so a
   team, round robin, Keizer, per-category or Swiss match format round is

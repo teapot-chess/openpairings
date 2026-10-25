@@ -220,6 +220,7 @@ defmodule PairingsEngineWeb.Router do
     get "/t/:id/norms/it4", NormsController, :it4
 
     get "/t/:id/export/trf", ExportController, :trf
+    get "/t/:id/export/itdx", ExportController, :itdx
     get "/t/:id/export/swar", ExportController, :swar
     get "/t/:id/export/swar_html", ExportController, :swar_html
     get "/t/:id/export/pgn", ExportController, :pgn

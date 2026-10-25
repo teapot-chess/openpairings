@@ -143,8 +143,8 @@ doet:
 - **Het is definitief.** Het toernooi kan nooit meer terug naar de FIDE-modus,
   ook niet als je elke instelling terugzet.
 - Het toernooi legt vast vanaf welke ronde het niet in de FIDE-modus zat. (Het
-  TRF26-bestand bevat alleen records, geen commentaarregels, of het nu verstuurd
-  werd of als kopie is gedownload; zie [Versturen naar FIDE](10-fide-report.md).)
+  TRF26-bestand voor het ratingkantoor bevat alleen records, geen commentaarregels;
+  de kopie en het ITDX-bestand dragen er een notitie over; zie [Versturen naar FIDE](10-fide-report.md).)
 - De vergrendelde instellingen en de afgesloten rondes kunnen daarna worden
   gewijzigd, en het programma stopt niet langer een wijziging die de FIDE-regels
   verbieden.

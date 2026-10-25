@@ -113,8 +113,8 @@ op de keuze van het bestand:
 
 Een bevestigde import maakt het toernooi met de rondes precies zoals het bestand ze
 vastlegt. Wat de import heeft aangepast en elke regel die is gebroken, wordt bij het
-toernooi en in het auditlogboek bewaard. (Het TRF-bestand bevat alleen records en
-geen commentaarregel daarover.)
+toernooi en in het auditlogboek bewaard. (Het TRF-bestand voor het ratingkantoor bevat alleen records en
+geen commentaarregel daarover; de kopie en het ITDX-bestand wel.)
 
 ### JSON-back-up {#json-backup}
 
@@ -211,7 +211,15 @@ toernooi (192, bijvoorbeeld `FIDE_DUTCH_2025` voor een Zwitsers toernooi, `_BAKU
 `BERGER_ROUNDROBIN_Gn`, `FIDE_TEAM_TYPEA_MP_GP`, of `CUSTOM_SWISS` voor Keizer), de
 tiebreaks (202), het speeltempo (222), de virtuele punten (250), de verboden
 paringen (260), een bye die voor een nog niet gepaarde ronde is toegekend (240) en de
-administratieve extra punten (299). Een kopie voegt bovenaan `###`-commentaarregels toe die zeggen dat het een kopie is.
+administratieve extra punten (299). Een kopie voegt bovenaan `###`-commentaarregels toe die zeggen dat het een kopie is,
+en de notities die het programma over het toernooi bijhoudt. **Overzetten naar een ander
+programma (ITDX)** is een derde bestand, om een lopend toernooi aan een ander
+paringsprogramma over te geven: het schrijft `?` voor partijen zonder uitslag (en `X` in
+record 162), de nationale ratingrecords, alle notities, en een blok `### OP`-regels dat
+alleen geschreven wordt, met instellingen, regels en rondegebeurtenissen. Het is niet
+voor rating en zegt dat in de naam (`ITDX-NOT-FOR-RATING`) en erin. Importeer je het,
+dan krijg je dezelfde paringen, kleuren en scores; [Versturen naar FIDE](10-fide-report.md)
+legt het verschil tussen de drie bestanden uit.
 Elke gepaarde ronde kan ook worden geselecteerd met `?rounds=1-5` in het adres van de
 download (bereiken en losse rondes, zoals `1-3,6`).
 

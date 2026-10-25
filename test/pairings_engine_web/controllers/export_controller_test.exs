@@ -147,6 +147,16 @@ defmodule PairingsEngineWeb.ExportControllerTest do
       assert length(alice.games) == 2
     end
 
+    test "/export/itdx downloads the ITDX file under its own name", %{conn: conn, scope: scope} do
+      {tournament, _} = fixture(scope)
+
+      conn = get(conn, ~p"/t/#{tournament.id}/export/itdx")
+
+      [disposition] = get_resp_header(conn, "content-disposition")
+      assert disposition =~ "S_export-ctrl-test_r1-2_ITDX-NOT-FOR-RATING.trf"
+      assert response(conn, 200) =~ "### ITDX - NOT FOR RATING"
+    end
+
     test "?rounds=1 downloads only round 1's column", %{conn: conn, scope: scope} do
       {tournament, _} = fixture(scope)
 

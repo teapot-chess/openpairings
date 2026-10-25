@@ -133,8 +133,8 @@ the round is not paired. The second question lists what leaving does:
 - **It is for good.** The tournament can never return to FIDE mode, even if
   you set every setting back.
 - The tournament records from which round it was not in FIDE mode. (The TRF26
-  file contains records only, no comment lines, whether it was sent or
-  downloaded as a copy; see [Sending to FIDE](10-fide-report.md).)
+  file for the rating office contains records only, no comment lines; the copy
+  and the ITDX file carry a note about it; see [Sending to FIDE](10-fide-report.md).)
 - The locked settings and the closed rounds can be changed afterwards, and the
   program no longer stops a change that FIDE rules forbid.
 - Every page of the tournament shows a line, *Not in FIDE mode*, with a link

@@ -1289,6 +1289,26 @@ defmodule PairingsEngineWeb.SettingsExportLive do
               </a>
             </div>
 
+            <div class="actions" style="align-items: center">
+              <a
+                id="trf-download-itdx"
+                class={["pe-btn", MapSet.size(@trf_selected) == 0 && "is-disabled"]}
+                href={
+                  if MapSet.size(@trf_selected) > 0,
+                    do: ~p"/t/#{@tournament.id}/export/itdx?rounds=#{trf_rounds_param(@trf_selected)}"
+                }
+                aria-disabled={to_string(MapSet.size(@trf_selected) == 0)}
+                target="_blank"
+              >
+                {gettext("Transfer to another program (ITDX)")}
+              </a>
+              <span id="trf-itdx-hint" class="hint">
+                {gettext(
+                  "A partial file for another pairing program: games without a result are written as ?. Not for rating."
+                )}
+              </span>
+            </div>
+
             <% one_report_short = one_report_short_text(@trf_selected, @tournament) %>
             <p
               :if={one_report_short}

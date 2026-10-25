@@ -50,8 +50,27 @@ Vink de rondes aan die je wilt en druk op:
   rating)** - kopieën voor je eigen gebruik of een ander programma. Een kopie is het
   bestand dat Versturen uitgeeft, geen ander bestand: dezelfde records, byte voor byte,
   met bovenaan `###`-commentaarregels die zeggen dat het een kopie is (en, voor een
-  ronde die al verstuurd is, bij welk ontvangstbewijs ze hoort). De bestandsnaam
+  ronde die al verstuurd is, bij welk ontvangstbewijs ze hoort) en de notities die
+  het programma over het toernooi bijhoudt: verlaten van de FIDE-modus, imports,
+  handmatige paringen, byes, correcties, verbodsregels, en voor elke uitgestelde
+  partij die als niet gespeeld is geschreven een regel `Postponed @ Round 3: 5-12`
+  (startnummers, wit eerst). De records zijn die van Versturen. De bestandsnaam
   eindigt op `COPY-NOT-FOR-RATING`.
+- **Overzetten naar een ander programma (ITDX)** - een derde bestand met een andere
+  taak: een lopend toernooi overgeven aan een ander paringsprogramma
+  (*In-Tournament Data Exchange*, uit het TEC-handboek van FIDE). Het is een
+  gedeeltelijk bestand en schrijft dus wel `?` voor een partij zonder uitslag: een
+  uitgestelde partij, en een bord dat is gepaard maar nog niet gespeeld (genoemd in
+  een regel `Unplayed @ Round r`). Record 162 geeft `X`, wat een `?` waard is: een
+  remise voor uitgestelde partijen, 0 voor gepaarde borden die niet gespeeld zijn,
+  en een remise, die de spelers van die borden in hun punten meedragen, als beide
+  in het bestand staan. Het heeft de nationale ratingrecords, alle notities van de
+  kopie en een blok `### OP`-regels met de instellingen, regels en rondegebeurtenissen
+  die TRF niet kan zeggen; dat blok is alleen voor de lezer en wordt niet teruggelezen.
+  De bestandsnaam eindigt op `ITDX-NOT-FOR-RATING` en een regel erin zegt dat het
+  geen ratingrapport is. In de FIDE-modus wordt het ook gemaakt terwijl een
+  uitgestelde partij openstaat: het is per definitie gedeeltelijk. Importeer je het
+  hier, dan krijg je dezelfde paringen, kleuren en scores.
 
 > [!IMPORTANT]
 > **Downloaden is niet versturen.** *Versturen…* bezorgt niets bij wie dan ook:
@@ -95,11 +114,13 @@ onbekend is, staat er niet als partij in.
 
 Noch het bestand voor het ratingbureau, noch een kopie ervan bevat `?`: een uitgestelde partij die nog open is wanneer
 de ronde wordt verstuurd, wordt geschreven als **niet gespeeld** voor beide spelers.
-Zo wordt de partij niet twee keer gerate en ook niet verloren; zie hieronder.
+Zo wordt de partij niet twee keer gerate en ook niet verloren; zie hieronder. Alleen
+het ITDX-bestand, dat geen rapport is, schrijft `?`.
 
 > [!NOTE] Verlaten FIDE-modus
-> Het toernooi onthoudt vanaf welke ronde het de FIDE-modus verliet, maar het TRF-bestand zegt
-> er niets over: alleen records, geen commentaarregels en geen kolomlineaal, verstuurd of gekopieerd.
+> Het toernooi onthoudt vanaf welke ronde het de FIDE-modus verliet, maar het TRF-bestand voor het
+> ratingkantoor zegt er niets over: alleen records, geen commentaarregels en geen
+> kolomlineaal. De kopie en het ITDX-bestand zeggen het in een `###`-regel.
 
 ## Uitgestelde partijen {#postponed-games}
 
@@ -141,7 +162,7 @@ Een verboden paring of een paringsregel die na het paren van ronde 1 wordt
 toegevoegd, gewijzigd of verwijderd, wordt per ronde vastgelegd waarop ze voor het eerst
 inwerkt. In de FIDE-modus is de eerste zulke wijziging ook
 de ronde waarin het toernooi die modus verliet ([FIDE-modus](02-fide-mode.md)).
-Het bestand voor de rating bevat alleen records en draagt zo'n regel niet.
+Het bestand voor de rating bevat alleen records en draagt zo'n regel niet; de kopie en het ITDX-bestand wel.
 
 Een partij die gespeeld wordt nadat haar ronde verstuurd is, wordt gerapporteerd als een **apart toernooi**
 met een eigen naam en een eigen FIDE-toernooi-ID, en FIDE rate maand na maand. Instellingen, Exporteren,
