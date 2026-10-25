@@ -61,8 +61,7 @@ defmodule PairingsEngineWeb.ExportController do
 
     # Every download here is a COPY - only "Send" (`trf_send/2`) hands out
     # the file for rating - and says so, in its name and, in the TRF26
-    # dialect, in `###` lines of its own (`TrfExport.export/3`, audit F7).
-    # Apart from those lines the TRF26 copy IS the file Send hands out.
+    # dialect, in `###` lines only (`TrfExport.export/3`, audit F7).
     with :ok <- engine_dialect_allowed(tournament, dialect, meta.rounds),
          {:ok, text} <-
            TrfExport.export(tournament, params["rounds"], dialect: dialect, copy: true) do
