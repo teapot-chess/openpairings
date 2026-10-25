@@ -210,8 +210,7 @@ The engine's TRF dialect writes them as `XXO team-forbidden 3 11 16 @1-2`
 and `XXO team-soft-pairs ...` (team numbers, rounds optional), so a pairing
 checker replays the file with them; a TRF with these records imports them
 back as rules for the named teams. A team event never writes `XXP` or `260`,
-which name players. The TRF26 report itself carries no team records, only the
-`### Prohibition` line of a rule changed once the event was under way.
+which name players. The TRF26 report itself carries no team records.
 
 ### Correcting the order of the teams
 

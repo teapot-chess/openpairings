@@ -230,15 +230,17 @@ defmodule PairingsEngine.TrfRatingFileTest do
                )
     end
 
-    test "every other file is unchanged: the copy keeps ?, X and its marks", ctx do
+    test "every other file is unchanged: the copy is the sent file plus its marks", ctx do
       %{t: t, postponed: postponed} = ctx
 
       {:ok, copy} = TrfExport.export(Repo.reload!(t), [1], copy: true)
+      {:ok, sent} = TrfExport.export(Repo.reload!(t), [1], for: :rating)
       line = line_of(copy, rank_of(t, postponed.white_player_id))
-      assert String.at(line, 98) == "?"
-      assert copy =~ ~r/\r\n162 .*X\s+0\.5/
+      assert line |> block(1) == "0000 - Z"
+      refute copy =~ "?"
       assert copy =~ "### COPY - NOT FOR RATING"
       assert copy =~ "DDD"
+      assert without_marks(copy) == sent
 
       # The engine dialect still writes the draw the engine paired with.
       {:ok, engine} = TrfExport.export(Repo.reload!(t), [1], dialect: :engine)
@@ -267,15 +269,46 @@ defmodule PairingsEngine.TrfRatingFileTest do
     assert {code.(c.white_player_id), code.(c.black_player_id)} == {"-", "-"}
   end
 
-  test "leaving FIDE mode is not a comment line in the file for rating" do
+  test "a copy is the file Send hands out plus its mark lines, with an unplayed future round" do
+    {t, _players} =
+      tournament(~w(Alice Bob Carol Dave),
+        pairing_system: "round_robin",
+        fide_compliance_lost_round: 0
+      )
+
+    round1 = pair!(t)
+    for p <- round1.pairings, do: result!(p, "1-0")
+
+    t = Repo.reload!(t)
+
+    for spec <- [nil, [1]] do
+      {:ok, sent} = TrfExport.export(t, spec, for: :rating)
+      {:ok, copy} = TrfExport.export(t, spec, copy: true)
+
+      refute copy =~ "?"
+      refute copy =~ "FIDE mode exited"
+      assert copy =~ "### COPY - NOT FOR RATING"
+      assert without_marks(copy) == sent
+      assert_only_records(sent)
+    end
+  end
+
+  test "leaving FIDE mode is a comment line in the plain report, not in the file for rating" do
     {t, players} = tournament(~w(Alice Bob Carol Dave), fide_compliance_lost_round: 0)
     round1 = pair!(t)
     for p <- round1.pairings, do: result!(p, "1-0")
     _ = players
 
-    {:ok, copy} = TrfExport.export(Repo.reload!(t), [1], copy: true)
+    {:ok, copy} = TrfExport.export(Repo.reload!(t), [1], [])
     assert copy =~ "### FIDE mode exited before Round 1 was paired"
 
     assert_only_records(send!(t, [1]))
+  end
+
+  defp without_marks(text) do
+    text
+    |> String.split("\r\n")
+    |> Enum.reject(&String.starts_with?(&1, "###"))
+    |> Enum.join("\r\n")
   end
 end

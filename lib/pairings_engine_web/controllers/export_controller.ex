@@ -61,7 +61,7 @@ defmodule PairingsEngineWeb.ExportController do
 
     # Every download here is a COPY - only "Send" (`trf_send/2`) hands out
     # the file for rating - and says so, in its name and, in the TRF26
-    # dialect, in a `###` line of its own (`TrfExport.export/3`, audit F7).
+    # dialect, in `###` lines only (`TrfExport.export/3`, audit F7).
     with :ok <- engine_dialect_allowed(tournament, dialect, meta.rounds),
          {:ok, text} <-
            TrfExport.export(tournament, params["rounds"], dialect: dialect, copy: true) do
@@ -83,7 +83,7 @@ defmodule PairingsEngineWeb.ExportController do
         |> put_flash(
           :error,
           gettext(
-            "No file: round %{rounds} has a postponed game still to be played, and the older TRF spelling can only write it as a draw. Download the TRF26 file instead, which writes it as unknown (?).",
+            "No file: round %{rounds} has a postponed game still to be played, and the older TRF spelling can only write it as a draw. Download the TRF26 file instead, which writes it as not played (0000 - Z).",
             rounds: Enum.join(rounds, ", ")
           )
         )
@@ -127,8 +127,8 @@ defmodule PairingsEngineWeb.ExportController do
   (`PostponedGames.send_rounds/4`): its result is semi-frozen from then on,
   and an open postponed game in it went out as not played for good - its
   real result goes in the postponed-games file. The file is
-  `TrfExport.export/3`'s `for: :rating`: only TRF records, no ruler, legend
-  or comment line, and no `?`. Two requests for the same round cannot both
+  `TrfExport.export/3`'s `for: :rating`: only TRF records and the one
+  legend line, no ruler or comment line, and no `?`. Two requests for the same round cannot both
   get a file: the second is refused (audit F1).
 
   Refused, with nothing marked and no file, while a round in it has a board

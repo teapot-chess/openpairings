@@ -443,7 +443,9 @@ defmodule PairingsEngineWeb.PostponedGamesLiveTest do
 
       # A copy, not finalised, can always be downloaded.
       copy = post(conn, ~p"/t/#{t.id}/export/trf", %{"rounds" => "1", "finalise" => "false"})
-      assert response(copy, 200) =~ "?"
+      # The copy is the file sent, marked: the open game is still not played.
+      refute response(copy, 200) =~ ~r/^001 .*\?/m
+      assert response(copy, 200) =~ "COPY - NOT FOR RATING"
 
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/settings/export")
       assert has_element?(lv, "#trf-sent-rounds")

@@ -42,8 +42,11 @@ defmodule PairingsEngine.TrfExport do
 
   `for: :rating` builds the file SENT FOR RATING (the Export page's "Send",
   `PostponedGames.send_rounds/4`) - see "The file sent for rating" below.
-  Every other file (a copy, the engine's input, a TRF26 download) is built
-  without it and is unchanged by it.
+  `copy: true` (the Export page's "Download a copy", in TRF26) builds that
+  same file and puts only the copy mark and the receipt lines
+  (`copy_comments/3`) in it: a copy is a copy, not a second opinion. The
+  engine's input and the engine spelling are built without either and are
+  unchanged by them.
 
   Returns `{:ok, text}`, or `{:error, %Ainalrami.Trf.ValidationError{}}`
   if the filtered result set fails `Trf`'s own legality validation (an
@@ -78,22 +81,35 @@ defmodule PairingsEngine.TrfExport do
            ),
          :ok <- ensure_round_dates(tournament, rounds_spec) do
       text =
-        if rating?(opts) do
-          build(tournament, rounds_spec, Keyword.put(opts, :dialect, :trf26))
-        else
-          tournament
-          |> build(rounds_spec, opts)
-          |> mark_copy(
-            copy_comments(tournament, rounds_spec, opts) ++
-              fide_mode_comments(tournament, opts) ++
-              import_pibe_comments(tournament, opts) ++
-              mpa_comments(tournament, rounds_spec, opts) ++
-              full_point_bye_comments(tournament, rounds_spec, opts) ++
-              rating_correction_comments(tournament, rounds_spec, opts) ++
-              correction_comments(tournament, rounds_spec, opts) ++
-              not_played_comments(tournament, rounds_spec, opts) ++
-              prohibition_comments(tournament, rounds_spec, opts)
-          )
+        cond do
+          rating?(opts) ->
+            build(tournament, rounds_spec, Keyword.put(opts, :dialect, :trf26))
+
+          copy_of_sent?(opts) ->
+            # A copy is the file "Send" hands out, byte for byte, plus the
+            # lines that say it is a copy - nothing else, so nothing in it
+            # can disagree with the file that was (or will be) sent.
+            tournament
+            |> build(
+              rounds_spec,
+              opts |> Keyword.put(:dialect, :trf26) |> Keyword.put(:for, :rating)
+            )
+            |> mark_copy(copy_comments(tournament, rounds_spec, opts))
+
+          true ->
+            tournament
+            |> build(rounds_spec, opts)
+            |> mark_copy(
+              copy_comments(tournament, rounds_spec, opts) ++
+                fide_mode_comments(tournament, opts) ++
+                import_pibe_comments(tournament, opts) ++
+                mpa_comments(tournament, rounds_spec, opts) ++
+                full_point_bye_comments(tournament, rounds_spec, opts) ++
+                rating_correction_comments(tournament, rounds_spec, opts) ++
+                correction_comments(tournament, rounds_spec, opts) ++
+                not_played_comments(tournament, rounds_spec, opts) ++
+                prohibition_comments(tournament, rounds_spec, opts)
+            )
         end
 
       {:ok, text}
@@ -103,6 +119,11 @@ defmodule PairingsEngine.TrfExport do
   end
 
   defp rating?(opts), do: Keyword.get(opts, :for) == :rating
+
+  # `copy: true` in the TRF26 dialect (the engine's spelling is the engine's
+  # input and stays what it was).
+  defp copy_of_sent?(opts),
+    do: Keyword.get(opts, :copy, false) and Keyword.get(opts, :dialect, :trf26) == :trf26
 
   ## ---------- a copy is marked as one ----------
   #
@@ -1140,10 +1161,10 @@ defmodule PairingsEngine.TrfExport do
     * `dates:` - a date per extra round, in order, to report instead of the
       latest date its games were played on; a nil entry, or a list shorter
       than the rounds, keeps that default.
-    * `copy: true` - a copy to download (the Export page's link): marked
-      as one in `###` lines and given the column ruler. Without it this is
-      the file sent for rating (`PostponedGames.send_late_games/3`), which
-      holds records and the `DDD` legend line - no ruler, no comment line - as
+    * `copy: true` - a copy to download (the Export page's link): the file
+      sent for rating (`PostponedGames.send_late_games/3`) byte for byte,
+      plus the `###` lines that say it is a copy. The sent file holds
+      records and the `DDD` legend line - no ruler, no comment line - as
       `export/3`'s `for: :rating` does. It never holds a `?`: every game in
       it has its result.
   """
@@ -1171,8 +1192,7 @@ defmodule PairingsEngine.TrfExport do
 
       true ->
         rounds = games |> Enum.map(& &1.pairing) |> PairingsEngine.PostponedGames.pack()
-        copy? = Keyword.get(opts, :copy, false)
-        text = build_postponed(tournament, rounds, Keyword.get(opts, :dates, []), copy?)
+        text = build_postponed(tournament, rounds, Keyword.get(opts, :dates, []))
         :ok = verify_postponed!(text, rounds)
         {:ok, mark_copy(text, postponed_copy_comments(opts)), games}
     end
@@ -1202,7 +1222,7 @@ defmodule PairingsEngine.TrfExport do
     |> Enum.max(Date, fn -> nil end)
   end
 
-  defp build_postponed(tournament, rounds, set_dates, copy?) do
+  defp build_postponed(tournament, rounds, set_dates) do
     roster = Pairing.full_roster_players(tournament.id) |> Map.new(&{&1.id, &1})
 
     ids =
@@ -1270,9 +1290,9 @@ defmodule PairingsEngine.TrfExport do
         players: rows
       },
       dialect: :trf26,
-      # A copy has the rulers; the file sent for rating has the legend line
-      # alone, as Swiss-Manager writes it (see `export/3`).
-      column_legend: if(copy?, do: true, else: :line),
+      # The legend line alone, as Swiss-Manager writes it (see `export/3`),
+      # for the file sent and its copy alike.
+      column_legend: :line,
       ascii: true
     )
   end

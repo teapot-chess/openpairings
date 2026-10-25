@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **A copy is a copy.** *Download a copy* on the Export page, the postponed-games copy and the rating inbox's rebuilt copy used to be a second opinion on the file Send hands out: open postponed games written as `?` (which FIDE's checker rejects as not valid characters), a column ruler, and a handful of `###` notes about leaving FIDE mode, imports, MPAs, byes, corrections and prohibitions. They are now the file Send hands out, byte for byte, plus only the `### COPY - NOT FOR RATING` line and the receipt lines that stop a copy being sent twice. An open postponed game is `0000 - Z` in both; the legend line stays. The notes that vanish from downloads are still built by the plain TRF26 report, which nothing links to, so the FIDE mode refusal on open postponed games and the engine-dialect download are untouched. The manual and the Export page say the same.
+
 - [Change] **Tie-breaks have a page of their own.** Settings has a *Tie-breaks* entry in the Set-up group, right after Scoring, and the list, the presets, the builder and *Reset to FIDE default* moved there from the Tournament page, along with the two advanced settings about unrated players and shared places. The page has its own *Save settings*, so rearranging tie-breaks no longer rides along with a changed venue, and saving it writes the same audit entry as before and nothing else of the tournament. FIDE mode still freezes the list once round 1 is paired and now freezes a page instead of a card. The Tournament page keeps no signpost to it; the rail is the signpost, and it has been there all along.
 
 ## [0.107.0] - 2026-10-25

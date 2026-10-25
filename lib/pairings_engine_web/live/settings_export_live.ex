@@ -1028,7 +1028,7 @@ defmodule PairingsEngineWeb.SettingsExportLive do
             {gettext(
               "The file for the rating officer. Tick the rounds, then download a copy (nothing is marked) or press Send. Send downloads the rating file to your computer and records its rounds as sent, so a round is never sent twice and a sent result asks for confirmation before it changes. The program delivers nothing: you send the downloaded file to your rating officer yourself."
             )} {gettext(
-              "Only the file Send hands out is for rating. Every copy is named COPY-NOT-FOR-RATING and says so in a comment line inside."
+              "Only the file Send hands out is for rating. A copy is that same file, named COPY-NOT-FOR-RATING, with comment lines at the top that say so."
             )}
           </p>
 

@@ -47,8 +47,11 @@ Vink de rondes aan die je wilt en druk op:
   van het toernooi, het FIDE-toernooi-ID, de naam en de rondes. Het bevat alleen
   de records van het rapport, geen opmerkingen.
 - **Een kopie downloaden (niet voor rating)** en **Alle rondes (TRF-kopie, niet voor
-  rating)** - kopieën voor je eigen gebruik of een ander programma. De bestandsnaam
-  eindigt op `COPY-NOT-FOR-RATING` en het bestand zegt dat in een `###`-commentaarregel.
+  rating)** - kopieën voor je eigen gebruik of een ander programma. Een kopie is het
+  bestand dat Versturen uitgeeft, geen ander bestand: dezelfde records, byte voor byte,
+  met bovenaan `###`-commentaarregels die zeggen dat het een kopie is (en, voor een
+  ronde die al verstuurd is, bij welk ontvangstbewijs ze hoort). De bestandsnaam
+  eindigt op `COPY-NOT-FOR-RATING`.
 
 > [!IMPORTANT]
 > **Downloaden is niet versturen.** *Versturen…* bezorgt niets bij wie dan ook:
@@ -88,16 +91,15 @@ toernooitype die vermeld staan in [Importeren en exporteren](12-import-export.md
 Voor elke ronde zijn de resultaatcodes `1`, `=`, `0` voor gespeelde partijen, `+` en
 `-` voor forfaits, `U` voor de door de paring toegekende bye, `H` voor een halvepuntsbye, `F` voor een
 volpuntsbye, `Z` voor een nulpuntsbye of een afwezigheid. Een uitgestelde partij waarvan het resultaat
-onbekend is, is `?` in een kopie.
+onbekend is, staat er niet als partij in.
 
-Het bestand voor het ratingbureau bevat nooit `?`: een uitgestelde partij die nog open is wanneer
+Noch het bestand voor het ratingbureau, noch een kopie ervan bevat `?`: een uitgestelde partij die nog open is wanneer
 de ronde wordt verstuurd, wordt geschreven als **niet gespeeld** voor beide spelers.
 Zo wordt de partij niet twee keer gerate en ook niet verloren; zie hieronder.
 
 > [!NOTE] Verlaten FIDE-modus
-> Als het toernooi de FIDE-modus heeft verlaten, vermelden de kopieën vanaf welke ronde in een
-> `###`-commentaarregel. Het bestand dat **Versturen…** maakt bevat alleen records: geen
-> commentaarregels, geen kolomlineaal.
+> Het toernooi onthoudt vanaf welke ronde het de FIDE-modus verliet, maar het TRF-bestand zegt
+> er niets over: alleen records, geen commentaarregels en geen kolomlineaal, verstuurd of gekopieerd.
 
 ## Uitgestelde partijen {#postponed-games}
 
@@ -107,8 +109,8 @@ ervoor wordt gewoon gemaakt, zoals de kopie in de ratinginbox van een eerder
 verstuurde ronde. De pagina Exporteren toont de
 openstaande partijen: voer elk resultaat in, of druk op **Niet gespeeld in dit
 toernooi**. Dat vraagt het twee keer en haalt het toernooi uit de FIDE-modus;
-de kopieën dragen dan `### Not played @ Round 3: 5-12` voor die partij, en het
-bestand voor de rating schrijft ze als niet gespeeld (`0000 - Z`).
+de bestanden, kopieën inbegrepen, schrijven ze dan als niet gespeeld
+(`0000 - Z`).
 
 **Lange toernooien.** Een toernooi met het vinkje *Toernooi duurt langer dan
 30 dagen* wordt op een van twee manieren gerapporteerd, te kiezen onder dat
@@ -136,9 +138,8 @@ rondes neemt een bestand van 9 rondes.
 ## Tijdens het toernooi gewijzigde verboden paringen {#prohibitions-changed-during-the-event}
 
 Een verboden paring of een paringsregel die na het paren van ronde 1 wordt
-toegevoegd, gewijzigd of verwijderd, staat in de TRF-kopieën, één regel per ronde
-waarop ze voor het eerst inwerkt, bijvoorbeeld `### Prohibition @ Round 4: 5-12
-added; rule same club removed`. In de FIDE-modus is de eerste zulke wijziging ook
+toegevoegd, gewijzigd of verwijderd, wordt per ronde vastgelegd waarop ze voor het eerst
+inwerkt. In de FIDE-modus is de eerste zulke wijziging ook
 de ronde waarin het toernooi die modus verliet ([FIDE-modus](02-fide-mode.md)).
 Het bestand voor de rating bevat alleen records en draagt zo'n regel niet.
 

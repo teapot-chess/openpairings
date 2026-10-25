@@ -490,11 +490,10 @@ included but board order not:
   and the rule warnings that still apply. Choose **Keep editing** to go back,
   or tick *I understand - keep my pairings and record the alteration* and
   press **Finish and record**. The round keeps your boards and records the
-  alteration, which the TRF copies of the report carry as a comment line:
-  `### MPA @ Round r: <checker's boards> => <the round's boards>`. Finishing
-  a session again replaces the line of that round, or removes it when the
-  boards now agree with the engine. The file made by *Send…* contains records
-  only, so it has no such line ([Sending to FIDE](10-fide-report.md)).
+  alteration with the round. Finishing a session again replaces the record of
+  that round, or removes it when the boards now agree with the engine. The TRF
+  file contains records only, so it has no comment line about it
+  ([Sending to FIDE](10-fide-report.md)).
 - **The checker cannot judge the round** (it is a Dutch-system check, so a
   team, round robin, Keizer, per-category or Swiss match format round is
   out of its reach): if the
@@ -536,9 +535,8 @@ Each board is checked as you make it, and a breach needs its own tick:
 table, and checks that the rounds left in the cycle can still pair
 everyone who has not met yet exactly once (a player left out of an even
 field, say, cannot catch up). If the round differs from the table the
-dialog shows the table's boards, the differences, any breach and the line
-the TRF gets, for example `### MPA @ Round 1: 1-4 2-3 => 1-2 3-4`
-(starting numbers; `5=BYE` for the player sitting out). As for a Swiss
+dialog shows the table's boards, the differences and any breach, with
+the boards in starting numbers (`5=BYE` for the player sitting out). As for a Swiss
 round, the tick *I understand - keep my pairings and record the alteration*
 keeps them. A round robin's earlier rounds can also be edited by hand in
 the same way, and are judged the same.

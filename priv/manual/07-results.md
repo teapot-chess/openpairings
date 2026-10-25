@@ -75,8 +75,7 @@ A wrong result found after the next round is already over cannot change
 the pairings that were made with it (C.04.2:4.3). Under each finished board
 of such a round, **Correct for rating…** records the right result for the
 rating report only: the pairings and the standings keep the result they
-used, the FIDE report carries the corrected one, and its TRF26 copy adds a
-`### Rating correction @ Round r` line saying which result the event used.
+used, the FIDE report carries the corrected one, and both the sent file and a copy of it hold the corrected result.
 Changing the board's result the ordinary way removes the correction.
 
 When the last result of a round is in, the next round can be paired.
@@ -285,11 +284,10 @@ postponed game without a result, and no final standings: Settings, Export
 lists the open games. A file of only the rounds before it is still made, and
 OpenResults keeps showing the standings, marked not final. Enter the
 result, or press **Not played in this event** beside the game. That second way
-asks twice (it takes the tournament out of FIDE mode, for good), and the
-report then says which game it was in a `###` line. The game stays postponed:
+asks twice (it takes the tournament out of FIDE mode, for good). The game stays postponed:
 the file for rating writes it as not played (`0000 - Z`), and if it is played
 later after all, its real result goes to the FIDE in a separate file for the
 postponed games, because a game played in another rating period is reported
-as a separate tournament. Outside FIDE mode a postponed game is written `?` in
-the TRF copies and as not played in the file for rating, without asking. See
+as a separate tournament. Outside FIDE mode a postponed game is written as not
+played in the file for rating and in its copy, without asking. See
 [Sending to FIDE](10-fide-report.md).

@@ -113,10 +113,8 @@ op de keuze van het bestand:
 
 Een bevestigde import maakt het toernooi met de rondes precies zoals het bestand ze
 vastlegt. Wat de import heeft aangepast en elke regel die is gebroken, wordt bij het
-toernooi en in het auditlogboek bewaard. Voor elke zo'n ronde krijgen de TRF-kopieën
-van het verslag een commentaarregel, `### Import @ Round r: ...`, zodat wie het bestand
-controleert, ziet waar de paringen niet die van het programma zelf waren. (Het bestand
-dat *Versturen…* maakt, bevat alleen records en geen zo'n regel.)
+toernooi en in het auditlogboek bewaard. (Het TRF-bestand bevat alleen records en
+geen commentaarregel daarover.)
 
 ### JSON-back-up {#json-backup}
 
@@ -202,7 +200,7 @@ Instellingen, **Exporteren** (de pagina *Export / back-up*):
 Het TRF26-bestand voor het ratingkantoor. Een tabel toont elke gepaarde ronde met de
 stand (wordt gespeeld, klaar om te versturen, verstuurd) en een vinkje.
 **Een kopie downloaden (niet voor rating)** en **Alle rondes (TRF-kopie, niet voor
-rating)** maken kopieën, en **Versturen…** maakt het bestand voor het ratingkantoor en
+rating)** maken een kopie van datzelfde bestand met enkele commentaarregels die dat zeggen, en **Versturen…** maakt het bestand voor het ratingkantoor en
 markeert de partijen als verstuurd. Dit maakt deel uit van de rapportageprocedure en
 wordt uitgelegd in [Versturen naar FIDE](10-fide-report.md).
 
@@ -213,8 +211,7 @@ toernooi (192, bijvoorbeeld `FIDE_DUTCH_2025` voor een Zwitsers toernooi, `_BAKU
 `BERGER_ROUNDROBIN_Gn`, `FIDE_TEAM_TYPEA_MP_GP`, of `CUSTOM_SWISS` voor Keizer), de
 tiebreaks (202), het speeltempo (222), de virtuele punten (250), de verboden
 paringen (260), een bye die voor een nog niet gepaarde ronde is toegekend (240) en de
-administratieve extra punten (299). Aantekeningen die het programma voor een menselijke
-lezer van het bestand wil tonen, worden in kopieën geschreven als `###`-commentaarregels.
+administratieve extra punten (299). Een kopie voegt bovenaan `###`-commentaarregels toe die zeggen dat het een kopie is.
 Elke gepaarde ronde kan ook worden geselecteerd met `?rounds=1-5` in het adres van de
 download (bereiken en losse rondes, zoals `1-3,6`).
 

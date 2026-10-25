@@ -405,7 +405,7 @@ de wensen, en de pagina zegt dat.
 > in voordat ronde 1 gepaard wordt. Daarna vraagt het toevoegen, wijzigen of
 > verwijderen van een paar of een regel (of het wijzigen van hoe zwaar de wensen
 > wegen) twee keer om bevestiging en haalt het het toernooi uit de FIDE-modus;
-> de TRF-kopieën vermelden elke wijziging als een regel `### Prohibition`. Een
+> het toernooi legt de wijziging vast. Een
 > speler die later instapt en onder een regel valt, is geen wijziging.
 
 > [!FIDE] Afwijking van de FIDE-modus

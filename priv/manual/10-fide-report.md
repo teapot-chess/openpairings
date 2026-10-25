@@ -50,8 +50,11 @@ Tick the rounds you want and press:
   named after the type of the tournament, the FIDE tournament ID, the name and
   the rounds. It holds only the records of the report, no comments.
 - **Download a copy (not for rating)** and **All rounds (TRF copy, not for
-  rating)** - copies for your own use or another program. The file name ends
-  `COPY-NOT-FOR-RATING` and the file says so in a `###` comment line.
+  rating)** - copies for your own use or another program. A copy is the file
+  that Send hands out, not a different file: the same records, byte for byte,
+  with `###` comment lines at the top that say it is a copy (and, for a round
+  already sent, which receipt it belongs to). The file name ends
+  `COPY-NOT-FOR-RATING`.
 
 > [!IMPORTANT]
 > **Downloading is not sending.** *Send…* delivers nothing to anybody: it
@@ -92,16 +95,16 @@ tournament-type records listed in [Import and export](12-import-export.md).
 For each round the result codes are `1`, `=`, `0` for played games, `+` and
 `-` for forfeits, `U` for the pairing-allocated bye, `H` for a half-point bye,
 `F` for a full-point bye, `Z` for a zero-point bye or an absence. A postponed
-game whose result is unknown is `?` in a copy.
+game whose result is unknown is not in the file as a game.
 
-The file for the rating office never contains `?`: a postponed game that is
-still open when its round is sent is written as **not played** for both players.
-This way the game is neither rated twice nor lost; see below.
+Neither the file for the rating office nor its copy contains `?`: a postponed
+game that is still open when its round is sent is written as **not played** for
+both players. This way the game is neither rated twice nor lost; see below.
 
 > [!NOTE] Left FIDE mode
-> If the tournament has left FIDE mode, the copies say from which round in a
-> `###` comment line. The file made by **Send…** is records only: no comment
-> lines, no column ruler.
+> The tournament remembers from which round it left FIDE mode, but the TRF file
+> says nothing about it: it is records only, with no comment lines and no
+> column ruler, sent or copied.
 
 ## Postponed games
 
@@ -109,8 +112,8 @@ In FIDE mode no file that holds the round of a postponed game without a
 result is sent or copied. A file of only the rounds before it is made as
 usual, such as the rating inbox's copy of a round sent earlier. The Export page lists the open games: enter each result, or press
 **Not played in this event**. That asks twice and takes the tournament out of
-FIDE mode; the copies then carry `### Not played @ Round 3: 5-12` for it, and
-the file for rating writes it as not played (`0000 - Z`).
+FIDE mode; the files, copies included, then write it as not played
+(`0000 - Z`).
 
 **Long events.** A tournament with the tick *Tournament lasts more than 30
 days* is reported one of two ways, chosen under that tick (Settings,
@@ -136,9 +139,8 @@ registration it is sent against: a registration of 9 rounds takes a file of
 
 A forbidden pairing or a pairing rule added, changed or removed after round
 1 was paired is listed in the TRF copies, one line per round it first
-affects, for example `### Prohibition @ Round 4: 5-12 added; rule same club
-removed`. In FIDE mode the first such change is also the round the
-tournament left it ([FIDE mode](02-fide-mode.md)). The file for rating holds
+affects. In FIDE mode the first such change is also the round the
+tournament left it ([FIDE mode](02-fide-mode.md)). The TRF file holds
 records only and carries no such line.
 
 A game played after its round was sent is reported as a **separate tournament**
