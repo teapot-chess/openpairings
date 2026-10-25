@@ -111,8 +111,8 @@ follows the choice of the file:
 
 A confirmed import creates the tournament with the rounds exactly as the file
 records them. What the import adjusted and every rule it found broken are kept
-with the tournament and in its audit log. (The TRF file has records only and
-no comment line about it.)
+with the tournament and in its audit log. (The TRF file for the rating office has
+records only and no comment line about it; the copy and the ITDX file do.)
 
 ### JSON backup
 
@@ -208,7 +208,15 @@ the type of tournament (192, for example `FIDE_DUTCH_2025` for a Swiss,
 `CUSTOM_SWISS` for Keizer), the tie-breaks (202), the rate of play (222), the
 virtual points (250), the prohibited pairings (260), a bye granted for a
 round that is not yet paired (240) and the administrative extra points (299).
-A copy adds `###` comment lines at the top saying it is a copy. Each paired round can also be selected by
+A copy adds `###` comment lines at the top saying it is a copy, and the notes
+the program keeps about the event. **Transfer to another program (ITDX)** is a
+third file, for handing a running tournament to another pairing program: it
+writes `?` for games without a result (and `X` in record 162), the national
+rating records, all the notes, and a write-only block of `### OP` lines with
+settings, rules and round events. It is not for rating, and says so in its name
+(`ITDX-NOT-FOR-RATING`) and inside. Importing it gives the same pairings,
+colours and scores; [Sending to FIDE](10-fide-report.md) tells the difference
+between the three files. Each paired round can also be selected by
 `?rounds=1-5` in the address of the download (ranges and single rounds, such
 as `1-3,6`).
 

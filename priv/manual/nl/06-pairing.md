@@ -526,8 +526,8 @@ kleuren maar zonder de volgorde van de borden:
   leg de wijziging vast* aan en druk op **Afronden en vastleggen**. De ronde
   behoudt je borden en legt de wijziging vast. Opnieuw afronden
   van een sessie vervangt de vastlegging van die ronde, of verwijdert ze wanneer de
-  borden nu met de engine overeenkomen. Het TRF-bestand bevat alleen records,
-  dus het heeft er geen commentaarregel over ([Versturen naar FIDE](10-fide-report.md)).
+  borden nu met de engine overeenkomen. Het TRF-bestand voor het ratingkantoor bevat alleen records,
+  dus het heeft er geen commentaarregel over; de kopie en het ITDX-bestand wel ([Versturen naar FIDE](10-fide-report.md)).
 - **De controleur kan de ronde niet beoordelen** (het is een controle op het
   Nederlandse systeem, dus een teams-, rondetoernooi-, Keizer-, per-categorie- of
   Zwitsers-matchformaatronde valt buiten zijn bereik): als de borden verschillen van

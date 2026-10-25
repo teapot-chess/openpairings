@@ -53,8 +53,25 @@ Tick the rounds you want and press:
   rating)** - copies for your own use or another program. A copy is the file
   that Send hands out, not a different file: the same records, byte for byte,
   with `###` comment lines at the top that say it is a copy (and, for a round
-  already sent, which receipt it belongs to). The file name ends
-  `COPY-NOT-FOR-RATING`.
+  already sent, which receipt it belongs to) and the notes the program keeps
+  about the event: leaving FIDE mode, imports, manual pairings, byes,
+  corrections, prohibitions, and for each postponed game written as not played a
+  line `Postponed @ Round 3: 5-12` (starting ranks, White first). The records
+  are Send's records. The file name ends `COPY-NOT-FOR-RATING`.
+- **Transfer to another program (ITDX)** - a third file with another job:
+  handing a running tournament to another pairing program (*In-Tournament Data
+  Exchange*, FIDE's TEC manual). It is a partial file, so it does write `?` for
+  a game without a result: a postponed game, and a board paired and not yet
+  played (named in an `Unplayed @ Round r` line). Record 162 gives `X`, what a
+  `?` is worth: a draw for postponed games, 0 for boards paired and not played,
+  and a draw, with those boards' players carrying it in their points, when both
+  are in the file. It has the national rating records, all the notes of the copy
+  and a block of `### OP` lines with the settings, rules and round events that
+  TRF cannot say; that block is only for the reader and is not read back. The
+  file name ends `ITDX-NOT-FOR-RATING` and a line inside says it is not a rating
+  report. In FIDE mode it is made even while a postponed game is open: it is
+  partial by definition. Importing it here gives the same pairings, colours and
+  scores.
 
 > [!IMPORTANT]
 > **Downloading is not sending.** *Send…* delivers nothing to anybody: it
@@ -99,12 +116,14 @@ game whose result is unknown is not in the file as a game.
 
 Neither the file for the rating office nor its copy contains `?`: a postponed
 game that is still open when its round is sent is written as **not played** for
-both players. This way the game is neither rated twice nor lost; see below.
+both players. This way the game is neither rated twice nor lost; see below. Only
+the ITDX file, which is no report, writes `?`.
 
 > [!NOTE] Left FIDE mode
 > The tournament remembers from which round it left FIDE mode, but the TRF file
-> says nothing about it: it is records only, with no comment lines and no
-> column ruler, sent or copied.
+> says nothing about it in the file for the rating office: it is records only,
+> with no comment lines and no column ruler. The copy and the ITDX file say it in
+> a `###` line.
 
 ## Postponed games
 
@@ -140,8 +159,8 @@ registration it is sent against: a registration of 9 rounds takes a file of
 A forbidden pairing or a pairing rule added, changed or removed after round
 1 was paired is listed in the TRF copies, one line per round it first
 affects. In FIDE mode the first such change is also the round the
-tournament left it ([FIDE mode](02-fide-mode.md)). The TRF file holds
-records only and carries no such line.
+tournament left it ([FIDE mode](02-fide-mode.md)). The TRF file for
+the rating office holds records only and carries no such line; the copy and the ITDX file do.
 
 A game played after its round was sent is reported as a **separate tournament**
 with its own name and its own FIDE tournament ID, and FIDE rates month by month.

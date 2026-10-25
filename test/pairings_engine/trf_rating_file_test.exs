@@ -286,7 +286,7 @@ defmodule PairingsEngine.TrfRatingFileTest do
       {:ok, copy} = TrfExport.export(t, spec, copy: true)
 
       refute copy =~ "?"
-      refute copy =~ "FIDE mode exited"
+      assert copy =~ "### FIDE mode exited before Round 1 was paired"
       assert copy =~ "### COPY - NOT FOR RATING"
       assert without_marks(copy) == sent
       assert_only_records(sent)

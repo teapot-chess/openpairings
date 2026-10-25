@@ -933,4 +933,37 @@ defmodule PairingsEngineWeb.ExportController do
       run -> "r#{List.first(run)}-#{List.last(run)}"
     end)
   end
+
+  # Last in the file on purpose: `.sobelow-skips` fingerprints are line-based.
+  @doc """
+  GET /t/:id/export/itdx?rounds=1-5 - the ITDX file: the partial TRF26 for
+  handing a running event to another pairing program (`TrfExport.export/3`
+  with `itdx: true`). `?` for every game without a result, national rating
+  records, all the notes, and a mark saying it is no rating report - in its
+  name too (`S_123_club_r1-3_ITDX-NOT-FOR-RATING.trf`). Open postponed games
+  do not stop it in FIDE mode: it is partial by definition. The engine
+  spelling has no ITDX file; `?dialect=engine` on `trf/2` is unchanged.
+  """
+  def itdx(conn, %{"id" => id} = params) do
+    tournament = Tournaments.get_authorized_tournament!(conn.assigns.current_scope, id)
+    meta = TrfExport.export_meta(tournament, params["rounds"])
+
+    case TrfExport.export(tournament, params["rounds"], itdx: true) do
+      {:ok, text} ->
+        name = String.replace_suffix(trf_filename(tournament, meta), ".trf", "")
+
+        conn
+        |> put_resp_content_type("text/plain")
+        |> put_resp_header(
+          "content-disposition",
+          "attachment; filename=\"#{name}_ITDX-NOT-FOR-RATING.trf\""
+        )
+        |> send_resp(200, text)
+
+      {:error, %Ainalrami.Trf.ValidationError{message: message}} ->
+        conn
+        |> put_flash(:error, gettext("Could not export TRF: %{reason}", reason: message))
+        |> redirect(to: ~p"/t/#{tournament.id}/settings/export")
+    end
+  end
 end

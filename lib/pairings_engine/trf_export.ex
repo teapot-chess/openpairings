@@ -46,7 +46,13 @@ defmodule PairingsEngine.TrfExport do
   same file and puts only the copy mark and the receipt lines
   (`copy_comments/3`) in it: a copy is a copy, not a second opinion. The
   engine's input and the engine spelling are built without either and are
-  unchanged by them.
+  unchanged by them. The copy also carries the `###` notes the plain
+  download always had (FIDE mode, PIBEs, corrections, prohibitions) and, for
+  each game it writes as not played, a `Postponed @ Round r: w-b` note
+  (`postponed_comments/3`): lines only, the records stay the sent file's.
+  `itdx: true` builds the ITDX file instead, the partial TRF26 for handing
+  a running event to another pairing program ("The ITDX file", below); it
+  is exempt from the FIDE-mode refusal, being partial by definition.
 
   Returns `{:ok, text}`, or `{:error, %Ainalrami.Trf.ValidationError{}}`
   if the filtered result set fails `Trf`'s own legality validation (an
@@ -74,16 +80,23 @@ defmodule PairingsEngine.TrfExport do
   postponed-games file (`postponed_export/2`), a FIDE tournament of its own.
   """
   def export(tournament, rounds_spec \\ nil, opts \\ []) do
-    with :ok <-
-           PairingsEngine.PostponedGames.ensure_reportable(
-             tournament,
-             file_rounds(tournament, rounds_spec)
-           ),
+    with :ok <- ensure_reportable(tournament, rounds_spec, opts),
          :ok <- ensure_round_dates(tournament, rounds_spec) do
       text =
         cond do
           rating?(opts) ->
             build(tournament, rounds_spec, Keyword.put(opts, :dialect, :trf26))
+
+          itdx?(opts) ->
+            opts = Keyword.put(opts, :dialect, :trf26)
+
+            tournament
+            |> build(rounds_spec, opts)
+            |> mark_copy(
+              itdx_comments(tournament, rounds_spec) ++
+                note_comments(tournament, rounds_spec, opts) ++
+                PairingsEngine.ItdxNotes.lines(tournament, file_rounds(tournament, rounds_spec))
+            )
 
           copy_of_sent?(opts) ->
             # A copy is the file "Send" hands out, byte for byte, plus the
@@ -94,21 +107,18 @@ defmodule PairingsEngine.TrfExport do
               rounds_spec,
               opts |> Keyword.put(:dialect, :trf26) |> Keyword.put(:for, :rating)
             )
-            |> mark_copy(copy_comments(tournament, rounds_spec, opts))
+            |> mark_copy(
+              copy_comments(tournament, rounds_spec, opts) ++
+                note_comments(tournament, rounds_spec, opts) ++
+                postponed_comments(tournament, rounds_spec, opts)
+            )
 
           true ->
             tournament
             |> build(rounds_spec, opts)
             |> mark_copy(
               copy_comments(tournament, rounds_spec, opts) ++
-                fide_mode_comments(tournament, opts) ++
-                import_pibe_comments(tournament, opts) ++
-                mpa_comments(tournament, rounds_spec, opts) ++
-                full_point_bye_comments(tournament, rounds_spec, opts) ++
-                rating_correction_comments(tournament, rounds_spec, opts) ++
-                correction_comments(tournament, rounds_spec, opts) ++
-                not_played_comments(tournament, rounds_spec, opts) ++
-                prohibition_comments(tournament, rounds_spec, opts)
+                note_comments(tournament, rounds_spec, opts)
             )
         end
 
@@ -119,6 +129,122 @@ defmodule PairingsEngine.TrfExport do
   end
 
   defp rating?(opts), do: Keyword.get(opts, :for) == :rating
+
+  defp itdx?(opts),
+    do: Keyword.get(opts, :itdx, false) and Keyword.get(opts, :dialect, :trf26) == :trf26
+
+  # An ITDX file is partial by definition and unknown results are what it
+  # exists to carry (TEC Manual draft, "Unknown results in ITDX files"), so
+  # the FIDE-mode refusal of an open postponed game (VCL4THP Q169), which is
+  # about final reports, does not apply to it.
+  defp ensure_reportable(tournament, rounds_spec, opts) do
+    if itdx?(opts),
+      do: :ok,
+      else:
+        PairingsEngine.PostponedGames.ensure_reportable(
+          tournament,
+          file_rounds(tournament, rounds_spec)
+        )
+  end
+
+  # Every `###` note the plain TRF26 download has always carried, in one
+  # place: the copy and the ITDX file both want all of them.
+  defp note_comments(tournament, rounds_spec, opts) do
+    fide_mode_comments(tournament, opts) ++
+      import_pibe_comments(tournament, opts) ++
+      mpa_comments(tournament, rounds_spec, opts) ++
+      full_point_bye_comments(tournament, rounds_spec, opts) ++
+      rating_correction_comments(tournament, rounds_spec, opts) ++
+      correction_comments(tournament, rounds_spec, opts) ++
+      not_played_comments(tournament, rounds_spec, opts) ++
+      prohibition_comments(tournament, rounds_spec, opts)
+  end
+
+  ## ---------- the ITDX file ----------
+  #
+  # In-Tournament Data Exchange (TEC Manual draft): the partial TRF26 that
+  # hands a running event to another pairing program. What the copy was
+  # before it became the sent file: `?` for every game without a result,
+  # `X` in the `162` record, the national rating records, all the notes -
+  # and a mark saying, inside the file, that it is no rating report.
+  #
+  # Two kinds of game lack a result. A postponed game is worth a draw (the
+  # draft's default for `X`). A board paired and not yet played is worth
+  # nothing yet, `X` 0; with both in one file `X` is the draw and the
+  # unplayed boards' players carry it in their points column (the draft:
+  # "increased by that value") - which is what every points column here
+  # does anyway, adding up from the file's own games. The unplayed boards
+  # are named in an `Unplayed @ Round r` note, because a `?` alone cannot
+  # tell them from a postponed game and the importer here wants to know.
+  defp itdx_comments(tournament, rounds_spec) do
+    [
+      "ITDX - NOT FOR RATING. Partial file for handing this event to another " <>
+        "pairing program: ? is a game without a result. It is not a rating report " <>
+        "and must not be sent as one."
+      | PairingsEngine.SentReceipts.copy_lines(
+          tournament.id,
+          file_rounds(tournament, rounds_spec)
+        )
+    ] ++ unplayed_comments(tournament, rounds_spec)
+  end
+
+  defp unplayed_comments(tournament, rounds_spec) do
+    rounds = file_rounds(tournament, rounds_spec)
+    tpn = pairing_numbers(tournament.id)
+
+    PairingsEngine.Repo.all(
+      from p in PairingsEngine.Tournaments.Pairing,
+        join: r in PairingsEngine.Tournaments.Round,
+        on: p.round_id == r.id,
+        where:
+          r.tournament_id == ^tournament.id and r.number in ^rounds and p.result == "" and
+            not is_nil(p.white_player_id) and not is_nil(p.black_player_id),
+        order_by: [r.number, p.board],
+        select: {r.number, p.white_player_id, p.black_player_id}
+    )
+    |> Enum.group_by(&elem(&1, 0), fn {_, w, b} ->
+      "#{Map.get(tpn, w, "?")}-#{Map.get(tpn, b, "?")}"
+    end)
+    |> Enum.sort()
+    |> Enum.map(fn {round, games} ->
+      "Unplayed @ Round #{round}: " <> Enum.join(games, " ") <> " (paired, no result yet)"
+    end)
+  end
+
+  ## ---------- open postponed games are in the copy ----------
+  #
+  # The copy writes an open postponed game as not played (`0000 - Z`, the
+  # sent file's spelling), so a note says which game that was, in the PIBE
+  # lines' shape and starting ranks: `Postponed @ Round 3: 5-12`, White
+  # first. Open: no result yet, or sent as not played already
+  # (`finalised_open`). TRF26 only.
+  defp postponed_comments(tournament, rounds_spec, opts) do
+    if Keyword.get(opts, :dialect, :trf26) == :trf26 do
+      rounds = file_rounds(tournament, rounds_spec)
+      tpn = pairing_numbers(tournament.id)
+      postponed = PairingsEngine.Results.postponed_codes()
+
+      PairingsEngine.Repo.all(
+        from p in PairingsEngine.Tournaments.Pairing,
+          join: r in PairingsEngine.Tournaments.Round,
+          on: p.round_id == r.id,
+          where:
+            r.tournament_id == ^tournament.id and r.number in ^rounds and
+              (p.result in ^postponed or p.finalised_open == true),
+          order_by: [r.number, p.board],
+          select: {r.number, p.white_player_id, p.black_player_id}
+      )
+      |> Enum.group_by(&elem(&1, 0), fn {_, w, b} ->
+        "#{Map.get(tpn, w, "?")}-#{Map.get(tpn, b, "?")}"
+      end)
+      |> Enum.sort()
+      |> Enum.map(fn {round, games} ->
+        "Postponed @ Round #{round}: " <> Enum.join(games, " ") <> " (written as not played here)"
+      end)
+    else
+      []
+    end
+  end
 
   # `copy: true` in the TRF26 dialect (the engine's spelling is the engine's
   # input and stays what it was).
@@ -670,8 +796,13 @@ defmodule PairingsEngine.TrfExport do
     # engine's input, byte for byte, and keeps what the event used.
     history = if dialect == :trf26, do: Pairing.rating_history(tournament)
 
-    engine_rows = Pairing.trf_player_rows(tournament, players, history)
     engine_system = Tournament.engine_point_system(tournament)
+
+    engine_rows =
+      tournament
+      |> Pairing.trf_player_rows(players, history)
+      |> then(&if itdx?(opts), do: unplayed_as_unknown(&1, engine_system), else: &1)
+
     unknown_value = unknown_value(engine_rows, engine_system)
 
     trf_players =
@@ -713,7 +844,8 @@ defmodule PairingsEngine.TrfExport do
     # file's draw while the tournament counts the game as a win or a loss.
     text =
       if (rating? and Enum.any?(trf_players, &not_played_postponed?/1)) or
-           (unknown != [] and valued_otherwise?(engine_rows, point_system)),
+           (unknown != [] and valued_otherwise?(engine_rows, point_system)) or
+           (itdx?(opts) and unplayed_valued_as_draw?(engine_rows, point_system)),
          do: rerank(text, trf_players),
          else: text
 
@@ -990,6 +1122,44 @@ defmodule PairingsEngine.TrfExport do
       end)
 
     %{row | games: games}
+  end
+
+  # ITDX only: a board paired and not yet played (an opponent, no result) is
+  # an unknown result like a postponed one. Worth `X` = 0 when it is the only
+  # kind in the file, the draw (and then `X` is the draw) when postponed
+  # games are there too - the TEC draft's two rules, see "The ITDX file".
+  # Written as the draw like a postponed game is, and swapped for `?` later.
+  defp unplayed_as_unknown(rows, system) do
+    postponed? = Enum.any?(rows, fn row -> Enum.any?(row.games, &unknown_game?/1) end)
+
+    Enum.map(rows, fn row ->
+      games =
+        Enum.map(row.games, fn game ->
+          if unplayed_game?(game) do
+            game
+            |> Map.put(:result, "=")
+            |> Map.put(:postponed, true)
+            |> Map.put(:unplayed, true)
+            |> Map.put(:provisional_points, if(postponed?, do: nil, else: system.loss))
+          else
+            game
+          end
+        end)
+
+      %{row | games: games}
+    end)
+  end
+
+  defp unplayed_game?(game),
+    do: is_nil(game[:result]) and not is_nil(game[:opponent_rank]) and not is_nil(game[:colour])
+
+  # Whether the unplayed boards of an ITDX file count a draw in its points
+  # column where the standings the places came from count nothing.
+  defp unplayed_valued_as_draw?(rows, point_system) do
+    Enum.any?(rows, fn row ->
+      Enum.any?(row.games, &(Map.get(&1, :unplayed) == true)) and
+        point_system.unknown == point_system.draw
+    end)
   end
 
   defp unknown_game?(game),

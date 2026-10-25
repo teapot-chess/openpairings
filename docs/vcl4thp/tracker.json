@@ -717,7 +717,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "The TRF26 export writes '### FIDE mode exited @ Round N' (or 'before Round 1 was paired') after the header whenever fide_compliance_lost_round is set (trf_export.ex; test/pairings_engine/fide_mode_locks_test.exs) - in copies and TRF26 downloads, not in the file sent for rating, which holds only records by the arbiter's decision (SWAR parity)."
+   "note": "The TRF26 export writes '### FIDE mode exited @ Round N' (or 'before Round 1 was paired') after the header whenever fide_compliance_lost_round is set (trf_export.ex; test/pairings_engine/fide_mode_locks_test.exs) - in the TRF26 copy and in the ITDX file (Export page, 'Transfer to another program (ITDX)'), not in the file sent for rating, which holds only records by the arbiter's decision (SWAR parity)."
   },
   {
    "q": 45,
@@ -901,7 +901,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "Imported rounds that break a pairing rule stop the import at a Level-3 review ('Import anyway' or Cancel) before the tournament exists; on confirm the finding is stored (import_findings), logged as a pibe.import audit row and written as '### Import @ Round r' in TRF26 reports, never in the file sent for rating (trf_export.ex import_pibe_comments). Tests: trf_import_adjustments_test.exs, tournaments_live import review test."
+   "note": "Imported rounds that break a pairing rule stop the import at a Level-3 review ('Import anyway' or Cancel) before the tournament exists; on confirm the finding is stored (import_findings), logged as a pibe.import audit row and written as '### Import @ Round r' in the TRF26 copy and the ITDX file (Export page, 'Transfer to another program (ITDX)'), never in the file sent for rating (trf_export.ex import_pibe_comments). Tests: trf_import_adjustments_test.exs, tournaments_live import review test."
   },
   {
    "q": 56,
@@ -1132,7 +1132,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "When they differ, a Level-3 dialog shows the checker's pairing, the differences, any rule breaches and the line to be written, and needs a tick (#mpa-end-dialog, #mpa-ack); confirming stores rounds.mpa_pibe and TRF26 reports carry '### MPA @ Round r: <checker pairs> => <round pairs>', never the file sent for rating (trf_export.ex mpa_comments/3). Test: 'the TRF carries the PIBE as a ### line; the file sent for rating does not'."
+   "note": "When they differ, a Level-3 dialog shows the checker's pairing, the differences, any rule breaches and the line to be written, and needs a tick (#mpa-end-dialog, #mpa-ack); confirming stores rounds.mpa_pibe and the TRF26 copy and the ITDX file (Export page, 'Transfer to another program (ITDX)') carry '### MPA @ Round r: <checker pairs> => <round pairs>', never the file sent for rating (trf_export.ex mpa_comments/3). Test: 'the TRF carries the PIBE as a ### line; the file sent for rating does not'."
   },
   {
    "q": 70,
@@ -1645,7 +1645,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "Next to 'Pair the whole tournament (Berger)', 'Pair round N by hand…' (#rr-pair-by-hand, behind a tick in #mpa-rr_round-dialog) creates the next round empty (RoundRobin.create_round_by_hand/1) inside the Swiss manual pairing alteration: paired from the not-playing list, a player left off the boards gets the table's zero-point bye at the end (RoundRobin.record_sitting_out/1). Finishing compares the round with the Berger table's round (ManualPairing.assess/2, RoundRobin.table_round/2); a round that differs needs a Level-3 tick and is written '### MPA @ Round r: <table pairs> => <round pairs>' in TRF26 reports, never the rating file (as Q69). Individual round robins over one table only (RoundRobin.by_hand?/1): team, per-category and match-format round robins keep the table. Tests: manual_round_robin_test.exs, manual_round_robin_live_test.exs."
+   "note": "Next to 'Pair the whole tournament (Berger)', 'Pair round N by hand…' (#rr-pair-by-hand, behind a tick in #mpa-rr_round-dialog) creates the next round empty (RoundRobin.create_round_by_hand/1) inside the Swiss manual pairing alteration: paired from the not-playing list, a player left off the boards gets the table's zero-point bye at the end (RoundRobin.record_sitting_out/1). Finishing compares the round with the Berger table's round (ManualPairing.assess/2, RoundRobin.table_round/2); a round that differs needs a Level-3 tick and is written '### MPA @ Round r: <table pairs> => <round pairs>' in the TRF26 copy and the ITDX file (Export page, 'Transfer to another program (ITDX)'), never the rating file (as Q69). Individual round robins over one table only (RoundRobin.by_hand?/1): team, per-category and match-format round robins keep the table. Tests: manual_round_robin_test.exs, manual_round_robin_live_test.exs."
   },
   {
    "q": 101,
@@ -1841,7 +1841,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "Pairing-integrity events are identified, stored and logged as PIBEs: hand edits (MPA, rounds.mpa_pibe, audit pairing.mpa_finished), imports (import_findings, pibe.import), result corrections after a later round was paired (pairings.corrected_from, pibe.correction), TPN exchanges and regenerations (audited), full-point byes and rating-only corrections (audited, ### lines). Tests: manual_pairing_test.exs, trf_import_adjustments_test.exs, long_event_and_correction_live_test.exs, tpn_test.exs."
+   "note": "Pairing-integrity events are identified, stored and logged as PIBEs: hand edits (MPA, rounds.mpa_pibe, audit pairing.mpa_finished), imports (import_findings, pibe.import), result corrections after a later round was paired (pairings.corrected_from, pibe.correction), TPN exchanges and regenerations (audited), full-point byes and rating-only corrections (audited, ### lines in the copy and the ITDX file). Tests: manual_pairing_test.exs, trf_import_adjustments_test.exs, long_event_and_correction_live_test.exs, tpn_test.exs."
   },
   {
    "q": 113,
@@ -1858,7 +1858,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "Each logged PIBE kind is written to the TRF26 report as a ### line: MPA, Import, Correction, FPB, Rating correction (trf_export.ex), never in the file sent for rating."
+   "note": "Each logged PIBE kind is written as a ### line in the TRF26 copy and in the ITDX file (Export page, 'Transfer to another program (ITDX)'): MPA, Import, Correction, FPB, Rating correction (trf_export.ex note_comments/3), never in the file sent for rating. The ITDX file also carries a write-only '### OP' block (ItdxNotes) of settings, rules and round events; nothing reads it back."
   },
   {
    "q": 114,
@@ -2711,7 +2711,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "Open * is written as ? on both players' 001 lines in the TRF26 download and copies (trf_export.ex); the file sent for rating writes it as not played, 0000 - Z (0.74.0)."
+   "note": "The ITDX file (Export page, 'Transfer to another program (ITDX)', GET /t/:id/export/itdx, trf_export.ex itdx: true) writes an open * as ? on both players' 001 lines with X in record 162: the draw for postponed games, 0 for a board paired and not yet played, the draw (and the unplayed boards' points raised by it) when both are in the file - the TEC Manual draft's rules for unknown results. Name: ..._ITDX-NOT-FOR-RATING.trf, and a '### ITDX - NOT FOR RATING' mark inside. The TRF26 copy and the file sent for rating write it as not played, 0000 - Z (0.74.0), the copy adding '### Postponed @ Round r: w-b'. Tests: trf_itdx_test.exs."
   },
   {
    "q": 165,
@@ -2794,7 +2794,7 @@
    },
    "answer": "N",
    "status": "met",
-   "note": "In FIDE mode no TRF (copy, engine dialect, file for rating, Send) that holds the round of a postponed game without a result, and no final standings (Standings page, printed individual and team standings), are made: TrfExport.export/3 asks PostponedGames.ensure_reportable/2 with the file's rounds, the pages ask PostponedGames.final_standings_refused?/2, and each refusal lists the open games. The way on without a result is 'Not played in this event' (Settings, Export; PostponedGames.report_not_played/2): Level-4 double confirmation, leaves FIDE mode (fide_compliance_lost_round stamped, audit row), written 0000 - Z in the file for rating and as '### Not played @ Round r' in TRF26 copies (trf_export.ex not_played_comments). A real result keeps FIDE mode. A file of only the rounds before the open game's round (e.g. the rating inbox's copy of an earlier round) is still made, it reports nothing about that game; OpenResults keeps publishing standings marked not final (a design decision, not a final-standings document). Tests: postponed_fide_mode_test.exs (incl. 'a file of only the rounds before its round is made; one that includes it is not'), postponed_fide_mode_live_test.exs."
+   "note": "In FIDE mode no final TRF (copy, engine dialect, file for rating, Send; not the ITDX file, which is partial by definition and exists to carry unknown results) that holds the round of a postponed game without a result, and no final standings (Standings page, printed individual and team standings), are made: TrfExport.export/3 asks PostponedGames.ensure_reportable/2 with the file's rounds, the pages ask PostponedGames.final_standings_refused?/2, and each refusal lists the open games. The way on without a result is 'Not played in this event' (Settings, Export; PostponedGames.report_not_played/2): Level-4 double confirmation, leaves FIDE mode (fide_compliance_lost_round stamped, audit row), written 0000 - Z in the file for rating and as '### Not played @ Round r' in the TRF26 copy and the ITDX file (trf_export.ex not_played_comments). A real result keeps FIDE mode. A file of only the rounds before the open game's round (e.g. the rating inbox's copy of an earlier round) is still made, it reports nothing about that game; OpenResults keeps publishing standings marked not final (a design decision, not a final-standings document). Tests: postponed_fide_mode_test.exs (incl. 'a file of only the rounds before its round is made; one that includes it is not'), postponed_fide_mode_live_test.exs."
   },
   {
    "q": 170,
@@ -2961,7 +2961,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "The TRF26 report writes '### FPB @ Round r: n=FPB' and the 001 record '0000 - F' (trf_export.ex). Test: full_point_bye_test.exs 'written F, with a ### line'. Like every ### line, not in the file sent for rating; see docs/vcl4thp/questions.md."
+   "note": "The TRF26 report writes '### FPB @ Round r: n=FPB' and the 001 record '0000 - F' (trf_export.ex). Test: full_point_bye_test.exs 'written F, with a ### line'. Like every ### line, in the copy and the ITDX file, not in the file sent for rating; see docs/vcl4thp/questions.md."
   },
   {
    "q": 180,
@@ -3190,7 +3190,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "The TRF26 report adds '### Rating correction @ Round r: a-b: old => new (pairings and standings used old)' (trf_export.ex). Test: rating_correction_test.exs. Not in the file sent for rating, which carries the corrected 001 results; see docs/vcl4thp/questions.md."
+   "note": "The TRF26 copy and the ITDX file add '### Rating correction @ Round r: a-b: old => new (pairings and standings used old)' (trf_export.ex). Test: rating_correction_test.exs. Not in the file sent for rating, which carries the corrected 001 results; see docs/vcl4thp/questions.md."
   },
   {
    "q": 194,
@@ -3223,7 +3223,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "In FIDE mode every prohibition - forbidden pairs, pairing rules by club, federation or group, hard or 'if possible' - is set before round 1 is paired, as C.05 5.2 asks of any restriction. Once round 1 is paired, adding, changing or removing one (and changing how hard the wishes are tried, while there are any) asks TEC's Level-4 double confirmation first (SettingsRestrictionsLive ask/3, fide_exit_dialog), then leaves FIDE mode in the same transaction: the act is recorded in tournaments.prohibition_changes and the round under way stamped in fide_compliance_lost_round (Tournaments.record_prohibition_change/2, record_soft_position_change/2). The TRF26 copy writes '### Prohibition @ Round r: ...' beside '### FIDE mode exited @ Round n' (trf_export.ex prohibition_comments); never in the file sent for rating. What a rule announced before round 1 does to a late entrant is not an act and records nothing; prohibitions added late before 0.79.0 are not re-judged (only new acts count). Tests: prohibitions_fide_mode_test.exs, settings_restrictions_live_test.exs 'FIDE mode'."
+   "note": "In FIDE mode every prohibition - forbidden pairs, pairing rules by club, federation or group, hard or 'if possible' - is set before round 1 is paired, as C.05 5.2 asks of any restriction. Once round 1 is paired, adding, changing or removing one (and changing how hard the wishes are tried, while there are any) asks TEC's Level-4 double confirmation first (SettingsRestrictionsLive ask/3, fide_exit_dialog), then leaves FIDE mode in the same transaction: the act is recorded in tournaments.prohibition_changes and the round under way stamped in fide_compliance_lost_round (Tournaments.record_prohibition_change/2, record_soft_position_change/2). The TRF26 copy and the ITDX file write '### Prohibition @ Round r: ...' beside '### FIDE mode exited @ Round n' (trf_export.ex prohibition_comments); never in the file sent for rating. What a rule announced before round 1 does to a late entrant is not an act and records nothing; prohibitions added late before 0.79.0 are not re-judged (only new acts count). Tests: prohibitions_fide_mode_test.exs, settings_restrictions_live_test.exs 'FIDE mode'."
   },
   {
    "q": 196,
@@ -3239,7 +3239,7 @@
    },
    "answer": "N",
    "status": "met",
-   "note": "In FIDE mode, no: once round 1 is paired any prohibition added, changed or removed takes the tournament out of FIDE mode behind the Level-4 confirmation, stamped and written as '### Prohibition' in TRF26 copies (see Q195). The club/federation rules are pairing rules now and follow the same path. Outside FIDE mode it can be added at any time and is still listed in the TRF26 copy. Tests: prohibitions_fide_mode_test.exs 'once round 1 is paired, in FIDE mode'."
+   "note": "In FIDE mode, no: once round 1 is paired any prohibition added, changed or removed takes the tournament out of FIDE mode behind the Level-4 confirmation, stamped and written as '### Prohibition' in the TRF26 copy and the ITDX file (see Q195). The club/federation rules are pairing rules now and follow the same path. Outside FIDE mode it can be added at any time and is still listed in the TRF26 copy and the ITDX file. Tests: prohibitions_fide_mode_test.exs 'once round 1 is paired, in FIDE mode'."
   },
   {
    "q": 197,
@@ -3592,7 +3592,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "The TRF26 report now also writes 172 with National Rating Support records when national ratings rank a player, 299 with its round (000 / 999), 260 from the round a late prohibition was added, and ### lines for corrections, rating-only corrections, full-point byes, MPAs and imports. Already written: final ranks, 202 in C.07 spelling, 152, 222 where encodable, 330, 310. 212 equals 202 here (points always rank first); 222 cannot encode a delay (122 carries the text). Tests: trf_complete_report_test.exs, trf_checker_round_trip_test.exs. See docs/vcl4thp/questions.md on the file sent for rating."
+   "note": "The TRF26 report now also writes 172 with National Rating Support records when national ratings rank a player, 299 with its round (000 / 999), 260 from the round a late prohibition was added, and ### lines for corrections, rating-only corrections, full-point byes, MPAs and imports (in the copy and the ITDX file; the file sent for rating has none). Already written: final ranks, 202 in C.07 spelling, 152, 222 where encodable, 330, 310. 212 equals 202 here (points always rank first); 222 cannot encode a delay (122 carries the text). Tests: trf_complete_report_test.exs, trf_checker_round_trip_test.exs. See docs/vcl4thp/questions.md on the file sent for rating."
   },
   {
    "q": 218,
