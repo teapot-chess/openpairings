@@ -498,7 +498,9 @@ defmodule PairingsEngineWeb.PrintController do
   defp player_list_columns(csv, tournament) do
     csv
     |> player_list_columns()
-    |> Enum.reject(fn {key, _label, _num?} -> key == :team and not Tournament.team?(tournament) end)
+    |> Enum.reject(fn {key, _label, _num?} ->
+      key == :team and not Tournament.team?(tournament)
+    end)
   end
 
   defp player_list_columns(csv) do
