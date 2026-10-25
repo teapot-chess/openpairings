@@ -162,7 +162,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
   def handle_event("tb_family", %{"family" => family}, socket),
     do: {:noreply, tb_update(socket, %{"family" => family})}
 
-  def handle_event("tb_set", %{"field" => field, "value" => value}, socket),
+  def handle_event("tb_set", %{"field" => field, "option" => value}, socket),
     do: {:noreply, tb_update(socket, %{field => value})}
 
   def handle_event("tb_toggle", %{"field" => field}, socket) do
@@ -1002,7 +1002,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLive do
           aria-pressed={to_string(@value == val)}
           phx-click="tb_set"
           phx-value-field={@field}
-          phx-value-value={val}
+          phx-value-option={val}
         >
           {text}
         </button>

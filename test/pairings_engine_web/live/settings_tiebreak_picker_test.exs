@@ -101,6 +101,22 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     assert Tournaments.get_tournament!(tournament.id).tiebreaks == ~w(BHC1 MBH AROC1)
   end
 
+  # In a browser, LiveView sends a button's own `value` property under the key
+  # "value" and it beats `phx-value-value`; a button with no value attribute
+  # sends "", so every choice arrived as the first one. LiveViewTest does not
+  # do that, which is how it got past the tests above. The attribute is the
+  # only thing a test here can hold on to.
+  test "the choice buttons do not carry their choice in phx-value-value",
+       %{conn: conn, scope: scope} do
+    tournament = create_tournament(scope, "team-swiss")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+
+    family(lv, "BH")
+    assert has_element?(lv, ~s(#tb-cut-m2[phx-value-option="M2"]))
+    assert has_element?(lv, ~s(#tb-ref-gp[phx-value-option="GP"]))
+    refute has_element?(lv, "#tiebreak-builder [phx-value-value]")
+  end
+
   test "a combination already in the list cannot be added", %{conn: conn, scope: scope} do
     tournament = create_tournament(scope)
     {:ok, _} = Tournaments.update_tournament(tournament, %{tiebreaks: ["BHC1"]})
