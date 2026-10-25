@@ -60,7 +60,7 @@ Keizer cannot be a team tournament.
    DE, BB, SB). Article 1.2.1 lets the competition's rules choose, so either
    value keeps the tournament in FIDE mode; like the points, it cannot change
    once round 1 is paired there.
-7. **Tie-breaks** (Settings, Tournament): a team tournament is offered the team
+7. **Tie-breaks** (Settings, Tie-breaks): a team tournament is offered the team
    tie-breaks. The FIDE default is MP, GP, DE, BB, SB.
 
 Every action on the Teams page is an ordinary button with a spoken name, and the

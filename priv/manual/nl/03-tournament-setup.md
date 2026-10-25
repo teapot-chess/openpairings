@@ -55,7 +55,7 @@ het FIDE-toernooi-ID.
 
 Het menu **Instellingen** in de bovenbalk opent de pagina Toernooi. Naast elke
 instellingenpagina staat de lijst van pagina's (op een telefoon erboven), in drie
-groepen: **Opzet** (Toernooi, Groep, Opties, Puntentelling, Data, Ruimtes, Categorieën,
+groepen: **Opzet** (Toernooi, Groep, Opties, Puntentelling, Tiebreaks, Data, Ruimtes, Categorieën,
 Extra punten, Verboden paringen), **Publiceren** (OpenResults, Live borden) en
 **Rapporteren** (FIDE, Exporteren, Over).
 
@@ -94,7 +94,7 @@ Nog twee dingen houden de pagina's kort:
 
 | Pagina | Getoond | Met *Geavanceerde instellingen tonen* |
 | --- | --- | --- |
-| Toernooi | naam, speelzaal, stad, federatie, organisator; toernooiformaat; aantal rondes; tiebreaks; Chess960 en het vinkje voor 30 dagen; delen | clubnummer van de organisator; hoe een ongerate speler in de tiebreaks telt; spelers die nog gelijk staan delen een plaats; logo |
+| Toernooi | naam, speelzaal, stad, federatie, organisator; toernooiformaat; aantal rondes; Chess960 en het vinkje voor 30 dagen; delen | clubnummer van de organisator; logo |
 | Groep | dit toernooi bij de andere toernooien van zijn evenement in een groep zetten, of er weer uit halen | - |
 | Opties | paringssysteem, toernooirating, cycli (rondetoernooi), Keizer-topwaarde (Keizer), opstellingen (teams), type en speeltempo | engine, beginkleur, gelijke rating en titel, paringsnummers van laatkomers, afwezigen in ronde 1, acceleratie, de matchformaten, teamrating en rating van een ongerate speler (teams), ander speeltempo |
 | Puntentelling | punten, matchpunten, uitgestelde partijen | de hele kaart *Byes en afwezigheden* (punten voor een overgeslagen ronde en de grenzen ervan, vrijwillig niet-gespeelde rondes, afwezigheden van laatkomers, het byetype vragen); bye, forfait en terugtrekking van een team |
@@ -138,11 +138,6 @@ als *niet gecontroleerd*. Wijzig je de naam zonder opnieuw te kiezen, dan
 waarschuwt de pagina dat de FIDE-ID bij de oude naam hoort, en bewaren wist hem
 in plaats van hem op iemand anders te plakken. De pagina Functionarissen &
 normen toont de organisator, met een link terug naar hier.
-
-**Tiebreaks.** Beschreven in [Rangschikking en tiebreaks](08-standings-and-tiebreaks.md).
-Met *Geavanceerde instellingen tonen* bevat deze kaart ook *Hoe een ongerate
-speler in de tiebreaks wordt geteld* (met de rating die daarvoor is ingetypt) en
-*Spelers die nog gelijk staan delen een plaats*.
 
 **Bijzondere formules.** Het vinkje *Chess960* zegt dat het toernooi als
 Chess960 wordt gespeeld. De arbiter trekt dan voor elke ronde een startpositie
@@ -462,6 +457,20 @@ telt ze voor de speler die haar heeft uitgesteld, en voor de tegenstander, zoals
 hier is ingesteld (standaard een remise voor beide spelers, wat de FIDE-regel is).
 Een round robin biedt uitgestelde resultaten altijd aan, dus daar staat de
 schakelaar aan en vast; de waarden gelden nog altijd. Zie [Resultaten](07-results.md).
+
+## Pagina Tiebreaks {#tie-breaks-page}
+
+De lijst die spelers met evenveel punten van elkaar scheidt, in de lijst met
+pagina's meteen na Puntentelling. Ze heeft een eigen knop **Instellingen
+bewaren**; er wordt niets anders van het toernooi mee bewaard. Een preset vult
+de lijst in één keer, met de pijltjes verplaats je een tiebreak en het kruisje
+haalt hem weg, en **Tiebreak toevoegen** bouwt er een in twee stappen. Hoe
+elke tiebreak wordt berekend staat in [Rangschikking en
+tiebreaks](08-standings-and-tiebreaks.md). Met *Geavanceerde instellingen
+tonen* bevat de pagina ook *Hoe een ongerate speler in de tiebreaks wordt
+geteld* (met de rating die daarvoor is ingetypt) en *Spelers die nog gelijk
+staan delen een plaats*. In de FIDE-modus is de hele lijst vergrendeld zodra
+ronde 1 gepaard is, met een opmerking die dat zegt.
 
 ## Pagina Data {#dates-page}
 

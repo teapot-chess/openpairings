@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **Tie-breaks have a page of their own.** Settings has a *Tie-breaks* entry in the Set-up group, right after Scoring, and the list, the presets, the builder and *Reset to FIDE default* moved there from the Tournament page, along with the two advanced settings about unrated players and shared places. The page has its own *Save settings*, so rearranging tie-breaks no longer rides along with a changed venue, and saving it writes the same audit entry as before and nothing else of the tournament. FIDE mode still freezes the list once round 1 is paired and now freezes a page instead of a card. The Tournament page keeps no signpost to it; the rail is the signpost, and it has been there all along.
+
 ## [0.107.0] - 2026-10-25
 
 - [Fix] **The tie-break builder's buttons press again.** Cut, median, score basis, "then" and Koya limit looked clickable and did nothing in a browser: each button sent its choice under the one name the browser overwrites with the button's own (empty) value, so every click chose the first option. Tests click without a browser and saw no problem, which is the kind of alibi only a test can have. The choice now travels under a name nobody else wants.

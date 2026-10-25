@@ -22,6 +22,7 @@ defmodule PairingsEngineWeb.SettingsAdvancedSwitchTest do
     "settings/group",
     "settings/options",
     "settings/scoring",
+    "settings/tiebreaks",
     "settings/dates",
     "settings/rooms",
     "categories",
@@ -80,5 +81,24 @@ defmodule PairingsEngineWeb.SettingsAdvancedSwitchTest do
     {:ok, _} = PairingsEngine.TournamentGroups.create_group(scope, tournament, "Festival")
     {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
     refute has_element?(lv, "#group-link")
+  end
+
+  test "the Tie-breaks page is in the rail, right after Scoring", %{conn: conn, scope: scope} do
+    {:ok, tournament} =
+      Tournaments.create_tournament(scope, %{"name" => "Rail", "type" => "swiss"})
+
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+
+    assert has_element?(lv, "#settings-nav a[href='/t/#{tournament.id}/settings/tiebreaks']")
+
+    hrefs =
+      lv
+      |> render()
+      |> LazyHTML.from_fragment()
+      |> LazyHTML.query("#settings-nav a")
+      |> LazyHTML.attribute("href")
+
+    scoring = Enum.find_index(hrefs, &String.ends_with?(&1, "/settings/scoring"))
+    assert Enum.at(hrefs, scoring + 1) == "/t/#{tournament.id}/settings/tiebreaks"
   end
 end

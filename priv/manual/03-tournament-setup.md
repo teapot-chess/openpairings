@@ -52,7 +52,7 @@ tournament ID.
 
 The **Settings** menu in the top bar opens the Tournament page. Every
 Settings page has the list of pages beside it (above it on a phone), in three
-groups: **Set-up** (Tournament, Group, Options, Scoring, Dates, Rooms, Categories,
+groups: **Set-up** (Tournament, Group, Options, Scoring, Tie-breaks, Dates, Rooms, Categories,
 Extra points, Forbidden pairings), **Publishing** (OpenResults, Live boards) and
 **Reporting** (FIDE, Export, About).
 
@@ -90,10 +90,11 @@ Two more things keep the pages short:
 
 | Page | Shown | With *Show advanced settings* |
 | --- | --- | --- |
-| Tournament | name, venue, city, federation, organiser; tournament format; number of rounds; tie-breaks; Chess960 and the 30-day tick; sharing | organiser's club number; how an unrated player is counted in the tie-breaks; players still level share a place; logo |
+| Tournament | name, venue, city, federation, organiser; tournament format; number of rounds; Chess960 and the 30-day tick; sharing | organiser's club number; logo |
 | Group | put this tournament in a group with the other tournaments of its event, or take it out | - |
 | Options | pairing system, tournament rating, cycles (round robin), Keizer top value (Keizer), line-ups (teams), type and rate of play | engine, initial colour, equal rating and title, late entrants' pairing numbers, round-1 absentees, acceleration, the match formats, team rating and unrated rating (teams), other rate of play |
 | Scoring | points, match points, postponed games | the whole *Byes and absences* card (points for a round sat out and its limits, voluntary unplayed rounds, late entrants' absences, asking the bye type); a team's bye, forfeit and withdrawal rules |
+| Tie-breaks | the tie-break list, with presets and the builder | how an unrated player is counted in the tie-breaks; players still level share a place |
 | Dates | one date per round | - |
 | Rooms | the rooms of the hall and their boards | - |
 | Categories | see [Categories and norms](11-categories-and-norms.md) | - |
@@ -133,11 +134,6 @@ typed in the ID box can be taken as typed and is marked *unverified*. When the
 name is changed without picking again, the page warns that the FIDE ID belongs
 to the old name, and saving clears it rather than pinning it on somebody else.
 The Officials and norms page shows the organiser, with a link back here.
-
-**Tie-breaks.** Described in [Standings and tie-breaks](08-standings-and-tiebreaks.md).
-With *Show advanced settings* this card also holds *How an unrated player is
-counted in the tie-breaks* (with the rating typed for it) and *Players still
-level share a place*.
 
 **Special formats.** The tick *Chess960* says that the tournament is played
 as Chess960. The arbiter then draws a starting position for each round on the
@@ -444,6 +440,18 @@ the opponent, as set here (a draw for both by default,
 which is the FIDE rule). A round robin always offers postponed results, so
 there the switch is shown on and locked; the values still apply. See
 [Results](07-results.md).
+
+## Tie-breaks page
+
+The list that orders players level on points, in the rail right after
+Scoring. It has its own **Save settings**; nothing else of the tournament is
+saved with it. A preset fills the list at once, the arrows move a tie-break
+and the cross removes it, and **Add a tie-break** builds one in two steps. How
+each one is calculated is described in [Standings and
+tie-breaks](08-standings-and-tiebreaks.md). With *Show advanced settings* the
+page also holds *How an unrated player is counted in the tie-breaks* (with the
+rating typed for it) and *Players still level share a place*. In FIDE mode the
+whole list is locked once round 1 is paired, with a note saying so.
 
 ## Dates page
 

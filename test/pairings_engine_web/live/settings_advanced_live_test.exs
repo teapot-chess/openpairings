@@ -60,7 +60,7 @@ defmodule PairingsEngineWeb.SettingsAdvancedLiveTest do
     scope: scope
   } do
     tournament = create_tournament(scope)
-    {:ok, _} = Tournaments.update_tournament(tournament, %{"shared_places" => "true"})
+    {:ok, _} = Tournaments.update_tournament(tournament, %{"organizer_club_number" => "123"})
 
     {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
 
@@ -91,6 +91,7 @@ defmodule PairingsEngineWeb.SettingsAdvancedLiveTest do
           ~p"/t/#{tournament.id}/settings",
           ~p"/t/#{tournament.id}/settings/options",
           ~p"/t/#{tournament.id}/settings/scoring",
+          ~p"/t/#{tournament.id}/settings/tiebreaks",
           ~p"/t/#{tournament.id}/settings/dates",
           ~p"/t/#{tournament.id}/categories",
           ~p"/t/#{tournament.id}/settings/extra-points",
