@@ -178,7 +178,7 @@ desktopversie bent dat altijd jij.
    startdatum, speeltempo. **Toernooi aanmaken**.
 2. Instellingen, **Data**: vul een datum in voor elke ronde (geen enkele ronde
    kan worden gepaard zolang niet elke ronde een datum heeft).
-3. Instellingen, **Toernooi**: controleer de tiebreaks en de functionarissen.
+3. Instellingen, **Tiebreaks** en **Toernooi**: controleer de tiebreaks en de functionarissen.
 4. **Spelers**: voeg de spelers toe (doorzoek de FIDE-lijst of typ ze in).
 5. **Paringen**: **Ronde 1 paren**.
 6. Voer de resultaten in op de pagina Paringen. Wanneer elk bord een resultaat

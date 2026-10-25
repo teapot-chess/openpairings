@@ -175,7 +175,7 @@ desktop build that is always you.
    start date, rate of play. **Create tournament**.
 2. Settings, **Dates**: enter a date for every round (no round can be paired
    until every round has a date).
-3. Settings, **Tournament**: check the tie-breaks and the officials.
+3. Settings, **Tie-breaks** and **Tournament**: check the tie-breaks and the officials.
 4. **Players**: add the players (search the FIDE list or type them in).
 5. **Pairings**: **Pair round 1**.
 6. Enter the results on the Pairings page. When every board has a result,

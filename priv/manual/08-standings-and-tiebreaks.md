@@ -7,7 +7,7 @@ the table has the rank, the name, the rating, the points, and one column for
 every tie-break of the tournament, in the order in which they are applied.
 The page header says *Standings after round N*. Players still level after
 every tie-break are ordered by rating and name, or share a place, as the
-setting *Players still level share a place* (Settings, Tournament, advanced) says (see below).
+setting *Players still level share a place* (Settings, Tie-breaks, advanced) says (see below).
 
 - The **Category** filter above the table shows one category at a time
   ([Categories and norms](11-categories-and-norms.md)).
@@ -54,7 +54,7 @@ as set there too ([Byes and absences](05-byes-and-absences.md)). Extra points
 ## Tie-breaks
 
 The tie-breaks decide the order of players who have the same number of
-points. They are set on Settings, **Tournament**, section *Tiebreaks*. The
+points. They are set on Settings, **Tie-breaks**. The
 program follows FIDE's C.07 (Tie-Break Regulations, 1 March 2026), and the
 calculations are done by the same engine that pairs the Swiss rounds.
 
@@ -182,7 +182,7 @@ the rest).
   tie-breaks (ARO and its cuts and medians, TPR, PTP, APRO, APPO, RTNG) are
   dropped when an unrated player is in the field, unless the tournament
   regulations say how an unrated player is counted. Say it in Settings,
-  Tournament, *How an unrated player is counted in the tie-breaks*, before the
+  Tie-breaks, *How an unrated player is counted in the tie-breaks*, before the
   first round:
   - *Fixed rating*: every unrated player counts as the rating typed in
     *Rating of an unrated player in the tie-breaks*; while that is empty,
@@ -214,7 +214,7 @@ the rest).
 
   Above the standings a line says which of the three is in force.
 - **Players still level after every tie-break.** *Players still level share
-  a place* (Settings, Tournament): off (the default), the remaining ties are
+  a place* (Settings, Tie-breaks): off (the default), the remaining ties are
   ordered by rating and then by name and numbered one after the other; on,
   they all show the same place, such as 2=, and the next place is skipped.
   A drawing of lots (below) can settle such ties instead.

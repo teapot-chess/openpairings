@@ -4,7 +4,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
 
   import Phoenix.LiveViewTest
 
-  alias PairingsEngine.{Standings, Tournaments}
+  alias PairingsEngine.{Audit, Pairing, Repo, Standings, Tournaments}
 
   setup :register_and_log_in_user
 
@@ -25,7 +25,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
 
   test "the builder offers base families only, in groups", %{conn: conn, scope: scope} do
     tournament = create_tournament(scope)
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     for id <- ~w(BH FB SB AOB PS KS DE ARO TPR RTNG WIN) do
       assert has_element?(lv, ~s(#tb-family optgroup option[value="#{id}"]))
@@ -42,7 +42,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
 
   test "only the modifiers a family accepts are shown", %{conn: conn, scope: scope} do
     tournament = create_tournament(scope)
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     family(lv, "BH")
     assert has_element?(lv, "#tb-cut")
@@ -65,7 +65,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     scope: scope
   } do
     tournament = create_tournament(scope)
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     family(lv, "BH")
     pick(lv, "tb-cut-c1")
@@ -83,7 +83,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
   test "a combination with an old spelling is stored under it", %{conn: conn, scope: scope} do
     tournament = create_tournament(scope)
     {:ok, _} = Tournaments.update_tournament(tournament, %{tiebreaks: []})
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     family(lv, "BH")
     pick(lv, "tb-cut-c1")
@@ -97,7 +97,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     pick(lv, "tb-cut-c1")
     add(lv)
 
-    lv |> form("#tournament-settings-form") |> render_submit()
+    lv |> form("#tiebreaks-settings-form") |> render_submit()
     assert Tournaments.get_tournament!(tournament.id).tiebreaks == ~w(BHC1 MBH AROC1)
   end
 
@@ -109,7 +109,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
   test "the choice buttons do not carry their choice in phx-value-value",
        %{conn: conn, scope: scope} do
     tournament = create_tournament(scope, "team-swiss")
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     family(lv, "BH")
     assert has_element?(lv, ~s(#tb-cut-m2[phx-value-option="M2"]))
@@ -120,7 +120,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
   test "a combination already in the list cannot be added", %{conn: conn, scope: scope} do
     tournament = create_tournament(scope)
     {:ok, _} = Tournaments.update_tournament(tournament, %{tiebreaks: ["BHC1"]})
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     family(lv, "BH")
     pick(lv, "tb-cut-c1")
@@ -138,7 +138,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
   } do
     tournament = create_tournament(scope, "team-swiss")
     {:ok, _} = Tournaments.update_tournament(tournament, %{tiebreaks: []})
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     for id <- ~w(SSSC EMMSB EDE PS MPVGP),
         do: assert(has_element?(lv, "#tb-family option[value=#{id}]"))
@@ -155,7 +155,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     assert has_element?(lv, "#tb-preview-code", "SSSC/F/K7")
     add(lv)
 
-    lv |> form("#tournament-settings-form") |> render_submit()
+    lv |> form("#tiebreaks-settings-form") |> render_submit()
     assert Tournaments.get_tournament!(tournament.id).tiebreaks == ["BH:GP/C1", "SSSC/F/K7"]
   end
 
@@ -165,18 +165,18 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
   } do
     tournament = create_tournament(scope, "team-roundrobin")
     {:ok, _} = Tournaments.update_tournament(tournament, %{tiebreaks: []})
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     family(lv, "BH")
     assert has_element?(lv, "#tb-preview-code", "BH:MP")
     add(lv)
-    lv |> form("#tournament-settings-form") |> render_submit()
+    lv |> form("#tiebreaks-settings-form") |> render_submit()
     assert Tournaments.get_tournament!(tournament.id).tiebreaks == ["BH"]
   end
 
   test "adding a tie-break from a group puts it in the list", %{conn: conn, scope: scope} do
     tournament = create_tournament(scope)
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     family(lv, "FB")
     pick(lv, "tb-cut-c1")
@@ -190,7 +190,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     scope: scope
   } do
     tournament = create_tournament(scope)
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
     assert has_element?(lv, "#tiebreak-unrated-rating")
     refute has_element?(lv, "#shared-places[checked]")
@@ -199,7 +199,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     add(lv)
 
     lv
-    |> form("#tournament-settings-form", %{
+    |> form("#tiebreaks-settings-form", %{
       "tournament" => %{"tiebreak_unrated_rating" => "1300", "shared_places" => "true"}
     })
     |> render_submit()
@@ -210,7 +210,7 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
     assert saved.shared_places == true
     assert Standings.dropped_tiebreaks(saved) == []
 
-    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+    {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
     assert has_element?(lv, "#shared-places[checked]")
     assert has_element?(lv, ~s(#tiebreak-unrated-rating[value="1300"]))
   end
@@ -228,5 +228,98 @@ defmodule PairingsEngineWeb.SettingsTiebreakPickerTest do
 
     {:ok, _lv, html} = live(conn, ~p"/t/#{tournament.id}/standings")
     assert html =~ "1="
+  end
+
+  describe "the Tie-breaks page" do
+    test "is in the rail, and the Tournament page no longer holds the editor", %{
+      conn: conn,
+      scope: scope
+    } do
+      tournament = create_tournament(scope)
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
+      assert has_element?(lv, "#settings-nav a[href='/t/#{tournament.id}/settings/tiebreaks']")
+      assert has_element?(lv, "#tiebreaks-settings-form #tiebreak-editor")
+      refute has_element?(lv, "#tiebreak-editor[disabled]")
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+      refute has_element?(lv, "#tiebreak-editor")
+      refute has_element?(lv, "#tiebreak-builder")
+      refute has_element?(lv, "#tiebreak-unrated-rating")
+      refute has_element?(lv, "#shared-places")
+      assert has_element?(lv, "#tournament-settings-form")
+    end
+
+    test "moves, removes and presets are saved by the Save button, and audited", %{
+      conn: conn,
+      scope: scope
+    } do
+      tournament = create_tournament(scope)
+      {:ok, _} = Tournaments.update_tournament(tournament, %{tiebreaks: ~w(BH SB PS)})
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
+
+      lv |> element("button[phx-click=tb_down][phx-value-index='0']") |> render_click()
+      lv |> element("button[phx-click=tb_remove][phx-value-code='PS']") |> render_click()
+
+      # Nothing is written until Save.
+      assert Tournaments.get_tournament!(tournament.id).tiebreaks == ~w(BH SB PS)
+
+      lv |> form("#tiebreaks-settings-form") |> render_submit()
+      assert Tournaments.get_tournament!(tournament.id).tiebreaks == ~w(SB BH)
+
+      assert Enum.any?(
+               Audit.list_for_tournament(tournament.id),
+               &(&1.action == "tournament.settings_updated")
+             )
+
+      lv |> element("button[phx-click=tb_reset]") |> render_click()
+      lv |> form("#tiebreaks-settings-form") |> render_submit()
+      defaults = PairingsEngine.Tiebreaks.fide_defaults_for(tournament)
+      assert Tournaments.get_tournament!(tournament.id).tiebreaks == defaults
+    end
+
+    test "a save here writes nothing else of the tournament", %{conn: conn, scope: scope} do
+      tournament = create_tournament(scope)
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
+
+      render_submit(lv, "save", %{
+        "tournament" => %{"name" => "Hijacked", "shared_places" => "true"}
+      })
+
+      saved = Tournaments.get_tournament!(tournament.id)
+      assert saved.name == "Picker"
+      assert saved.shared_places
+    end
+
+    test "FIDE mode locks the editor and the save once round 1 is paired", %{
+      conn: conn,
+      scope: scope
+    } do
+      tournament = create_tournament(scope)
+
+      for {name, i} <- Enum.with_index(~w(Ann Ben Cas Dan)) do
+        {:ok, _} =
+          Tournaments.create_player(tournament.id, %{
+            tournament_id: tournament.id,
+            name: name,
+            fide_rating: 2000 - 100 * i
+          })
+      end
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
+      refute has_element?(lv, "#tiebreak-editor[disabled]")
+      before = Tournaments.get_tournament!(tournament.id).tiebreaks
+
+      {:ok, _round} = Pairing.pair_next_round(Repo.reload!(tournament), [])
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
+      assert has_element?(lv, "#tiebreaks-fide-lock")
+      assert has_element?(lv, "#tiebreak-editor[disabled]")
+
+      # A crafted event cannot change the list either: it is not sent.
+      render_click(lv, "tb_reset", %{})
+      render_submit(lv, "save", %{"tournament" => %{"shared_places" => "true"}})
+      assert Tournaments.get_tournament!(tournament.id).tiebreaks == before
+    end
   end
 end

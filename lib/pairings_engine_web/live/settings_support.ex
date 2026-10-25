@@ -273,7 +273,7 @@ defmodule PairingsEngineWeb.SettingsSupport do
   The rail of Settings pages, grouped the way an arbiter meets them:
   setting the tournament up, putting it in front of people, reporting it.
   `active` is one of `:tournament`, `:options`, `:restrictions`, `:scoring`,
-  `:group`, `:dates`, `:rooms`, `:categories`, `:extra_points`, `:results`, `:boards`, `:fide`,
+  `:tiebreaks`, `:group`, `:dates`, `:rooms`, `:categories`, `:extra_points`, `:results`, `:boards`, `:fide`,
   `:norms`, `:export`, `:about`. A plugin's page is `"plugin:" <> id`
   (`PairingsEngine.Plugin`'s `tournament_settings_entries/2`).
 
@@ -352,6 +352,8 @@ defmodule PairingsEngineWeb.SettingsSupport do
          {:options, ~p"/t/#{id}/settings/options", "hero-adjustments-vertical-micro",
           gettext("Options")},
          {:scoring, ~p"/t/#{id}/settings/scoring", "hero-calculator-micro", gettext("Scoring")},
+         {:tiebreaks, ~p"/t/#{id}/settings/tiebreaks", "hero-scale-micro",
+          gettext("Tie-breaks")},
          {:dates, ~p"/t/#{id}/settings/dates", "hero-calendar-days-micro", gettext("Dates")},
          {:rooms, ~p"/t/#{id}/settings/rooms", "hero-map-micro", gettext("Rooms")},
          {:categories, ~p"/t/#{id}/categories", "hero-tag-micro", gettext("Categories")},
@@ -2016,7 +2018,9 @@ defmodule PairingsEngineWeb.SettingsSupport do
   def setup_field_path(tournament, field) when field in [:fide_tournament_id],
     do: ~p"/t/#{tournament.id}/settings/fide"
 
-  # name, rounds_count, tiebreaks, federation all live on the main
+  def setup_field_path(tournament, :tiebreaks), do: ~p"/t/#{tournament.id}/settings/tiebreaks"
+
+  # name, rounds_count, federation all live on the main
   # Tournament settings page. (start_date, formerly here too, is derived
   # from round_dates now - see Tournament's own doc comment on that
   # field - so it's never a `missing_setup_fields/1` entry on its own.)

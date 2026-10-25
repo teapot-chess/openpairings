@@ -53,7 +53,7 @@ Keizer kan geen teamtoernooi zijn.
    FIDE-standaard* bij de tiebreaks begint dan met de andere score (GP, MP, DE, BB, SB). Artikel
    1.2.1 laat het reglement kiezen, dus beide waarden houden het toernooi in de FIDE-modus; net als
    de punten kun je ze daar niet meer wijzigen zodra ronde 1 gepaard is.
-7. **Tiebreaks** (Instellingen, Toernooi): een teamtoernooi krijgt de teamtiebreaks aangeboden. De
+7. **Tiebreaks** (Instellingen, Tiebreaks): een teamtoernooi krijgt de teamtiebreaks aangeboden. De
    FIDE-standaard is MP, GP, DE, BB, SB.
 
 Elke actie op de pagina Teams is een gewone knop met een gesproken naam, en het

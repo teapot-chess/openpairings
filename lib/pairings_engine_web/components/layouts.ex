@@ -274,6 +274,10 @@ defmodule PairingsEngineWeb.Layouts do
                 {gettext("Scoring")}
               </.link>
 
+              <.link navigate={~p"/t/#{@tournament.id}/settings/tiebreaks"} class="topbar-menu-item">
+                {gettext("Tie-breaks")}
+              </.link>
+
               <.link navigate={~p"/t/#{@tournament.id}/settings/dates"} class="topbar-menu-item">
                 {gettext("Dates")}
               </.link>

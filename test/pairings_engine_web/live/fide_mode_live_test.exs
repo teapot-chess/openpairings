@@ -120,6 +120,10 @@ defmodule PairingsEngineWeb.FideModeLiveTest do
       {:ok, lv, _} = live(conn, ~p"/t/#{tournament.id}/settings")
       assert has_element?(lv, "input[name='tournament[rounds_count]'][disabled]")
       assert has_element?(lv, "#rounds-fide-lock")
+      refute has_element?(lv, "#tiebreak-editor")
+
+      {:ok, lv, _} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
+      assert has_element?(lv, "#tiebreaks-fide-lock")
       assert has_element?(lv, "#tiebreak-editor[disabled]")
 
       {:ok, lv, _} = live(conn, ~p"/t/#{tournament.id}/settings/scoring")

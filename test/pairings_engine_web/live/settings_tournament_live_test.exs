@@ -72,7 +72,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLiveTest do
       scope: scope
     } do
       tournament = create_tournament(scope)
-      {:ok, _lv, html} = live(conn, ~p"/t/#{tournament.id}/settings")
+      {:ok, _lv, html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
       refute html =~ "Personel"
       assert html =~ "Custom"
@@ -116,7 +116,7 @@ defmodule PairingsEngineWeb.SettingsTournamentLiveTest do
     } do
       tournament = create_tournament(scope)
 
-      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings")
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/tiebreaks")
 
       # Mark the page dirty the same way any in-progress edit would (reordering
       # a tiebreak), without saving.

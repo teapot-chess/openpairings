@@ -22,7 +22,7 @@ defmodule PairingsEngineWeb.Components.GroupSwitcher do
   # Pages every tournament has, sibling or not: kept as they are.
   @portable ~w(players pairings standings print history audit audit/explain postponed
                registrations live norms categories settings settings/options
-               settings/restrictions settings/results settings/scoring settings/dates
+               settings/restrictions settings/results settings/scoring settings/tiebreaks settings/dates
                settings/rooms
                settings/extra-points settings/fide settings/norms settings/about settings/export
                settings/changelog)

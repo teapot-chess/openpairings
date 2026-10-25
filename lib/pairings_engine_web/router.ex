@@ -160,6 +160,7 @@ defmodule PairingsEngineWeb.Router do
       live "/t/:id/settings/boards", SettingsBoardsLive
       live "/t/:id/games/:game", BoardGameLive
       live "/t/:id/settings/scoring", SettingsScoringLive
+      live "/t/:id/settings/tiebreaks", SettingsTiebreaksLive
       live "/t/:id/settings/dates", SettingsDatesLive
       live "/t/:id/settings/rooms", SettingsRoomsLive
       live "/t/:id/settings/extra-points", ExtraPointsLive

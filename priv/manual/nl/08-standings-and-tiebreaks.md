@@ -7,7 +7,7 @@ heeft de tabel de plaats, de naam, de rating, de punten en één kolom voor elke
 tiebreak van het toernooi, in de volgorde waarin ze worden toegepast. De kop van de
 pagina zegt *Stand na ronde N*. Spelers die na elke tiebreak nog gelijk staan,
 worden gerangschikt op rating en naam, of delen een plaats, al naar gelang de
-instelling *Spelers die nog gelijk staan delen een plaats* (Instellingen, Toernooi, geavanceerd) (zie hieronder).
+instelling *Spelers die nog gelijk staan delen een plaats* (Instellingen, Tiebreaks, geavanceerd) (zie hieronder).
 
 - Het filter **Categorie** boven de tabel toont één categorie tegelijk
   ([Categorieën en normen](11-categories-and-norms.md)).
@@ -57,7 +57,7 @@ zoals ingesteld ([Byes en afwezigheden](05-byes-and-absences.md)). Extra punten
 ## Tiebreaks {#tie-breaks}
 
 De tiebreaks bepalen de volgorde van spelers met hetzelfde aantal punten. Ze worden
-ingesteld bij Instellingen, **Toernooi**, sectie *Tiebreaks*. Het programma volgt
+ingesteld bij Instellingen, **Tiebreaks**. Het programma volgt
 het C.07-reglement van FIDE (Tie-Break Regulations, 1 maart 2026), en de
 berekeningen worden gedaan door dezelfde engine die de Zwitserse rondes paart.
 
@@ -186,7 +186,7 @@ vormen van de tabel op wedstrijdpunten en partijpunten (`BH:MP/C1/P`, `FB:GP`,
 - **Op rating gebaseerde tiebreaks en ongeratete spelers.** De op rating gebaseerde
   tiebreaks (ARO en zijn cuts en medianen, TPR, PTP, APRO, APPO, RTNG) vallen weg
   wanneer een ongerate speler in het veld zit, tenzij het reglement van het toernooi
-  zegt hoe een ongerate speler wordt geteld. Zeg dat in Instellingen, Toernooi, *Hoe
+  zegt hoe een ongerate speler wordt geteld. Zeg dat in Instellingen, Tiebreaks, *Hoe
   een ongerate speler in de tiebreaks wordt geteld*, vóór de eerste ronde:
   - *Vaste rating*: elke ongerate speler telt als de rating die is ingevuld bij
     *Rating van een ongerate speler in de tiebreaks*; zolang dat leeg is, vallen de
@@ -219,7 +219,7 @@ vormen van de tabel op wedstrijdpunten en partijpunten (`BH:MP/C1/P`, `FB:GP`,
 
   Boven de stand staat een regel die zegt welke van de drie geldt.
 - **Spelers die na elke tiebreak nog gelijk staan.** *Spelers die nog gelijk staan delen een plaats*
-  (Instellingen, Toernooi): uitgeschakeld (de standaard), dan worden de overgebleven
+  (Instellingen, Tiebreaks): uitgeschakeld (de standaard), dan worden de overgebleven
   gelijke spelers gerangschikt op rating en daarna op naam, en één na één genummerd;
   ingeschakeld, dan delen ze allemaal dezelfde plaats, zoals 2=, en wordt de volgende
   plaats overgeslagen. Een loting (hieronder) kan zulke gelijke standen ook beslissen.
