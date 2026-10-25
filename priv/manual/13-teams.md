@@ -17,8 +17,12 @@ Keizer cannot be a team tournament.
    **series** and an optional **club**. A team can
    be deleted while it is in no round; a team that is in a paired match is
    withdrawn instead.
-3. Register the players on the Players page as usual, then put each one on a
-   team from the team's card. **The order of a roster is the board order**:
+3. Register the players on the Players page as usual. The add form and the
+   registration dialog have a **Team** select (*No team* or one of the teams),
+   so a player goes straight onto a team, at the bottom of its line-up; or put
+   each one on a team later from the team's card. The Players list has a
+   **Team** column (team and board, sortable, on by default in a team event),
+   and so does the printed player list. **The order of a roster is the board order**:
    board 1 first. The arrows move a player to a higher or lower board; *Remove*
    takes them off the team. Players beyond the match size are marked *reserve*.
 4. **Boards per match** (on the Teams page; default 4) is fixed when round 1
@@ -189,6 +193,16 @@ players: *Teams of the same club* (the club on each team's card, compared
 without regard to capitals or spaces at the edges; a team with no club is
 never grouped) and *Teams I choose* (a group that must not meet). Each is a
 **rule** or a **wish (if possible)**, for every round or a window of them.
+
+The club-based rule can only see a club that is filled in. With a *Teams of the
+same club* rule in place, the Forbidden pairings page says how many teams have
+no club, so the rule does not apply to them, and puts a club box beside each
+one. When most of a team's players (at least two with a club, three quarters of
+them) are from one club, that club is offered as a button, here and on the team's
+edit form; it is only filled in when you press it. The Teams page's forms say
+the club is needed for that rule, but it stays optional. For players, a *Same
+club* rule has the same notice for players without a club, with a link to the
+Players list filtered to them.
 
 A rule is handed to the pairing as absolute: to the C.04.6 procedure a
 forbidden pair is a pair that has already met, so nothing else moves. A wish

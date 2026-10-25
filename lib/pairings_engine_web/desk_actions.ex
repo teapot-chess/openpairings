@@ -38,7 +38,7 @@ defmodule PairingsEngineWeb.DeskActions do
   }
 
   alias PairingsEngine.Pairing, as: Engine
-  alias PairingsEngine.Tournaments.{Player, Round, Tournament}
+  alias PairingsEngine.Tournaments.{Player, Round, Team, Tournament}
   alias PairingsEngineWeb.{ByePreferenceText, SettingsSupport}
 
   ## ---------- pairing a round ----------
@@ -465,6 +465,67 @@ defmodule PairingsEngineWeb.DeskActions do
       end
     else
       {:error, :setup_incomplete}
+    end
+  end
+
+  @doc """
+  Puts `player` on the team with id `team_id` (a string from a form select,
+  an integer, or nil / "" for no team), through
+  `Tournaments.set_player_team/3` - the same function, with the same rules
+  (board order appended at the bottom of the line-up, locked line-ups in
+  FIDE mode), as the Teams page - and writes the same audit row it does.
+
+  A player already on that team is left alone, and so is a player with no
+  team asked to have none. `{:ok, player}` or `{:error, reason}`
+  (`:not_found` for a team of another tournament).
+  """
+  def assign_team(%Tournament{} = t, scope, %Player{} = player, team_id) do
+    case parse_team_id(team_id) do
+      nil -> remove_from_team(t, scope, player)
+      id -> put_on_team(t, scope, player, id)
+    end
+  end
+
+  defp parse_team_id(id) when is_integer(id), do: id
+
+  defp parse_team_id(id) when is_binary(id) do
+    case Integer.parse(id) do
+      {n, ""} -> n
+      _ -> nil
+    end
+  end
+
+  defp parse_team_id(_), do: nil
+
+  defp put_on_team(t, scope, player, id) do
+    with %Team{} = team <- Tournaments.get_team(t.id, id),
+         {:ok, moved} <- Tournaments.set_player_team(t, player, team) do
+      if player.team_id != team.id do
+        Audit.log(t.id, scope, "team.player_assigned", %{
+          player_name: player.name,
+          team_name: team.name
+        })
+      end
+
+      {:ok, moved}
+    else
+      nil -> {:error, :not_found}
+      {:error, _reason} = error -> error
+    end
+  end
+
+  defp remove_from_team(_t, _scope, %Player{team_id: nil} = player), do: {:ok, player}
+
+  defp remove_from_team(t, scope, %Player{} = player) do
+    team = Tournaments.get_team(t.id, player.team_id)
+
+    with {:ok, moved} <- Tournaments.set_player_team(t, player, nil) do
+      Audit.log(t.id, scope, "team.player_removed", %{
+        player_name: player.name,
+        team_name: team && team.name
+      })
+
+      {:ok, moved}
     end
   end
 

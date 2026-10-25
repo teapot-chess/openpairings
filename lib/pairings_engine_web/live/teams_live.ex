@@ -26,7 +26,7 @@ defmodule PairingsEngineWeb.TeamsLive do
 
   import PairingsEngineWeb.SettingsSupport, only: [error_text: 1]
 
-  alias PairingsEngine.{Audit, Plugins, TeamStandings, TeamTpn, Tournaments}
+  alias PairingsEngine.{Audit, Plugins, TeamClubs, TeamStandings, TeamTpn, Tournaments}
   alias PairingsEngine.Pairing, as: Engine
   alias PairingsEngine.Tournaments.{Player, Team, Tournament}
 
@@ -99,6 +99,11 @@ defmodule PairingsEngineWeb.TeamsLive do
 
     assign(socket,
       teams: teams,
+      # A rule on teams of the same club needs the club of each team; the
+      # forms say so, and offer the club the players point at (never filled
+      # in unasked).
+      club_rule?: TeamClubs.rule_applies?(t),
+      club_suggestions: TeamClubs.suggestions(teams, players),
       rosters: Map.new(rosters, fn {id, ps} -> {id, Tournaments.sort_roster(ps)} end),
       unassigned: players |> Enum.reject(& &1.team_id) |> Enum.sort_by(& &1.name),
       frozen?: Tournaments.teams_frozen?(t.id),
@@ -192,6 +197,27 @@ defmodule PairingsEngineWeb.TeamsLive do
       {:noreply, socket |> ok(gettext("Team %{name} saved.", name: updated.name)) |> load()}
     else
       nil -> {:noreply, fail(socket, :not_found)}
+      {:error, reason} -> {:noreply, fail(socket, reason)}
+    end
+  end
+
+  # The one-click club suggestion on a team's card: worked out again from the
+  # roster here, then saved like any other club edit.
+  def handle_event("use_club_suggestion", %{"team_id" => id}, socket) do
+    with %Team{} = team <- team(socket, id),
+         {:ok, updated} <-
+           TeamClubs.apply_suggestion(
+             socket.assigns.tournament,
+             socket.assigns.current_scope,
+             team
+           ) do
+      {:noreply,
+       socket
+       |> ok(gettext("Club of %{team} set to %{club}.", team: updated.name, club: updated.club))
+       |> load()}
+    else
+      nil -> {:noreply, fail(socket, :not_found)}
+      {:error, :no_suggestion} -> {:noreply, load(socket)}
       {:error, reason} -> {:noreply, fail(socket, reason)}
     end
   end
@@ -372,14 +398,13 @@ defmodule PairingsEngineWeb.TeamsLive do
   def handle_event("add_player", %{"team_id" => team_id, "player_id" => player_id}, socket) do
     with %Team{} = team <- team(socket, team_id),
          %Player{} = player <- Tournaments.get_player(socket.assigns.tournament.id, player_id),
-         {:ok, _} <- Tournaments.set_player_team(socket.assigns.tournament, player, team) do
-      Audit.log(
-        socket.assigns.tournament.id,
-        socket.assigns.current_scope,
-        "team.player_assigned",
-        %{player_name: player.name, team_name: team.name}
-      )
-
+         {:ok, _} <-
+           PairingsEngineWeb.DeskActions.assign_team(
+             socket.assigns.tournament,
+             socket.assigns.current_scope,
+             player,
+             team.id
+           ) do
       {:noreply,
        socket
        |> ok(gettext("%{player} added to %{team}.", player: player.name, team: team.name))
@@ -641,6 +666,12 @@ defmodule PairingsEngineWeb.TeamsLive do
 
   # Floating flashes rather than a line at the top of the page: the buttons
   # that answer here are far down a long list of teams.
+  defp club_needed_hint,
+    do:
+      gettext(
+        "A rule on this tournament keeps teams of the same club apart, so it needs the club. A team with no club is not covered by it."
+      )
+
   defp ok(socket, note), do: socket |> put_flash(:info, note) |> assign(note: nil, error: nil)
 
   defp fail(socket, reason),
@@ -905,6 +936,9 @@ defmodule PairingsEngineWeb.TeamsLive do
                 name="team[club]"
                 maxlength="100"
               />
+              <small :if={@club_rule?} id="create-team-club-needed" class="hint">
+                {club_needed_hint()}
+              </small>
             </label>
 
             <div class="actions">
@@ -1386,6 +1420,26 @@ defmodule PairingsEngineWeb.TeamsLive do
                   value={team.club}
                   maxlength="100"
                 />
+                <small
+                  :if={@club_rule? and String.trim(team.club) == ""}
+                  id={"team-club-needed-#{team.id}"}
+                  class="hint"
+                >
+                  {club_needed_hint()}
+                </small>
+                <button
+                  :if={@club_suggestions[team.id]}
+                  type="button"
+                  class="pe-btn"
+                  id={"team-club-suggest-#{team.id}"}
+                  phx-click="use_club_suggestion"
+                  phx-value-team_id={team.id}
+                >
+                  {gettext("Use %{club}", club: @club_suggestions[team.id])}
+                </button>
+                <small :if={@club_suggestions[team.id]} class="hint">
+                  {gettext("Most of the players on this team are from this club.")}
+                </small>
               </label>
 
               <label class="field">

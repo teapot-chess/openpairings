@@ -146,6 +146,11 @@ defmodule PairingsEngineWeb.PlayersLive do
   @default_visible ~w(title birth_year federation fide_id fide_rating national_rating club) ++
                      ~w(cl games pts xtpts ptot pr)
 
+  # A team event shows the Team column from the start: whose team a player
+  # plays for is the first thing its arbiter looks for in this list.
+  defp default_visible(tournament),
+    do: if(Tournament.team?(tournament), do: @default_visible ++ ["team"], else: @default_visible)
+
   @impl true
   def mount(%{"id" => id} = params, _session, socket) do
     tournament = Tournaments.get_authorized_tournament!(socket.assigns.current_scope, id)
@@ -176,7 +181,7 @@ defmodule PairingsEngineWeb.PlayersLive do
        custom_results: [],
        form_values: %{},
        confirm_sex: false,
-       visible: @default_visible,
+       visible: default_visible(tournament),
        editing_player: nil,
        edit_form: %{},
        edit_error: nil,
@@ -229,6 +234,9 @@ defmodule PairingsEngineWeb.PlayersLive do
        sort_col: nil,
        sort_dir: nil,
        cat_filter: nil,
+       # `?club=none` (the Forbidden pairings page's "players without a
+       # club"): only the players whose club is empty. A view, not a write.
+       club_filter: if(params["club"] == "none", do: :none),
        setup_complete: Tournament.setup_complete?(tournament),
        missing_setup: Tournament.missing_setup_fields(tournament)
      )
@@ -491,10 +499,15 @@ defmodule PairingsEngineWeb.PlayersLive do
     entries =
       all_entries
       |> filter_by_category(socket.assigns[:cat_filter])
+      |> filter_by_club(socket.assigns[:club_filter])
       |> sort_entries(socket.assigns[:sort_col], socket.assigns[:sort_dir])
 
     socket
     |> assign(:players, entries)
+    |> assign(
+      :teams,
+      if(Tournament.team?(tournament), do: Tournaments.list_teams(tournament.id), else: [])
+    )
     |> assign(:player_total, length(all_entries))
     |> assign(:data_warnings, data_warnings(all_entries))
     |> assign(
@@ -541,6 +554,11 @@ defmodule PairingsEngineWeb.PlayersLive do
   defp filter_by_category(entries, tag),
     do: Enum.filter(entries, &Categories.in_category?(&1.player, tag))
 
+  defp filter_by_club(entries, :none),
+    do: Enum.filter(entries, &(String.trim(&1.player.club || "") == ""))
+
+  defp filter_by_club(entries, _), do: entries
+
   # No column chosen (or the current one was toggled back off) - default
   # order: the real tournament ranking. `entry.rank` (set by
   # `Standings.grid_standings/1`, via `build_standings/3`) already sorts by
@@ -562,7 +580,7 @@ defmodule PairingsEngineWeb.PlayersLive do
 
   # Every key `sort_value/2` has a clause for: the name, each grid column, and
   # "cat:<name>" for grouping on one category.
-  @sortable_keys ["name"] ++
+  @sortable_keys ["name", "team"] ++
                    Enum.map(
                      @columns_before_tiebreaks ++ @tiebreak_columns ++ @columns_after_tiebreaks,
                      &elem(&1, 0)
@@ -620,6 +638,15 @@ defmodule PairingsEngineWeb.PlayersLive do
   end
 
   defp sort_value(entry, "national_id"), do: text_sort_value(entry.player.national_id)
+
+  # Team, then board: the line-up reads in order, and players with no team
+  # sort last either way.
+  defp sort_value(entry, "team") do
+    case entry.grid["team"] do
+      value when value in [nil, ""] -> {1, nil}
+      value -> {0, {String.downcase(value), entry.player.board_order || 0}}
+    end
+  end
 
   defp sort_value(entry, key)
        when key in ~w(fide_id fide_rating national_rating birth_year fixed_board) do
@@ -778,6 +805,11 @@ defmodule PairingsEngineWeb.PlayersLive do
       |> Enum.with_index(1)
       |> Map.new(fn {player, idx} -> {player.id, idx} end)
 
+    team_names =
+      if Tournament.team?(tournament),
+        do: Map.new(Tournaments.list_teams(tournament.id), &{&1.id, &1.name}),
+        else: %{}
+
     Enum.map(entries, fn entry ->
       # Finished games only - a postponed one has no result yet
       # (`Standings.finished_game?/1`).
@@ -813,6 +845,7 @@ defmodule PairingsEngineWeb.PlayersLive do
         # what the column sorts on. `nil` = no category, sorted last.
         "cat_rank" =>
           category_rank(tournament, Categories.pairing_category(tournament, entry.player)),
+        "team" => team_names[entry.player.team_id],
         "games" => length(played_games),
         "rds" => Standings.rounds_played(entry.games),
         "pts" => entry.points,
@@ -1382,6 +1415,9 @@ defmodule PairingsEngineWeb.PlayersLive do
   end
 
   def handle_event("filter_category", _params, socket), do: {:noreply, socket}
+
+  def handle_event("clear_club_filter", _params, socket),
+    do: {:noreply, socket |> assign(club_filter: nil) |> assign_players()}
 
   def handle_event("set_all_paid", %{"value" => value}, socket) do
     tournament_id = socket.assigns.tournament.id
@@ -2105,6 +2141,11 @@ defmodule PairingsEngineWeb.PlayersLive do
   end
 
   defp do_save(socket, params) do
+    # The team is not a column of the player: it goes through
+    # `DeskActions.assign_team/4` after the add, so it follows the Teams
+    # page's rules and leaves its audit row.
+    {team_id, params} = Map.pop(params, "team_id")
+
     # The add and its audit row: `DeskActions.create_player/3`, which the
     # phone app's late entry goes through too.
     case DeskActions.create_player(
@@ -2113,6 +2154,8 @@ defmodule PairingsEngineWeb.PlayersLive do
            params
          ) do
       {:ok, player} ->
+        team_note = add_to_team(socket, player, team_id)
+
         {:noreply,
          socket
          |> assign(
@@ -2124,7 +2167,7 @@ defmodule PairingsEngineWeb.PlayersLive do
                  n: player.pairing_number || "-"
                ),
                player
-             ),
+             ) <> team_note,
            form_values: %{},
            confirm_sex: false,
            add_start_round: Tournaments.next_start_round(socket.assigns.tournament.id)
@@ -2144,8 +2187,30 @@ defmodule PairingsEngineWeb.PlayersLive do
     end
   end
 
+  # The team chosen on the add form. "" when there is none or it went in; a
+  # sentence when the player was added but the team refused them.
+  defp add_to_team(socket, player, team_id) do
+    if blank?(to_string(team_id || "")) do
+      ""
+    else
+      case DeskActions.assign_team(
+             socket.assigns.tournament,
+             socket.assigns.current_scope,
+             player,
+             team_id
+           ) do
+        {:ok, _} -> ""
+        {:error, reason} -> " " <> team_refusal(reason)
+      end
+    end
+  end
+
+  defp team_refusal(:not_found), do: gettext("That team is not in this tournament.")
+  defp team_refusal(reason), do: error_text(reason)
+
   defp save_player(socket, before, params) do
     form_params = params
+    {team_id, params} = Map.pop(params, "team_id")
     params = keep_derived_start(params, socket.assigns.edit_derived_start)
     params = expand_bye_choice(params, socket.assigns.tournament)
     sent = Tournaments.sent_absence_rounds(before, params)
@@ -2165,18 +2230,41 @@ defmodule PairingsEngineWeb.PlayersLive do
            params,
            acknowledged
          ) do
-      {:ok, _player} ->
-        {:noreply,
-         socket
-         |> assign(
-           editing_player: nil,
-           edit_form: %{},
-           edit_error: nil,
-           edit_fide_conflicts: nil,
-           edit_half_rounds: [],
-           edit_bye_types: []
-         )
-         |> assign_players()}
+      {:ok, saved} ->
+        # The team select, when the form had one: same rules and audit row
+        # as the Teams page. The rest of the form is saved either way, so a
+        # refused team keeps the dialog open with the reason.
+        team_result =
+          if is_nil(team_id),
+            do: {:ok, saved},
+            else:
+              DeskActions.assign_team(
+                socket.assigns.tournament,
+                socket.assigns.current_scope,
+                saved,
+                team_id
+              )
+
+        case team_result do
+          {:ok, _} ->
+            {:noreply,
+             socket
+             |> assign(
+               editing_player: nil,
+               edit_form: %{},
+               edit_error: nil,
+               edit_fide_conflicts: nil,
+               edit_half_rounds: [],
+               edit_bye_types: []
+             )
+             |> assign_players()}
+
+          {:error, reason} ->
+            {:noreply,
+             socket
+             |> assign(edit_error: team_refusal(reason), edit_form: form_params)
+             |> assign_players()}
+        end
 
       {:error, {:needs_acknowledgement, [:second_half_bye]}} ->
         {:noreply,
@@ -2291,6 +2379,7 @@ defmodule PairingsEngineWeb.PlayersLive do
       "birth_year" => blank_or(p.birth_year),
       "sex" => p.sex,
       "club" => p.club,
+      "team_id" => blank_or(p.team_id),
       "club_number" => blank_or(p.club_number),
       "federation" => p.federation,
       "national_rating" => blank_or(p.national_rating),
@@ -2760,11 +2849,25 @@ defmodule PairingsEngineWeb.PlayersLive do
   # tiebreaks configured, i.e. `tiebreaks == []`) falls back to appearing
   # after the configured ones, in `@tiebreak_columns`'s fixed order.
   defp all_columns(tournament) do
-    (@columns_before_tiebreaks ++ tiebreak_columns(tournament) ++ @columns_after_tiebreaks)
+    (@columns_before_tiebreaks ++
+       team_column(tournament) ++ tiebreak_columns(tournament) ++ @columns_after_tiebreaks)
     |> Enum.map(fn {key, label, num, desc} ->
       {key, Gettext.gettext(PairingsEngineWeb.Gettext, label), num,
        Gettext.gettext(PairingsEngineWeb.Gettext, desc)}
     end)
+  end
+
+  # A team event lists each player's team (and board in it) too. Placed
+  # before the score columns, with the data columns it belongs with.
+  defp team_column(tournament) do
+    if Tournament.team?(tournament),
+      do: [
+        {"team", gettext_noop("Team"), false,
+         gettext_noop(
+           "The team the player plays for and, after a dot, the board they have in its line-up. Click to sort by team and board"
+         )}
+      ],
+      else: []
   end
 
   # Whether `key` is one `toggle_column` may actually act on - `all_columns/1`'s
@@ -2820,6 +2923,19 @@ defmodule PairingsEngineWeb.PlayersLive do
   end
 
   defp cell(entry, "status"), do: entry.player.status
+
+  defp cell(entry, "team") do
+    case entry.grid["team"] do
+      value when value in [nil, ""] ->
+        "-"
+
+      name ->
+        case entry.player.board_order do
+          nil -> name
+          board -> "#{name} · #{board}"
+        end
+    end
+  end
 
   defp cell(entry, "sex") do
     case Player.sex_label(entry.player.sex) do
@@ -3021,7 +3137,7 @@ defmodule PairingsEngineWeb.PlayersLive do
   @printable_player_list_columns ~w(
     pr aff paid nr cat title birth_year sex federation
     national_id fide_id national_rating fide_rating elo_used
-    club status fixed_board
+    club status fixed_board team
   )
 
   defp printable_player_list_columns(visible) do
@@ -3572,6 +3688,13 @@ defmodule PairingsEngineWeb.PlayersLive do
             <span>{gettext("Club")}</span> <input name="player[club]" value={@form_values["club"]} />
           </label>
 
+          <.team_select
+            :if={@teams != []}
+            id="add-player-team"
+            value={@form_values["team_id"]}
+            teams={@teams}
+          />
+
           <div class="field" id="add-player-sex-field">
             <span>{gettext("Sex")}</span>
             <div class={["radio-row", @confirm_sex && "sex-needed"]} id="add-player-sex">
@@ -3691,6 +3814,18 @@ defmodule PairingsEngineWeb.PlayersLive do
 
       <div :if={@players != []} class="split" id="players-grid" phx-hook="ColumnPrefs">
         <div class="card table-card split-main">
+          <p :if={@club_filter} id="players-club-filter" class="hint" style="padding: 0 16px 8px">
+            <strong>{gettext("Showing only players with no club.")}</strong>
+            <button
+              id="clear-club-filter"
+              class="pe-btn"
+              style="padding: 2px 9px"
+              phx-click="clear_club_filter"
+            >
+              {gettext("Show all")}
+            </button>
+          </p>
+
           <p :if={@cat_filter} class="hint" style="padding: 0 16px 8px">
             <strong>{gettext("Showing only %{name}.", name: @cat_filter)}</strong> {gettext(
               "Ranks are still this player's rank in the whole tournament, not a position within the category."
@@ -3903,6 +4038,7 @@ defmodule PairingsEngineWeb.PlayersLive do
         form={@edit_form}
         error={@edit_error}
         tournament={@tournament}
+        teams={@teams}
         titles={@titles}
         fide_conflicts={@edit_fide_conflicts}
         editing_player_id={@editing_player.id}
@@ -4977,6 +5113,32 @@ defmodule PairingsEngineWeb.PlayersLive do
     end
   end
 
+  # The Team select of the add form and the registration dialog. A player
+  # chosen onto a team goes to the bottom of its line-up
+  # (`Tournaments.set_player_team/3`); "No team" leaves them out of every
+  # line-up, which is how a player is entered before the teams exist.
+  attr :id, :string, required: true
+  attr :value, :any, default: nil
+  attr :teams, :list, required: true
+
+  defp team_select(assigns) do
+    ~H"""
+    <label class="field">
+      <span>{gettext("Team")}</span>
+      <select id={@id} name="player[team_id]">
+        <option value="" selected={@value in [nil, ""]}>{gettext("No team")}</option>
+        <option
+          :for={team <- @teams}
+          value={team.id}
+          selected={to_string(@value) == to_string(team.id)}
+        >
+          {team.name}
+        </option>
+      </select>
+    </label>
+    """
+  end
+
   ## ---------- Player registration dialog (double-click) ----------
 
   attr :form, :map, required: true
@@ -4995,6 +5157,8 @@ defmodule PairingsEngineWeb.PlayersLive do
   # Leading rounds with nothing recorded, for a player starting in round 1.
   attr :derived_start, :any, default: nil
   attr :players, :list, default: []
+  # The tournament's teams (a team event only): the dialog's Team select.
+  attr :teams, :list, default: []
   # Passed in rather than read from the socket: this is a function component,
   # so it sees only what its caller hands it.
   attr :bel_lookup?, :boolean, default: false
@@ -5280,6 +5444,13 @@ defmodule PairingsEngineWeb.PlayersLive do
           <label class="field">
             <span>{gettext("Club")}</span> <input name="player[club]" value={@form["club"]} />
           </label>
+
+          <.team_select
+            :if={@teams != []}
+            id="edit-player-team"
+            value={@form["team_id"]}
+            teams={@teams}
+          />
 
           <label class="field">
             <span>{gettext("Club nr")}</span>

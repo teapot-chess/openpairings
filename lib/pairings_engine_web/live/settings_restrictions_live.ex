@@ -23,7 +23,15 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
 
   import PairingsEngineWeb.SettingsSupport
 
-  alias PairingsEngine.{Audit, Compliance, Exclusions, RestrictionCheck, Tournaments}
+  alias PairingsEngine.{
+    Audit,
+    Compliance,
+    Exclusions,
+    RestrictionCheck,
+    TeamClubs,
+    Tournaments
+  }
+
   alias PairingsEngine.Tournaments.{PairingRule, Player, Tournament}
 
   @impl true
@@ -70,6 +78,18 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
     teams = if team_event?, do: Tournaments.list_teams(tournament.id), else: []
     {groups, field_rules} = Enum.split_with(rules, &(&1.kind == "group"))
 
+    # A rule on clubs reads the club of each team (or player) and a blank one
+    # is never a group: say which are outside it, and offer the club the
+    # roster points at. Nothing is filled in.
+    team_club_rule? = team_event? and TeamClubs.rule_applies?(tournament)
+
+    clubless_teams = if team_club_rule?, do: TeamClubs.without_club(teams), else: []
+
+    club_rule? = not team_event? and TeamClubs.rule_applies?(tournament, "club")
+
+    clubless_players =
+      if club_rule?, do: length(TeamClubs.players_without_club(players)), else: 0
+
     assign(socket,
       players: players,
       players_by_id: by_id,
@@ -84,6 +104,13 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
         ),
       team_event?: team_event?,
       teams: teams,
+      clubless_teams: clubless_teams,
+      club_suggestions:
+        if(clubless_teams == [],
+          do: %{},
+          else: TeamClubs.suggestions(clubless_teams, Tournaments.list_players(tournament.id))
+        ),
+      clubless_players: clubless_players,
       check: if(team_event?, do: nil, else: RestrictionCheck.next_round(tournament)),
       paired: PairingsEngine.Pairing.paired_rounds_count(tournament.id),
       departs?: Tournaments.prohibition_change_departs?(tournament)
@@ -304,6 +331,39 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
         {:error, reason} ->
           {:noreply, put_flash(socket, :error, error_text(reason))}
       end
+    end
+  end
+
+  ## ---------- teams without a club ----------
+
+  # The club typed beside a team the team-club rule skips. One form per team;
+  # the same write (and audit row) as the Teams page's own save.
+  def handle_event("save_team_club", %{"team_id" => id, "club" => club}, socket)
+      when is_binary(club) do
+    t = socket.assigns.tournament
+
+    with %{} = team <- Tournaments.get_team(t.id, id),
+         true <- String.trim(club) != "",
+         {:ok, _} <- TeamClubs.save(t, socket.assigns.current_scope, team, club) do
+      {:noreply, socket |> assign(note: nil) |> reload()}
+    else
+      {:error, reason} -> {:noreply, put_flash(socket, :error, error_text(reason))}
+      _ -> {:noreply, socket}
+    end
+  end
+
+  # The suggestion button: the club is worked out again from the roster
+  # here, so the page cannot hand in another one.
+  def handle_event("use_team_club", %{"team_id" => id}, socket) do
+    t = socket.assigns.tournament
+
+    with %{} = team <- Tournaments.get_team(t.id, id),
+         {:ok, _} <- TeamClubs.apply_suggestion(t, socket.assigns.current_scope, team) do
+      {:noreply, reload(socket)}
+    else
+      {:error, :no_suggestion} -> {:noreply, reload(socket)}
+      {:error, reason} -> {:noreply, put_flash(socket, :error, error_text(reason))}
+      _ -> {:noreply, socket}
     end
   end
 
@@ -730,6 +790,74 @@ defmodule PairingsEngineWeb.SettingsRestrictionsLive do
             {gettext(
               "Keep teams apart: teams of the same club (the club on each team's card), or teams you name. A rule is never seated; a wish (if possible) only breaks ties between pairings FIDE's rules rank equal, and never costs a colour, a float or the bye. Neither is part of C.04.6."
             )}
+          </p>
+
+          <div :if={@clubless_teams != []} id="team-club-missing" class="prohib-alert is-warm">
+            <p style="margin: 0 0 0.5rem">
+              <strong>
+                {ngettext(
+                  "%{count} team has no club, so the rule on teams of the same club does not apply to it.",
+                  "%{count} teams have no club, so the rule on teams of the same club does not apply to them.",
+                  length(@clubless_teams)
+                )}
+              </strong>
+              {gettext("Fill in the club here; nothing is filled in for you.")}
+            </p>
+
+            <div
+              :for={team <- @clubless_teams}
+              id={"team-club-row-#{team.id}"}
+              class="prohib-row"
+            >
+              <span class="prohib-row-title">{team.name}</span>
+              <form
+                id={"team-club-form-#{team.id}"}
+                phx-submit="save_team_club"
+                style="display: inline-flex; gap: 0.5rem; align-items: center"
+              >
+                <input type="hidden" name="team_id" value={team.id} />
+                <input
+                  type="text"
+                  id={"team-club-input-#{team.id}"}
+                  name="club"
+                  maxlength="100"
+                  aria-label={gettext("Club of %{team}", team: team.name)}
+                  placeholder={gettext("Club")}
+                />
+                <button type="submit" class="pe-btn" id={"team-club-save-#{team.id}"}>
+                  {gettext("Save club")}
+                </button>
+              </form>
+              <button
+                :if={@club_suggestions[team.id]}
+                type="button"
+                class="pe-btn"
+                id={"team-club-suggest-#{team.id}"}
+                phx-click="use_team_club"
+                phx-value-team_id={team.id}
+              >
+                {gettext("Use %{club}", club: @club_suggestions[team.id])}
+              </button>
+              <span :if={@club_suggestions[team.id]} class="hint">
+                {gettext("most of its players are from this club")}
+              </span>
+            </div>
+          </div>
+
+          <p :if={@clubless_players > 0} id="player-club-missing" class="prohib-alert is-warm">
+            <strong>
+              {ngettext(
+                "%{count} player has no club, so the rule on players of the same club does not apply to them.",
+                "%{count} players have no club, so the rule on players of the same club does not apply to them.",
+                @clubless_players
+              )}
+            </strong>
+            <.link
+              id="player-club-missing-link"
+              navigate={~p"/t/#{@tournament.id}/players?club=none"}
+            >
+              {gettext("Show them in the players list")}
+            </.link>
           </p>
 
           <ul :if={@field_rules != []} class="prohib-list" id="rule-list">
