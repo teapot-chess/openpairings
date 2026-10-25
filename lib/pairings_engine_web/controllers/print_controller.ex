@@ -436,6 +436,7 @@ defmodule PairingsEngineWeb.PrintController do
     {:fide_rating, "FIDE", true},
     {:elo_used, "Elo used", true},
     {:club, "Club", false},
+    {:team, "Team", false},
     {:status, "Status", false},
     {:fixed_board, "Table", true}
   ]
@@ -452,7 +453,13 @@ defmodule PairingsEngineWeb.PrintController do
     players =
       tournament.id |> Tournaments.list_players() |> filter_players(tournament, category)
 
-    cols = player_list_columns(params["cols"])
+    cols = player_list_columns(params["cols"], tournament)
+
+    teams =
+      if Tournament.team?(tournament),
+        do: Map.new(Tournaments.list_teams(tournament.id), &{&1.id, &1}),
+        else: %{}
+
     # Same "round about to be paired" the Players grid uses to decide
     # whether a Pr. cell's A(1,2,3) is upper- or lower-case - see
     # `player_list_value(:pr, ...)` below and `PlayersLive.build_grid/2`.
@@ -461,7 +468,7 @@ defmodule PairingsEngineWeb.PrintController do
     rows =
       players
       |> Enum.with_index(1)
-      |> Enum.map_join("", &player_list_row(&1, cols, current_round, tournament))
+      |> Enum.map_join("", &player_list_row(&1, cols, current_round, tournament, teams))
 
     body =
       tournament_info_html(tournament) <>
@@ -476,7 +483,25 @@ defmodule PairingsEngineWeb.PrintController do
     )
   end
 
-  defp player_list_columns(nil), do: selected_player_columns(@player_list_default_columns)
+  # The Team column is for team events only, and on by default there: a
+  # printed list of individuals in a team event that does not say whose
+  # team each plays for is the list the arbiter then writes it on by hand.
+  defp player_list_columns(nil, tournament) do
+    keys =
+      if Tournament.team?(tournament),
+        do: @player_list_default_columns ++ [:team],
+        else: @player_list_default_columns
+
+    selected_player_columns(keys)
+  end
+
+  defp player_list_columns(csv, tournament) do
+    csv
+    |> player_list_columns()
+    |> Enum.reject(fn {key, _label, _num?} ->
+      key == :team and not Tournament.team?(tournament)
+    end)
+  end
 
   defp player_list_columns(csv) do
     requested =
@@ -515,7 +540,7 @@ defmodule PairingsEngineWeb.PrintController do
       ths.(before_name) <> "<th>#{gettext("Name")}</th>" <> ths.(after_name)
   end
 
-  defp player_list_row({p, i}, cols, current_round, tournament) do
+  defp player_list_row({p, i}, cols, current_round, tournament, teams) do
     {before_name, after_name} = split_around_name(cols)
 
     tds = fn columns ->
@@ -525,6 +550,10 @@ defmodule PairingsEngineWeb.PrintController do
         {:elo_used, _label, num?} ->
           ~s(<td#{num_class(num?)}>#{blank_zero(Player.rating(p, tournament))}</td>)
 
+        # The team's name and, after a dot, the board in its line-up.
+        {:team, _label, num?} ->
+          ~s(<td#{num_class(num?)}>#{team_cell(p, teams)}</td>)
+
         {key, _label, num?} ->
           ~s(<td#{num_class(num?)}>#{player_list_value(key, p, current_round)}</td>)
       end)
@@ -533,6 +562,16 @@ defmodule PairingsEngineWeb.PrintController do
     ~s(<tr><td class="num">#{i}</td>) <>
       tds.(before_name) <>
       "<td><strong>#{esc(p.name)}</strong></td>" <> tds.(after_name) <> "</tr>"
+  end
+
+  defp team_cell(%{team_id: nil}, _teams), do: ""
+
+  defp team_cell(p, teams) do
+    case Map.get(teams, p.team_id) do
+      nil -> ""
+      team when is_nil(p.board_order) -> esc(team.name)
+      team -> esc("#{team.name} · #{p.board_order}")
+    end
   end
 
   defp split_around_name(cols) do

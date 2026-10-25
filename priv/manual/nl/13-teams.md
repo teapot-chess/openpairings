@@ -15,8 +15,12 @@ Keizer kan geen teamtoernooi zijn.
    naam, een optionele korte naam voor smalle kolommen (die staat bij de tiebreakberekening en
    wordt niet gepubliceerd) en een optionele captain, een optionele **reeks** en een optionele **club**. Een team kan worden verwijderd zolang het in geen
    enkele ronde zit; een team dat in een gepaarde wedstrijd zit, wordt in plaats daarvan teruggetrokken.
-3. Registreer de spelers zoals gewoonlijk op de pagina Spelers, en zet dan elk van hen op een
-   team vanaf de kaart van het team. **De volgorde van een opstelling is de bordvolgorde**:
+3. Registreer de spelers zoals gewoonlijk op de pagina Spelers. Het toevoegformulier en het
+   registratievenster hebben een keuzelijst **Team** (*Geen team* of een van de teams), zodat een
+   speler meteen op een team komt, onderaan de opstelling; je kunt ze ook later vanaf de kaart van
+   het team op een team zetten. De lijst met spelers heeft een kolom **Team** (team en bord,
+   sorteerbaar, standaard aan bij een teamtoernooi), en de afgedrukte spelerslijst ook.
+   **De volgorde van een opstelling is de bordvolgorde**:
    bord 1 eerst. De pijltjes verplaatsen een speler naar een hoger of lager bord; *Verwijderen*
    haalt hem van het team af. Spelers boven de wedstrijdgrootte worden gemarkeerd als *reserve*.
 4. **Borden per wedstrijd** (op de pagina Teams; standaard 4) wordt vastgelegd wanneer ronde 1
@@ -174,6 +178,15 @@ dezelfde club* (de club op de kaart van elk team, vergeleken zonder hoofdletters
 de rand; een team zonder club wordt nooit gegroepeerd) en *Teams die ik kies* (een groep die
 elkaar niet mag ontmoeten). Elke regel is een **regel** of een **wens (indien mogelijk)**, voor
 elke ronde of een reeks rondes.
+
+De regel op club ziet alleen een club die ingevuld is. Met een regel *Teams van dezelfde club*
+zegt de pagina Verboden paringen hoeveel teams geen club hebben, zodat de regel er niet voor geldt,
+en zet ze naast elk team een veld voor de club. Komen de meeste spelers van een team (minstens twee
+met een club, drie kwart van hen) uit dezelfde club, dan wordt die club als knop voorgesteld, hier en op het
+bewerkformulier van het team; ze wordt alleen ingevuld als je op de knop drukt. De formulieren op de pagina
+Teams zeggen dat de club voor die regel nodig is, maar ze blijft optioneel. Voor spelers heeft een regel
+*Zelfde club* dezelfde melding voor spelers zonder club, met een link naar de lijst met spelers,
+gefilterd op hen.
 
 Een regel wordt absoluut aan de paring doorgegeven: voor de procedure van C.04.6 is een
 verboden paar een paar dat al tegen elkaar speelde, dus verder verandert er niets. Een wens
