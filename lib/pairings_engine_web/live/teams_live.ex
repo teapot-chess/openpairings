@@ -46,6 +46,7 @@ defmodule PairingsEngineWeb.TeamsLive do
        note: nil,
        error: nil,
        form_nonce: 0,
+       new_team: new_team_form(),
        tpn: nil,
        tpn_changes: nil,
        # The "draw the order by lot" confirmation is open: there is an order
@@ -157,9 +158,20 @@ defmodule PairingsEngineWeb.TeamsLive do
     end
   end
 
+  defp new_team_form(params \\ %{}),
+    do: to_form(Map.take(params, ~w(name short_name captain series club)), as: :team)
+
   ## ---------- events ----------
 
   @impl true
+  # The add-team form tells us every keystroke. Without it the fields lived
+  # only in the browser, and any redraw of the page - a change made in
+  # another tab, say - emptied every field but the one being typed in: the
+  # team name went as soon as you moved on to the captain.
+  def handle_event("draft_team", %{"team" => params}, socket) when is_map(params) do
+    {:noreply, assign(socket, new_team: new_team_form(params))}
+  end
+
   def handle_event("create_team", %{"team" => params}, socket) when is_map(params) do
     attrs = Map.take(params, ~w(name short_name captain series club))
 
@@ -172,11 +184,11 @@ defmodule PairingsEngineWeb.TeamsLive do
         {:noreply,
          socket
          |> ok(gettext("Team %{name} added.", name: team.name))
-         |> assign(form_nonce: socket.assigns.form_nonce + 1)
+         |> assign(form_nonce: socket.assigns.form_nonce + 1, new_team: new_team_form())
          |> load()}
 
       {:error, reason} ->
-        {:noreply, fail(socket, reason)}
+        {:noreply, socket |> assign(new_team: new_team_form(params)) |> fail(reason)}
     end
   end
 
@@ -885,13 +897,19 @@ defmodule PairingsEngineWeb.TeamsLive do
         <div :if={@writable?} class="card">
           <h2>{gettext("Add a team")}</h2>
 
-          <form id="create-team-form" phx-submit="create_team" class="form-grid">
+          <form
+            id="create-team-form"
+            phx-change="draft_team"
+            phx-submit="create_team"
+            class="form-grid"
+          >
             <label class="field">
               <span>{gettext("Team name")}</span>
               <input
                 type="text"
                 id={"create-team-name-#{@form_nonce}"}
                 name="team[name]"
+                value={@new_team[:name].value}
                 required
                 maxlength="100"
               />
@@ -903,6 +921,7 @@ defmodule PairingsEngineWeb.TeamsLive do
                 type="text"
                 id={"create-team-short-#{@form_nonce}"}
                 name="team[short_name]"
+                value={@new_team[:short_name].value}
                 maxlength="12"
               />
             </label>
@@ -913,6 +932,7 @@ defmodule PairingsEngineWeb.TeamsLive do
                 type="text"
                 id={"create-team-captain-#{@form_nonce}"}
                 name="team[captain]"
+                value={@new_team[:captain].value}
                 maxlength="100"
               />
             </label>
@@ -923,6 +943,7 @@ defmodule PairingsEngineWeb.TeamsLive do
                 type="text"
                 id={"create-team-series-#{@form_nonce}"}
                 name="team[series]"
+                value={@new_team[:series].value}
                 maxlength="30"
                 placeholder={gettext("e.g. Series 1")}
               />
@@ -934,6 +955,7 @@ defmodule PairingsEngineWeb.TeamsLive do
                 type="text"
                 id={"create-team-club-#{@form_nonce}"}
                 name="team[club]"
+                value={@new_team[:club].value}
                 maxlength="100"
               />
               <small :if={@club_rule?} id="create-team-club-needed" class="hint">

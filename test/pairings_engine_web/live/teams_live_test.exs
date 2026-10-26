@@ -320,6 +320,22 @@ defmodule PairingsEngineWeb.TeamsLiveTest do
       refute has_element?(lv, "#create-team-form input[value=Rooks]")
     end
 
+    test "what is typed in the add-team form survives a redraw", %{conn: conn, scope: scope} do
+      t = team_tournament(scope)
+      {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/teams")
+
+      lv
+      |> form("#create-team-form", team: %{name: "Rooks", captain: "Anna"})
+      |> render_change()
+
+      # A change elsewhere (another tab) redraws the page.
+      Tournaments.broadcast_tournament_change(t.id, :teams)
+      _ = render(lv)
+
+      assert has_element?(lv, "#create-team-name-0[value=Rooks]")
+      assert has_element?(lv, "#create-team-captain-0[value=Anna]")
+    end
+
     test "a team that is gone answers instead of doing nothing", %{conn: conn, scope: scope} do
       t = team_tournament(scope)
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/teams")
