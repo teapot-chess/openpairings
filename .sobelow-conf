@@ -4,7 +4,8 @@
 # was read in context and is a false positive:
 #   * Traversal.FileModule - paths are server-built (data dir, upload temp files
 #     from consume_uploaded_entries, backup names looked up in Backup.list/0,
-#     theme-pack files behind a whitelist regex); none is a raw user string.
+#     theme-pack files behind a whitelist regex, the engine trace's own temp
+#     directory); none is a raw user string.
 #   * XSS.SendResp / XSS.Raw / XSS.ContentType - bodies are escaped HTML builders,
 #     binaries (xlsx, fonts, images, QR SVG) or the repo's own rendered manual and
 #     changelog; content types come from validated image sniffing or literals.

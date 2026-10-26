@@ -18,8 +18,15 @@ defmodule PairingsEngine.ItdxNotes do
   (`HandReason`), written next to that edit with accents stripped, control
   characters and line breaks gone and the length capped. Left out on
   purpose: the rest of what audit rows carry (player names, summaries), so
-  only their kind, round and time are used; the engine's per-board pairing
-  explanation is not summarised here.
+  only their kind, round and time are used.
+
+  The block ends at the bottom of the file, after the last record, with how
+  the engine paired each round (`trace_lines/2`, `PairingsEngine.ItdxTrace`):
+  Ainalrami's own output at its normal level where it was kept
+  (`PairingsEngine.EngineTrace`), the round's stored account in short where
+  it was not, and one line where there is neither. Players appear there as
+  starting ranks too: the engine's roster lines, which carry names, are
+  dropped, since the `001` records already say who is who.
   """
 
   import Ecto.Query, only: [from: 2]
@@ -65,6 +72,18 @@ defmodule PairingsEngine.ItdxNotes do
        round_lines(tournament, rounds) ++
        audit_lines(tournament, rounds, paired_rounds(tournament, rounds)) ++
        player_lines(tournament, rounds, tpn))
+    |> Enum.map(&ascii/1)
+  end
+
+  @doc """
+  The block's last section, how the engine paired each of `rounds`
+  (`PairingsEngine.ItdxTrace`), as lines without their `### ` -
+  `TrfExport` writes them after the last record. Same rules as `lines/2`:
+  printable ASCII, every line starting `OP `.
+  """
+  def trace_lines(%Tournament{} = tournament, rounds) when is_list(rounds) do
+    tournament
+    |> PairingsEngine.ItdxTrace.lines(rounds)
     |> Enum.map(&ascii/1)
   end
 

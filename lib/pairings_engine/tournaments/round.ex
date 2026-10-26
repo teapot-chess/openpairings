@@ -76,6 +76,18 @@ defmodule PairingsEngine.Tournaments.Round do
     # then would explain a pairing the engine never produced.
     field :explanation, :map
 
+    # Ainalrami's own console output for this round at its normal level -
+    # the engine telling how it paired, in its own words - captured for the
+    # ITDX file (`PairingsEngine.EngineTrace`): `%{"version" => 1,
+    # "kind" => "individual" | "team", "sections" => [...]}`. Commentary
+    # like `explanation`, read by nothing but the ITDX file, and never an
+    # input to a pairing. nil for a round paired before the column existed,
+    # by hand, by round robin or Keizer (no engine run), or whose trace
+    # could not be worked out. Large on a large round, so NOT loaded by
+    # default (`load_in_query: false`): a reader asks for it by name.
+    # Not cast, not exported.
+    field :engine_trace, :map, load_in_query: false
+
     # The extra points each player was paired with in this round - the
     # virtual points handed to the engine as that round's `XXA` value -
     # `%{"player id" => points}`, non-zero entries only, so `%{}` is "paired
@@ -120,7 +132,8 @@ defmodule PairingsEngine.Tournaments.Round do
   end
 
   @doc """
-  `query` (all rounds by default) selecting every column but `explanation`.
+  `query` (all rounds by default) selecting every column but `explanation`
+  (and `engine_trace`, which no plain query loads).
 
   A round's engine account is the largest thing in the database - every
   bracket of a 1,000-player round, as JSON - and every reader that only
@@ -132,7 +145,7 @@ defmodule PairingsEngine.Tournaments.Round do
   `Round` query, as before.
   """
   def without_explanation(query \\ __MODULE__) do
-    fields = __schema__(:fields) -- [:explanation]
+    fields = __schema__(:query_fields) -- [:explanation]
     Ecto.Query.select(query, [r], struct(r, ^fields))
   end
 

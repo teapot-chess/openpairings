@@ -4,7 +4,9 @@ defmodule PairingsEngine.DataVersionTest do
   paths `standings_cache_test.exs` already covers: a round's engine account
   (`rounds.explanation`) is commentary, written after the round by a
   background job, and on its own leaves the version where it was
-  (migration `DataVersionIgnoresRoundAccounts`); and the standings cache
+  (migration `DataVersionIgnoresRoundAccounts`) - as does its engine trace
+  (`rounds.engine_trace`, migration `AddEngineTraceToRounds`); and the
+  standings cache
   keys by a tournament's settings, not by its bookkeeping.
   """
   use PairingsEngine.DataCase, async: false
@@ -41,6 +43,12 @@ defmodule PairingsEngine.DataVersionTest do
 
     set_round(round, explanation: nil)
     assert version(t) == before
+
+    set_round(round, engine_trace: %{"version" => 1, "sections" => []})
+    assert version(t) == before
+
+    set_round(round, engine_trace: nil, explanation: %{"status" => "pending"})
+    assert version(t) == before
   end
 
   test "any other column of the round moves it, with or without the account", %{
@@ -56,7 +64,7 @@ defmodule PairingsEngine.DataVersionTest do
     assert version(t) != after_status
   end
 
-  test "the trigger names every column of the round but its account" do
+  test "the trigger names every column of the round but its account and trace" do
     columns =
       Repo.query!("PRAGMA table_info(rounds)").rows
       |> Enum.map(&Enum.at(&1, 1))
@@ -66,7 +74,7 @@ defmodule PairingsEngine.DataVersionTest do
         "SELECT sql FROM sqlite_master WHERE type = 'trigger' AND name = 'rounds_data_version_update'"
       ).rows
 
-    for column <- columns -- ["explanation"] do
+    for column <- columns -- ["explanation", "engine_trace"] do
       assert sql =~ ~s|OLD."#{column}" IS NOT NEW."#{column}"|,
              "rounds.#{column} is not in rounds_data_version_update - recreate the trigger " <>
                "(see migration DataVersionIgnoresRoundAccounts) in the migration that added it"

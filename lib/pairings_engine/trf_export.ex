@@ -112,6 +112,12 @@ defmodule PairingsEngine.TrfExport do
                 note_comments(tournament, rounds_spec, opts) ++
                 PairingsEngine.ItdxNotes.lines(tournament, file_rounds(tournament, rounds_spec))
             )
+            |> append_comments(
+              PairingsEngine.ItdxNotes.trace_lines(
+                tournament,
+                file_rounds(tournament, rounds_spec)
+              )
+            )
 
           copy_of_sent?(opts) ->
             # A copy is the file "Send" hands out, byte for byte, plus the
@@ -621,6 +627,15 @@ defmodule PairingsEngine.TrfExport do
       |> Enum.split_while(&(&1 != "" and not String.starts_with?(&1, "001")))
 
     Enum.join(head ++ Enum.map(comments, &("### " <> &1)) ++ rest, "\r\n")
+  end
+
+  # `comments` as `###` lines after everything else - the ITDX file's
+  # engine trace, too long to stand between the header and the players.
+  defp append_comments(text, []), do: text
+
+  defp append_comments(text, comments) do
+    body = String.trim_trailing(text, "\r\n")
+    Enum.join([body | Enum.map(comments, &("### " <> &1))], "\r\n") <> "\r\n"
   end
 
   # SWAR parity #23 (manual standings override) is deliberately NOT
