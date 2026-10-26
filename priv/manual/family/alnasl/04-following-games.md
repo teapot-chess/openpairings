@@ -56,6 +56,8 @@ Some alarms name what the board shows:
 - "A move is missing before this" takes you to where moves are typed, for when the board missed a move.
 - "Clock not in starting position" or a clock running the wrong way: stop it, put it right, start it again. The alarm goes away by itself. The moves are still followed.
 - "White knight not seen on f3" is a warning, not an alarm: a piece left its square (parked beside the board, or the sensor lost it) and the game went on, so Alnasl takes it to be standing there still. It goes away when the piece is seen there again, moves, or is taken. If the piece was in fact captured, correct the moves on the board's page.
+- "White bishop on e4 reads as a knight" is a warning, not an alarm: the board hears a piece as another piece of the same colour, usually because it stands close to another one. Alnasl keeps the piece the game has and follows the moves as usual. Only a move that piece could not make raises an alarm. The warning goes away when the board reads the piece right again; straightening the piece often does it.
+- "queen assumed" beside a promotion means the pawn was left on the last square, or the new piece was gone before the board could read it. Alnasl takes a queen and marks the move. If the piece later moves like a rook, bishop or knight, the promotion is rewritten to that piece. If nothing ever shows what it was, check the scoresheet and correct it on the board's page.
 - "read as d3" beside a move means the board read that move one square off (a piece set down between two squares) and a later move showed where it really went - or somebody straightened the piece, which the board can read as a move of its own; with a clock, a press that belongs to no move gives that away. Alnasl has put it right and says so above the moves; "Check it" has the move as it was read.
 
 ## Repairing a board {#repairing}
@@ -87,9 +89,13 @@ Set the result on every board, or confirm the suggestion: "Finish game" on the b
 
 A game that was not captured at all: Games page, read the scoresheet's moves, and "Attach" it to its board.
 
+## Deleting a game {#deleting-a-game}
+
+"Delete this game" at the end of "This game" on a board's page is the hall's owner's. It removes the game's moves, its PGN file and what was still waiting to be sent for it; the board is then empty again for the pairing. What was already sent to the results site or the pairing program stays there. A game that a connected board is reading cannot be deleted: disconnect the board on the Boards page first. Every deletion is written in the Log with who played and how far the game got.
+
 ## Rounds {#rounds}
 
-With OpenPairings, a round starts by itself a few seconds after the arbiter pairs it there: that tournament's boards show the new round with names, ratings and colours. The boards of the other tournaments are not touched. "Start round N" on the Live page stays for when there is no connection, and a tournament can be told not to start rounds by itself (Setup, Tournaments, open the tournament).
+With OpenPairings, a round starts by itself a few seconds after the arbiter pairs it there: that tournament's boards show the new round with names, ratings and colours. The boards of the other tournaments are not touched. Until it does, the Live page says "Waiting for OpenPairings to pair round N - the boards switch by themselves when it does." and shows no "Start round N" button: there is nothing to press. The button comes back when the tournament is told not to start rounds by itself (Setup, Tournaments, open the tournament), and for a tournament that has no OpenPairings. If OpenPairings is already on another round than the boards (a game is under way, so the boards stay put), the page says which round it is on and offers "Follow round N" instead.
 
 Without OpenPairings, "Start round N" moves the tournament's boards on to the next round.
 

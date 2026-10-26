@@ -50,7 +50,7 @@ Onder **Rapporten** op dezelfde pagina open je het rapport van een toernooi. Het
 - **Getelde zetten**: hoeveel zetten in de getallen zitten (hieronder: wat niet meetelt).
 - **Zelfde zet als de engine**, en wat daarvan **verwacht** werd voor de rating van die speler in die stellingen.
 - **Gemiddeld verlies**, en wat verwacht werd. Het verlies is hoeveel slechter de gespeelde zet was dan de beste van de engine, geschaald zodat een pion weggooien in een gelijke stelling zwaarder weegt dan een pion weggooien als je twee pionnen voor staat.
-- **Score**, met het interval, en een van de twee formuleringen hieronder.
+- **Score**, met het interval, en een van de twee formuleringen hieronder. Als één partij de score bepaalde, zegt het rapport **beslist door één partij** en noemt het de ronde.
 - **Niet meegeteld**: hoeveel zetten niet meetelden, en waarom.
 
 Druk op de naam van een speler voor de **stellingen om te bekijken**: de zetten van die speler die de eerste keuze van de engine waren, waar die keuze het meest afstak van de tweede, elk op een bord met de gespeelde zet en de vier beste van de engine.
@@ -62,6 +62,7 @@ Een zet zegt niets over de speler, of Alnasl weet niet zeker dat hij gespeeld is
 | Niet meegeteld | Waarom |
 | --- | --- |
 | geen rating | Zonder rating is er niets om mee te vergelijken. Ratings komen uit de paring |
+| rating onder 1000 | De partijen waaruit het model gemaakt is, bevatten te weinig spelers onder 1000 om te zeggen wat je van hen mag verwachten, en een gok is geen verwachting |
 | geraden door de tracker | De tracker wist niet zeker wat er gespeeld werd, en dat geldt ook voor elke zet erna in die partij |
 | herschreven, uitslag nog niet bevestigd | De tracker heeft hem gecorrigeerd en de arbiter heeft de uitslag nog niet bevestigd |
 | opening (zet 1 tot 8) | Theorie, geen denkwerk |
@@ -75,14 +76,18 @@ Een speler krijgt alleen een score bij minstens 40 getelde zetten in het toernoo
 
 ## Wat de getallen betekenen {#what-the-numbers-mean}
 
-De **verwachte** waarden komen uit een model dat gefit is op echte partijen uit toernooien aan het bord (Lichess-uitzendingen, met FIDE-ratings en klokken): hoe vaak wordt voor een speler met die rating, in een stelling met zoveel goede zetten, de eerste keuze van de engine gespeeld, en hoeveel gaat er gemiddeld verloren. De **score** is hoe ver de speler van die verwachting af zit, in standaarddeviaties, waarbij de drie maten (de eerste keuze spelen, een even goede zet spelen, het verlies) samen genomen worden. Nul is zoals verwacht. Hoger is sterker dan de rating voorspelt.
+De **verwachte** waarden komen uit een model dat gefit is op echte partijen uit toernooien aan het bord (Lichess-uitzendingen, met FIDE-ratings en klokken): hoe vaak wordt voor een speler met die rating, tegen een tegenstander met die rating, in een stelling met zoveel goede zetten en die evaluatie, na dat deel van de klok aan de zet besteed te hebben, de eerste keuze van de engine gespeeld, en hoeveel gaat er gemiddeld verloren. De **score** is hoe ver de speler van die verwachting af zit, in standaarddeviaties, waarbij de drie maten (de eerste keuze spelen, een even goede zet spelen, het verlies) samen genomen worden. Nul is zoals verwacht. Hoger is sterker dan de rating voorspelt.
 
-- **Vanaf 2: "de moeite van een nader onderzoek waard".** Zulke scores komen bij een paar van elke honderd eerlijke spelers toevallig voor. Kijk naar de partijen, niet naar het getal.
+De standaarddeviatie is die van de eigen partijen van de speler: de zetten van één partij zijn niet onafhankelijk van elkaar (een goede dag duurt langer dan één zet), en negen korte partijen spreiden anders dan vijf lange. Hoe sterk zetten samenhangen binnen een partij, en over de partijen van één speler in een toernooi, wordt gemeten op echte partijen als het model gemaakt wordt.
+
+Elke partij van minstens 20 getelde zetten wordt ook apart bekeken. Eén partij die veel beter gespeeld is dan de rest, valt weg in de score van een heel toernooi van negen partijen; apart valt ze niet weg. Alnasl neemt de meest ongewone partij van de speler en vraagt hoe ongewoon dat is, gegeven hoeveel partijen er waren om uit te kiezen (bij negen partijen is er altijd wel een die de beste van de speler is). De **score** is de hoogste van de twee, het hele toernooi of die ene partij, gecorrigeerd voor het feit dat dezelfde zetten twee keer bekeken zijn: wie elke keer het beste van twee getallen neemt, laat een eerlijke speler er gemiddeld zo'n derde standaardafwijking beter uitzien dan hij is. Na de correctie zit een eerlijke speler gemiddeld weer op nul, en haalt hij 2 of meer niet vaker dan de standaardafwijking belooft. Als de partij de hoogste van de twee is, zegt het rapport **beslist door één partij: ronde N**. Open die partij eerst.
+
+- **Vanaf 2: "de moeite van een nader onderzoek waard".** Zulke scores komen bij ongeveer twee van elke honderd eerlijke spelers toevallig voor. Kijk naar de partijen, niet naar het getal.
 - **Boven 5: "statistisch zeer ongewoon".** Eerlijke spelers hebben zo'n score in een model dat past vrijwel nooit. Het is nog steeds geen bewijs van iets, en het volgende onderdeel zegt wat je ermee mag doen.
 
 Die twee woorden en die twee getallen zijn van Alnasl zelf, voor zijn eigen score. Het zijn niet de drempels van FIDE (de 5,00 van FIDE voor spel aan het bord hoort bij de goedgekeurde methode, en de 2,50 steunt alleen ander bewijs), en een 5 hier is geen 5 daar.
 
-Het interval naast de score is het bereik waarin de werkelijke stand van de speler waarschijnlijk ligt: een score van 2,4 uit 40 zetten verschilt niet veel van een score van 0,5.
+Het interval naast de score is het bereik waarin de werkelijke stand van de speler waarschijnlijk ligt: een score van 2,4 uit 40 zetten verschilt niet veel van een score van 0,5. Als één partij de score bepaalde, is er geen interval: een bereik rond de beste van een paar partijen zou een ander getal zijn, en geen eerlijker.
 
 ### Hoe vaak een eerlijke speler zo hoog scoort {#false-positives}
 
@@ -96,6 +101,8 @@ Naast een score van 2 of meer zegt het rapport hoe zeldzaam die is: **"ongeveer 
 
 > [!IMPORTANT] Geen kalibratie, geen score
 > Het model is een bestand dat bij één engine-build hoort. Zolang Alnasl er geen heeft voor de engine die je installeerde, toont het rapport de aantallen en zegt het duidelijk dat er **geen score** is. De aantallen kloppen. Ze zijn geen score en moeten niet als een score gelezen worden. Het model is gemaakt voor standaard bedenktijden; rapid en blitz zijn niet gekalibreerd.
+
+Alnasl wordt geleverd met een model voor Stockfish 19, de engine die het installeert. Het is één keer getest, nadat het vastgelegd was, op 25.000 broadcastpartijen uit 2026 die het nooit gezien had: van 7.914 eerlijke speler-toernooien scoorde er geen 3,75 of meer, en 2 scoorden 3 of meer. Met andere woorden: een eerlijke speler wordt zeer onwaarschijnlijk gemarkeerd, een volledig met de engine gespeelde partij of engine-hulp op de beslissende momenten valt meestal op, en een speler die voorzichtig een engine overneemt (een goede zet, niet de beste) valt helemaal niet op.
 
 Wat de screening niet kan zien: een partij die zonder de borden gespeeld is (tenzij je ze uploadt, hieronder), een zet die de tracker niet kon lezen, openingskennis, een speler die gewoon veel sterker is dan zijn rating, een speler die één variant erg goed voorbereid heeft. Sterke, eenvoudige, gedwongen ogende stellingen geven veel overeenkomst zonder dat iemand iets verkeerd doet.
 
@@ -157,3 +164,7 @@ Een zaak die naar de FIDE Fair Play Commission gaat, heeft de gegevens misschien
 Een geüploade PGN die bij een toernooi hoort, blijft even lang bewaard als het toernooi. Eén op zichzelf telt zijn 30 dagen vanaf het uploaden, en kan op dezelfde manier langer bewaard worden. Een gedeeld rapport verdwijnt met het rapport. Wat met de hele zaal gedeeld werd, en wat daarover in het eigen overzicht van de zaal staat, wordt een jaar na het einde verwijderd.
 
 Fair play uitzetten stopt de analyse van nieuwe zetten. Wat er al is, wordt niet verwijderd; dat doet de bewaartermijn.
+
+### Een analyse op verzoek verwijderen {#delete-analysis}
+
+De eigenaar kan de analyse van een toernooi verwijderen voor de bewaartermijn dat doet: "Deze analyse verwijderen" op het rapport, met een reden als je die genoteerd wilt hebben. Verwijderd worden alle geanalyseerde zetten. Bewaard blijft een bevroren kopie van het rapport zoals het was (elke speler, de getelde zetten en de score), met wie het verwijderde, wanneer en waarom. De kopie staat voor de eigenaar onder het rapport, leeft precies zo lang als het rapport zou hebben geleefd, en gaat ermee weg. De verwijdering is een regel in het overzicht van wie wat deed bij het rapport. Partijen die later opnieuw geanalyseerd worden, of een ronde waarom gevraagd wordt, maken een nieuwe analyse.

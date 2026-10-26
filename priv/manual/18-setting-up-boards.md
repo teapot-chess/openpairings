@@ -145,8 +145,14 @@ the results site follows as soon as the tournament has arrived there.
 10. **Pair the round in OpenPairings** as always (**Pair round N**). OpenPairings
     has no button that starts a round: a round that is paired is on. Within
     about five seconds the boards of that tournament show the new round, with
-    names, ratings and colours. If it does not (no connection), **Start round
-    N** on Alnasl's Round page does it by hand.
+    names, ratings and colours. Nothing has to be published for that: the box
+    gets every paired round, published or not; publishing only decides what
+    the results site shows. While it waits, Alnasl's Round page says *Waiting
+    for OpenPairings to pair round N* - there is nothing to press there. Its
+    **Start round N** button is only offered to a box that is not linked, or
+    whose tournament has starting by itself switched off; **Follow round N**
+    appears when OpenPairings is on a later round than the boards (a game
+    still going on the old round keeps the box from moving by itself).
 11. **Play.** Keep Alnasl's Round page open. A tile per board shows the state
     as a shape and a word: *Live*, *Settling*, *Reconstructed*, *Out of sync*,
     *No signal*, *Clock wrong way*, *Finished*. On the Pairings page of
@@ -158,7 +164,9 @@ the results site follows as soon as the tournament has arrived there.
     *differs* and the hover text says *Check the scoresheets. Nothing is
     blocked.* Check the scoresheet, correct whichever is wrong, and go on.
 13. **Spectators** see the moves on the results site's live pages. They only
-    see a game for a board of a **published** round.
+    see a game for a board of a round that is **released** (the round's
+    *Released:* level on the Pairings page) on a tournament that is **on the
+    results site**.
 
 ## Set-up with the desktop edition {#set-up-desktop}
 
@@ -336,7 +344,7 @@ page.
 | --- | --- | --- |
 | Alnasl: *That is not a whole connect code: the part after the # is missing.* | The line was cut when copied. | Copy the whole line, from `https://` to the end. |
 | Alnasl: *OpenPairings does not know this code* or *OpenPairings refuses the connect code*; link says *Code refused* | Mistyped, or **withdrawn** in OpenPairings. The box has stopped asking. | Make a new code (Settings, Live boards), add it in Alnasl, remove the old one. |
-| Alnasl: *OpenPairings cannot be reached*; link says *No answer* | The server or the hall's network is down. Nothing is lost: the boards go on with the pairings they have and the box asks again by itself. | Check the network. A round paired meanwhile: **Start round N**. |
+| Alnasl: *OpenPairings cannot be reached*; link says *No answer* | The server or the hall's network is down. Nothing is lost: the boards go on with the pairings they have and the box asks again by itself. | Check the network. A round paired meanwhile starts by itself once the box can reach OpenPairings again. |
 | *No answer. This code is for an OpenPairings on this same computer: is it running?* | A code *for a box on this computer* is used on a computer that is not the one OpenPairings is on, or OpenPairings is not running. | Run Alnasl on the same PC as the desktop OpenPairings and start OpenPairings; or make a code *for a box on the network* (see [Alnasl on another machine](#desktop-on-the-network)). |
 | Alnasl on another machine: *OpenPairings cannot be reached*, with a desktop OpenPairings | One of: the switch is off; Windows' firewall did not allow it; the two machines are not on the same network; your computer's address changed; no network code exists any more, so the door is closed. | Settings, Live boards, card **Boxes elsewhere on this network** says which. Address changed: pick the new one, make a new code. Firewall: allow OpenPairings on private networks in Windows Security. |
 | OpenPairings: *Port 4747 is in use by another program on this computer* | Another program has that port. | Pick another port on the same card and press **Use these**, then make a new code. Nothing else is affected. |
@@ -352,7 +360,7 @@ page.
 | *There are already 8 codes.* | The limit. | Withdraw a code you no longer use. |
 | *The code reaches no tournament just now* | The tournament was deleted or archived, or the group is empty. | Check the tournament; it cannot be on a box when archived or handed off. |
 | *OpenPairings asks to slow down* | Too many requests. | Nothing: the box tries again by itself. |
-| The new round does not appear | The box asks about every five seconds. | Wait a few seconds. If still nothing, look at the link state in Setup, or use **Start round N**. |
+| The new round does not appear | The box asks about every five seconds. | Wait a few seconds. If still nothing, look at the link state in Setup; **Follow round N** on the Round page, if it is there, moves the boards. |
 | *Clock not in starting position: … the clock is turned or the lever is the wrong way* | The clock is not set for White (it stands to the right of the board, the lever up on White's side). | Turn the clock or tip the lever. The message goes by itself. |
 | The same game is reported twice | Two codes reach the same tournament on one box. | Keep one code (see [several tournaments](#several-tournaments)). |
 | No **Board saw** column on the Pairings page | No code reaches this tournament yet and no board has reported a game. | Make a code (step 2) and add it to the box. |

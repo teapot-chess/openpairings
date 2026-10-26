@@ -116,13 +116,13 @@ defmodule PairingsEngineWeb.UndoWhileUnplayedLiveTest do
                Audit.list_for_tournament(t.id, action: "pairing.mpa_discarded")
     end
 
-    test "a session started from the More menu takes its restore point too",
+    test "a session started explicitly takes its restore point too",
          %{conn: conn, scope: scope} do
       {t, _} = swiss(scope, ~w(Ann Ben Cas Dan))
       {:ok, _} = Pairing.pair_next_round(t)
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/pairings")
 
-      lv |> element("#mpa-start-1") |> render_click()
+      render_click(lv, "mpa_start", %{})
       assert [_] = snapshots(t, "pairing.mpa_started")
       assert has_element?(lv, "#mpa-discard")
     end
@@ -131,7 +131,7 @@ defmodule PairingsEngineWeb.UndoWhileUnplayedLiveTest do
       {t, _} = swiss(scope, ~w(Ann Ben Cas Dan))
       {:ok, _} = Pairing.pair_next_round(t)
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/pairings")
-      lv |> element("#mpa-start-1") |> render_click()
+      render_click(lv, "mpa_start", %{})
 
       [p | _] = Tournaments.get_round(t.id, 1).pairings
       {:ok, _} = Tournaments.update_pairing_result(p, "1-0")

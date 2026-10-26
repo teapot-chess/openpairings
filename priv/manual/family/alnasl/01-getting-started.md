@@ -89,6 +89,8 @@ Then open the site in a browser: on the box itself at `http://localhost:4040`; f
 
 The box asks once every half hour whether a newer version is out, and says so at the top of the page. It downloads nothing until you say yes under Setup, Updates, where it also says how big the download is. It will not restart while a game is being played unless you insist: the moves played during the restart are not read. "Later" asks again tomorrow; "Don't ask again" stops the looking, and Setup switches it back on.
 
+What changed in each version is on the same page, under the button, so nobody has to leave Alnasl to read it. The notes that came with your version are there at once; the newer ones are fetched from GitHub when you open the section, and kept for six hours so the hall's internet is not asked twice. Your version is marked, newer ones are marked and open, older ones are folded. Offline, you get the notes that came with your version and a calm remark that anything newer needs the internet. A small "View on GitHub" link remains for anyone who wants the original, though a hall kiosk should not need it.
+
 ### Where your data is {#where-your-data-is}
 
 Not in the program's folder. Windows: `%LOCALAPPDATA%\AlnaslData` (type that in Explorer's address bar). Linux, installed: `/var/lib/alnasl`. Mac: `~/Library/Application Support/AlnaslData`. It holds the database, the PGN of every game, the raw recordings, and the keys and codes you pasted. Updating and uninstalling leave it alone; installing again finds it. To move to another computer, copy that folder while Alnasl is stopped.
@@ -116,6 +118,14 @@ Whoever has chosen nothing reads Alnasl's default language. An admin sets it und
 The colours come in the same themes as OpenResults: Paper, Night, Board, Slate and High contrast, and Match device, which follows the phone or computer. Choose in the account menu, under Colour theme; it is the only place. The choice is kept in that browser only. High contrast is the one for a projector at the back of the hall.
 
 More themes can be added as theme packs: one folder per theme, in the folder `themes` inside the data folder. On the next page load they are offered after the built-in ones. A pack Alnasl will not load is listed in grey, with the reason.
+
+## The tour {#the-tour}
+
+The first time you open the site (with accounts: the first time you sign in), a small card in the corner offers a tour. It walks through the pages in the order a hall is set up and played: the places, the setup wizard, bridges, connecting OpenPairings, tournaments and their tables, the boards and their numbers, the check before the round, Live, Results, and fair play. Each step points at the thing it is about, says what it is for in a sentence or two, and links to the section of this manual that says the rest. A step on another page takes you there.
+
+You only see the steps for what your role lets you use: a viewer is not shown the setup wizard or the bridges, and fair play is shown to the hall's owner only. Where a page has nothing to point at yet (no boards, no tournaments), the step says what will appear there.
+
+Use **Next** and **Back** (or the arrow keys), or **Skip the tour**; Escape closes it too. Press **Not now** on the card and it is not offered again. To take it later, open the account menu (the button at the foot of the rail, top right on a phone) and choose **Take the tour**. With accounts, whether you took it is kept with your account; on a box without accounts it is kept for the box.
 
 ## Words used here {#words}
 

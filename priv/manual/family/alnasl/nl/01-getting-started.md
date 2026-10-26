@@ -89,6 +89,8 @@ Open daarna de site in een browser: op het kastje zelf via `http://localhost:404
 
 Het kastje vraagt om het halfuur of er een nieuwere versie is en meldt dat bovenaan de pagina. Er wordt niets gedownload voor je ja zegt bij Instellingen, Updates, waar ook staat hoe groot de download is. Het herstart niet terwijl er een partij bezig is, tenzij je aandringt: de zetten tijdens de herstart worden niet gelezen. "Later" vraagt morgen opnieuw; "Niet meer vragen" stopt het zoeken, en Instellingen zet het weer aan.
 
+Wat er per versie veranderd is, staat op dezelfde pagina onder de knop, zodat niemand Alnasl hoeft te verlaten om het te lezen. De notities die bij je versie horen staan er meteen; de nieuwere worden bij GitHub opgehaald zodra je het onderdeel opent, en zes uur bewaard zodat het internet van de zaal niet twee keer wordt gevraagd. Je eigen versie is gemarkeerd, nieuwere zijn gemarkeerd en open, oudere zijn ingeklapt. Zonder internet krijg je de notities die bij je versie horen en een kalme opmerking dat alles wat nieuwer is internet nodig heeft. Een klein "Bekijk op GitHub"-linkje blijft voor wie het origineel wil, al hoort een zaalkiosk dat niet nodig te hebben.
+
 ### Waar je gegevens staan {#where-your-data-is}
 
 Niet in de map van het programma. Windows: `%LOCALAPPDATA%\AlnaslData` (typ dat in de adresbalk van Verkenner). Linux, geïnstalleerd: `/var/lib/alnasl`. Mac: `~/Library/Application Support/AlnaslData`. Daarin staan de database, de PGN van elke partij, de ruwe opnames en de sleutels en codes die je geplakt hebt. Updaten en verwijderen laten die map met rust; opnieuw installeren vindt ze terug. Om naar een andere computer te verhuizen kopieer je die map terwijl Alnasl gestopt is.
@@ -116,6 +118,14 @@ Wie niets koos, leest de standaardtaal van Alnasl. Een beheerder stelt die in bi
 De kleuren komen in dezelfde thema's als OpenResults: Papier, Nacht, Bord, Leisteen en Hoog contrast, en Volg het toestel, dat het toestel volgt. Kies in het accountmenu, bij Kleurthema; dat is de enige plek. De keuze geldt alleen voor die browser. Hoog contrast is voor een projector achteraan de zaal.
 
 Er kunnen meer thema's bij als themapakketten: een map per thema, in de map `themes` binnen de gegevensmap. Bij de volgende keer laden staan ze na de ingebouwde thema's. Een pakket dat Alnasl niet wil laden, staat in het grijs in de lijst, met de reden.
+
+## De rondleiding {#the-tour}
+
+De eerste keer dat je de site opent (met accounts: de eerste keer dat je aanmeldt), biedt een kaartje in de hoek een rondleiding aan. Ze loopt door de pagina's in de volgorde waarin je een zaal inricht en speelt: de plaatsen, de installatiewizard, bruggen, OpenPairings koppelen, toernooien en hun tafels, de borden en hun nummers, de controle voor de ronde, Live, Resultaten en fair play. Elke stap wijst aan waar het over gaat, zegt in een zin of twee waarvoor het dient, en linkt naar het stuk van deze handleiding dat de rest vertelt. Een stap op een andere pagina brengt je daarheen.
+
+Je ziet alleen de stappen voor wat je rol je laat gebruiken: een kijker krijgt de installatiewizard en de bruggen niet te zien, en fair play alleen de eigenaar van de zaal. Waar een pagina nog niets heeft om aan te wijzen (geen borden, geen toernooien), zegt de stap wat er zal verschijnen.
+
+Gebruik **Volgende** en **Terug** (of de pijltjestoetsen), of **Rondleiding overslaan**; Escape sluit ze ook. Druk je op het kaartje op **Nu niet**, dan wordt ze niet meer aangeboden. Wil je ze later volgen, open dan het accountmenu (de knop onderaan de balk, op een telefoon rechtsboven) en kies **Rondleiding volgen**. Met accounts wordt bij je account bewaard of je ze volgde; op een kastje zonder accounts geldt dat voor het kastje.
 
 ## Woorden in deze handleiding {#words}
 
