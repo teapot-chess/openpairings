@@ -38,7 +38,7 @@ Settings, **OpenResults**.
 
 ### What the public sees, round by round
 
-On the Pairings page, a control **Spectators see:** sets how much of each round is public, in four cumulative
+On the Pairings page, a control **Released:** sets how much of each round is public, in four cumulative
 levels:
 
 | Level | Public |
@@ -47,6 +47,12 @@ levels:
 | Pairings | who plays whom |
 | + Results | the results as they come in |
 | + Standings | the standings after the round too |
+
+The level is the round's; the results site is the tournament's. The same
+level also decides what the hall screen and the phone app show, so it works
+with the tournament **Off** too: then it applies there only, and the control
+says so under the round. Switch **On the results site** to *Link only* or
+*Listed* and every round goes out at the level it already has.
 
 A newly published round starts at *Pairings*: live results are a deliberate
 choice. Going down asks first and names what disappears.

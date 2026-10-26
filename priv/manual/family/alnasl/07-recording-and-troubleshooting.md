@@ -50,7 +50,7 @@ OpenPairings does not accept the connect code: it was withdrawn there, or it is 
 
 ### "No answer" under Connections in Setup {#no-answer}
 
-OpenPairings cannot be reached. Nothing is lost: the boards go on with the pairings Alnasl has, the games are kept for it, and Alnasl asks again by itself. A round paired meanwhile is started with "Start round N" and takes its names when the connection is back.
+OpenPairings cannot be reached. Nothing is lost: the boards go on with the pairings Alnasl has, the games are kept for it, and Alnasl asks again by itself. A round paired meanwhile starts by itself, and takes its names, when the connection is back; with rounds set not to start by themselves, "Start round N" does it.
 
 ### A tournament has no results page {#no-results-page}
 
@@ -70,7 +70,7 @@ Switch it on. Games, queue and settings are on disk; boards reconnect and carry 
 
 ### "Your role in this hall lets you follow the games, not change them" {#role-refused}
 
-You are a viewer there. Ask an owner of the hall for the arbiter role (see [Accounts, halls and roles](06-accounts-and-halls.md)).
+You are a viewer there, or a request reached the server that the page would not have offered. Ask an owner of the hall for the arbiter role (see [Accounts, halls and roles](06-accounts-and-halls.md)).
 
 > [!TIP] Still stuck
 > Open the Log and the Recordings page before you do anything drastic. They say what the boards said, and that is usually the whole story.

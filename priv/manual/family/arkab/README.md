@@ -57,12 +57,9 @@ installs nothing without a yes. How releases are cut and what each file is:
 
 ## The bridge
 
-```sh
-mix deps.get
-mix run --no-halt          # or: iex -S mix
-```
+Install it from the table above; there is nothing to compile and no `mix` to run. A hall organiser needs a downloaded file and a browser, and the installers are built so that is all it takes: the Windows installer and the Linux script both start the bridge for you, and on a Mac you open `Arkab.app`. The bridge then keeps running by itself, and the status page described below is how you talk to it.
 
-Open `http://localhost:4050` on the bridge (or, from another computer, through
+Open `http://localhost:4050` on the machine the bridge runs on (or, from another computer, through
 an SSH port forward: `ssh -L 4050:localhost:4050 user@bridge`). Paste or scan the join link that Alnasl shows:
 Halls, your hall, Bridges, *Add a bridge* (Alnasl's Setup wizard leads
 there too). The link is good for fifteen minutes and one bridge. That is the
@@ -70,8 +67,16 @@ whole setup: the bridge fetches its own key, and the server decides which
 table each board belongs to. The page is open to the hall's network for
 looking, but from another computer it is a read-only view (servers, queue,
 ports, boards), marked as such: joining, removing a server, updating and the
-settings work from the bridge itself only (the peer address of the connection
-decides, never a header; an SSH port forward counts as the bridge itself). A
+settings work from the bridge itself (the peer address of the connection
+decides, never a header; an SSH port forward counts as the bridge itself) or from
+a browser unlocked with the **remote PIN**: set one on the bridge itself under
+"This program" (4 characters at least, kept only as a salted PBKDF2 hash), and the
+read-only banner elsewhere offers "Enter PIN"; the right PIN gives that browser
+every button for 12 hours (also behind `tailscale serve` or a reverse proxy,
+which still count as remote), changing or removing the PIN locks them all again,
+and five wrong tries lock an address out for five minutes. The PIN can only be
+set from the bridge itself. The page is plain HTTP, so the PIN crosses the hall's
+network in clear: a lock for the hall, not security against the internet. A
 request that asks for a host the bridge does not answer to gets a 403. The page speaks English and Dutch, the choice
 kept in a cookie; `/help` says what the page's parts mean.
 
@@ -92,6 +97,21 @@ What the bridge promises:
 - Remove, on either side, ends the link for both.
 
 The link itself is described in [docs/protocol.md](docs/protocol.md).
+
+## For developers
+
+Everything below is for people working on Arkab or building on it. A hall never needs it, because the releases above already contain a built bridge.
+
+### Running from a checkout
+
+This starts the same bridge from source, which is what you want while changing it and nothing else:
+
+```sh
+mix deps.get
+mix run --no-halt          # or: iex -S mix
+```
+
+The status page, the variables and the promises above all apply as they are. A checkout keeps its data in `./data` unless `ARKAB_DATA` says otherwise.
 
 ## Licence
 

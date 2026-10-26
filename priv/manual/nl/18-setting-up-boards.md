@@ -150,9 +150,15 @@ toestemming voor de uitslagensite volgt zodra het toernooi daar is aangekomen.
 10. **Paar de ronde in OpenPairings** zoals altijd (**Ronde N paren**).
     OpenPairings heeft geen knop die een ronde start: een ronde die gepaard is,
     is bezig. Binnen ongeveer vijf seconden tonen de borden van dat toernooi de
-    nieuwe ronde, met namen, ratings en kleuren. Gebeurt dat niet (geen
-    verbinding), dan doet **Ronde N starten** op de pagina Ronde van Alnasl het
-    met de hand.
+    nieuwe ronde, met namen, ratings en kleuren. Daarvoor hoeft niets
+    gepubliceerd te zijn: het kastje krijgt elke gepaarde ronde, gepubliceerd of
+    niet; publiceren bepaalt alleen wat de uitslagensite toont. Zolang het
+    wacht, zegt de pagina Ronde van Alnasl *Wacht op OpenPairings om ronde N te
+    paren* - je hoeft daar niets in te drukken. De knop **Ronde N starten**
+    krijg je alleen bij een kastje zonder koppeling, of bij een toernooi dat
+    niet vanzelf start; **Ronde N volgen** verschijnt wanneer OpenPairings al
+    op een latere ronde zit dan de borden (een partij die nog bezig is in de
+    oude ronde houdt het kastje tegen).
 11. **Spelen.** Houd de pagina Ronde van Alnasl open. Een tegel per bord toont de
     toestand als een vorm en een woord: *Live*, *Bezig*, *Afgeleid*,
     *Niet synchroon*, *Geen signaal*, *Klok verkeerd om*, *Afgelopen*. Op de
@@ -165,7 +171,9 @@ toestemming voor de uitslagensite volgt zodra het toernooi daar is aangekomen.
     notatieformulieren. Er wordt niets geblokkeerd.* Controleer het
     notatieformulier, verbeter wat fout is, en ga door.
 13. **Toeschouwers** zien de zetten op de livepagina's van de uitslagensite. Ze
-    zien een partij alleen voor een bord van een **gepubliceerde** ronde.
+    zien een partij alleen voor een bord van een ronde die **vrijgegeven** is
+    (het niveau *Vrijgegeven:* van de ronde op de pagina Paringen) bij een
+    toernooi dat **op de uitslagensite** staat.
 
 ## Installeren met de desktopversie {#set-up-desktop}
 
@@ -354,7 +362,7 @@ ronde en eigen uitslagenpagina.
 | --- | --- | --- |
 | Alnasl: *Dat is geen volledige koppelcode: het deel na de # ontbreekt.* | De regel is bij het kopiëren afgebroken. | Kopieer de hele regel, van `https://` tot het einde. |
 | Alnasl: *OpenPairings kent deze code niet* of *OpenPairings weigert de koppelcode*; de koppeling zegt *Code geweigerd* | Verkeerd getypt, of in OpenPairings **ingetrokken**. Het kastje vraagt niet meer. | Maak een nieuwe code (Instellingen, Live borden), voeg ze toe in Alnasl, verwijder de oude. |
-| Alnasl: *OpenPairings is niet bereikbaar*; de koppeling zegt *Geen antwoord* | De server of het zaalnetwerk ligt eruit. Er gaat niets verloren: de borden gaan door met de paringen die ze hebben en het kastje vraagt vanzelf opnieuw. | Controleer het netwerk. Een ronde die intussen gepaard is: **Ronde N starten**. |
+| Alnasl: *OpenPairings is niet bereikbaar*; de koppeling zegt *Geen antwoord* | De server of het zaalnetwerk ligt eruit. Er gaat niets verloren: de borden gaan door met de paringen die ze hebben en het kastje vraagt vanzelf opnieuw. | Controleer het netwerk. Een ronde die intussen gepaard is, start vanzelf zodra het kastje OpenPairings weer bereikt. |
 | *Geen antwoord. Deze code is voor een OpenPairings op deze zelfde computer: draait het?* | Een code *voor een kastje op deze computer* wordt gebruikt op een computer die niet die van OpenPairings is, of OpenPairings draait niet. | Draai Alnasl op dezelfde pc als de desktop-OpenPairings en start OpenPairings; of maak een code *voor een kastje op het netwerk* (zie [Alnasl op een andere machine](#desktop-on-the-network)). |
 | Alnasl op een andere machine: *OpenPairings is niet bereikbaar*, bij een desktop-OpenPairings | Een van: de schakelaar staat uit; de firewall van Windows liet het niet toe; de twee machines zitten niet op hetzelfde netwerk; het adres van je computer is veranderd; er bestaat geen netwerkcode meer, dus de deur is dicht. | Instellingen, Live borden, kaart **Kastjes elders op dit netwerk** zegt welke. Adres veranderd: kies het nieuwe, maak een nieuwe code. Firewall: sta OpenPairings toe op particuliere netwerken in Windows-beveiliging. |
 | OpenPairings: *Poort 4747 is in gebruik door een ander programma op deze computer* | Een ander programma heeft die poort. | Kies op dezelfde kaart een andere poort en druk op **Gebruik deze**, maak daarna een nieuwe code. Verder verandert er niets. |
@@ -370,7 +378,7 @@ ronde en eigen uitslagenpagina.
 | *Er zijn al 8 codes.* | De grens. | Trek een code in die je niet meer gebruikt. |
 | *De code bereikt nu geen toernooi* | Het toernooi is verwijderd of gearchiveerd, of de groep is leeg. | Controleer het toernooi; een gearchiveerd of overgedragen toernooi kan niet op een kastje staan. |
 | *OpenPairings vraagt om het rustiger aan te doen* | Te veel verzoeken. | Niets: het kastje probeert het vanzelf opnieuw. |
-| De nieuwe ronde verschijnt niet | Het kastje vraagt ongeveer elke vijf seconden. | Wacht een paar seconden. Nog niets, kijk dan naar de stand van de koppeling bij Instellingen, of gebruik **Ronde N starten**. |
+| De nieuwe ronde verschijnt niet | Het kastje vraagt ongeveer elke vijf seconden. | Wacht een paar seconden. Nog niets, kijk dan naar de stand van de koppeling bij Instellingen; **Ronde N volgen** op de pagina Ronde, als die er staat, zet de borden over. |
 | *Klok niet in beginstelling: … de klok staat omgekeerd of de wip staat verkeerd* | De klok staat niet voor wit klaar (ze staat rechts van het bord, de wip omhoog aan de kant van wit). | Draai de klok of tip de wip. De melding verdwijnt vanzelf. |
 | Dezelfde partij wordt twee keer gemeld | Twee codes bereiken hetzelfde toernooi op één kastje. | Houd één code (zie [meerdere toernooien](#several-tournaments)). |
 | Geen kolom **Bord zag** op de pagina Paringen | Nog geen code bereikt dit toernooi en geen bord meldde een partij. | Maak een code (stap 2) en voeg ze toe op het kastje. |

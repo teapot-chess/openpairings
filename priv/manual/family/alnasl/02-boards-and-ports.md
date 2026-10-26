@@ -30,21 +30,31 @@ If a port was added while one board was on it, and several are on it now, the ro
 > [!NOTE] What has been checked on real boards
 > Finding the boards, who they are, and what stands on each, with two boards on one cable. Not yet seen on a real loop: a move as it is played, a clock, and more than two boards. The box reads the whole board every few seconds as well, so on a loop a move can be late but not wrong.
 
+## Renaming and removing a board {#removing-a-board}
+
+"Rename" under a board's name changes what the pages call it; nothing else about it changes. "Remove" at the end of its row takes the board off the list and stops reading it. Its games stay, as do its recordings (they are listed on the Recordings page as "removed board N", and only the owner of the hall the board was in, or an admin, can open them). If a game is being played on the board, Remove asks first and says so.
+
+A board that comes from a bridge is also told to the bridge, which stops reporting it; without that it would be back a moment later. If the bridge is not connected, the board is removed here but the bridge will report it again when it is: forget the board on the bridge's own page to stop that. Putting the board back is adding the port again, on the bridge or here.
+
 ## Which board is which {#which-board-is-which}
 
 Twelve boards look alike, and so do twelve cables. The box keeps three things apart.
 
-- **Which board it is.** An electronic board tells the box its serial number (it is also on a label under the board). That is what the box knows it by, not the USB port. Unplug it, plug it in elsewhere, restart the box: it is still the same board and keeps its number. If it comes back on another port, add it on that port: the box recognises the serial and puts it back in its old place. A board the box has never seen is marked "New board" and asks for a number.
+- **Which board it is.** An electronic board tells the box its serial number (it is also on a label under the board). That is what the box knows it by, not the USB port. Unplug it, plug it in elsewhere, restart the box: it is still the same board and keeps its number. If it comes back on another port - another USB hub, another adapter (a broken one replaced), or another bridge of the same hall - add it on that port, or let the bridge report it: the box recognises the serial and brings its old row back, with its name, table number, board of the round, game, turned-round setting and history. No second row is made, whether the board had a number yet or not. Replugged so fast that the old port has not noticed yet (that takes a few seconds), the two rows become one the moment it does; until then the board is listed as seen twice. Mid-game that is safe: the game carries on in the same row. A board in another hall is that hall's: it is never moved there by itself. A board the box has never seen is marked "New board" and asks for a number.
 - **Its table number.** The sticker on the board: "this is table 7". You set it once for the hall and it stays. "Labels" on the Boards page prints a sheet of stickers with the table number and the serial.
 - **Its board of the round.** Normally the same number as the table. For one round you can say otherwise in the column "Board of round N" ("table 7 plays board 3 today"), swap two boards, or put everything back. The next round starts from the table numbers again. On the Live page the board number is the big one; "table 7 · serial 06310" is the small print.
 
 ### Giving the table numbers {#giving-numbers}
 
-Three ways:
+Three ways, side by side in the panel "Number the boards" on the Boards page:
 
-- **Number by touching.** Press Start, then lift a piece on table 1's board, then on table 2's, and so on. Each board gets the next number the moment it feels the piece go. Undo takes the last one back, Skip leaves a number out, Stop ends it.
-- **Number all in connection order.** One click, when the boards were connected in the order of the tables.
+- **Number boards by touching them.** Press the button, then Start, then lift a piece on table 1's board, then on table 2's, and so on. Each board gets the next number the moment it feels the piece go. Undo takes the last one back, Skip leaves a number out, Stop ends it.
+- **Number in order.** One click: every board, in the order the list shows them - the order they were connected in. Handy when the boards were connected in the order of the tables.
 - **By hand.** Type the number in the column "Table".
+
+"Show me" on a row is none of these: it helps you find that board in the hall, and gives no number.
+
+The list keeps its order while you number: a board does not move up or down because it got a number, so the next row you tap is the board you meant. A table number is on one board only, and a board of the round is fed by one board: when the number you give takes one from another board, the page says which board lost what. And when a board you numbered turns out to be a board the box already knew by its serial (replugged on another port), the box keeps the number it knew it by, and the log says which number went.
 
 ### Which board is this? {#which-board-is-this}
 
@@ -56,7 +66,7 @@ Walking along the tables with a phone in your hand is easier than going back and
 
 1. Setup, Access, "Access from other machines": set a PIN, then let other machines in the hall open the site, and start Alnasl again. Do it before the hall fills up.
 2. On the box, open Boards (or Setup, Access): "Open this site on your phone" shows the address and a QR code. Point the phone's camera at it and give the PIN. (On a box with accounts, the code signs you in instead; see [Accounts, halls and roles](06-accounts-and-halls.md).)
-3. On the phone: Boards, "Number by touching", Start. The next table number fills the screen. Walk to that table and lift any piece; the phone flashes the number and the board's serial, buzzes (Android only) and beeps once "Sound off" has been tapped to "Sound on". A phone wants one tap per visit before it makes any sound, and an iPhone on silent plays none.
+3. On the phone: Boards, "Number boards by touching them", Start. The next table number fills the screen. Walk to that table and lift any piece; the phone flashes the number and the board's serial, buzzes (Android only) and beeps once "Sound off" has been tapped to "Sound on". A phone wants one tap per visit before it makes any sound, and an iPhone on silent plays none.
 4. Undo, Skip and Stop are at the bottom of the screen. If the phone loses the network between two tables, nothing is lost: the run is kept on the box.
 
 > [!WARNING] Never without the PIN
