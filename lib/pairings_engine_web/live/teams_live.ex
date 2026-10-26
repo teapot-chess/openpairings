@@ -47,6 +47,7 @@ defmodule PairingsEngineWeb.TeamsLive do
        error: nil,
        form_nonce: 0,
        new_team: new_team_form(),
+       team_drafts: %{},
        tpn: nil,
        tpn_changes: nil,
        # The "draw the order by lot" confirmation is open: there is an order
@@ -158,6 +159,13 @@ defmodule PairingsEngineWeb.TeamsLive do
     end
   end
 
+  # What a team's edit form shows: the unsaved draft if there is one.
+  defp edit_value(drafts, team, field) do
+    drafts
+    |> Map.get(to_string(team.id), %{})
+    |> Map.get(Atom.to_string(field), Map.get(team, field))
+  end
+
   defp new_team_form(params \\ %{}),
     do: to_form(Map.take(params, ~w(name short_name captain series club)), as: :team)
 
@@ -170,6 +178,13 @@ defmodule PairingsEngineWeb.TeamsLive do
   # team name went as soon as you moved on to the captain.
   def handle_event("draft_team", %{"team" => params}, socket) when is_map(params) do
     {:noreply, assign(socket, new_team: new_team_form(params))}
+  end
+
+  # The same for each team's edit form, a draft per team, until it is saved.
+  def handle_event("draft_edit_team", %{"team_id" => id, "team" => params}, socket)
+      when is_binary(id) and is_map(params) do
+    draft = Map.take(params, ~w(name short_name captain series club rating_override))
+    {:noreply, assign(socket, team_drafts: Map.put(socket.assigns.team_drafts, id, draft))}
   end
 
   def handle_event("create_team", %{"team" => params}, socket) when is_map(params) do
@@ -206,7 +221,11 @@ defmodule PairingsEngineWeb.TeamsLive do
         rating_override: updated.rating_override
       })
 
-      {:noreply, socket |> ok(gettext("Team %{name} saved.", name: updated.name)) |> load()}
+      {:noreply,
+       socket
+       |> ok(gettext("Team %{name} saved.", name: updated.name))
+       |> assign(team_drafts: Map.delete(socket.assigns.team_drafts, id))
+       |> load()}
     else
       nil -> {:noreply, fail(socket, :not_found)}
       {:error, reason} -> {:noreply, fail(socket, reason)}
@@ -1395,30 +1414,51 @@ defmodule PairingsEngineWeb.TeamsLive do
             </button>
           </div>
 
-          <details :if={@writable?}>
+          <details
+            :if={@writable?}
+            id={"edit-team-details-#{team.id}"}
+            phx-mounted={Phoenix.LiveView.JS.ignore_attributes(["open"])}
+          >
             <summary>
               {gettext("Rename")}<span class="sr-only">{gettext(" %{team}", team: team.name)}</span>
             </summary>
 
             <form
               id={"edit-team-#{team.id}"}
+              phx-change="draft_edit_team"
               phx-submit="update_team"
               class="form-grid"
             >
               <input type="hidden" name="team_id" value={team.id} />
               <label class="field">
                 <span>{gettext("Team name")}</span>
-                <input type="text" name="team[name]" value={team.name} required maxlength="100" />
+                <input
+                  type="text"
+                  name="team[name]"
+                  value={edit_value(@team_drafts, team, :name)}
+                  required
+                  maxlength="100"
+                />
               </label>
 
               <label class="field">
                 <span>{gettext("Short name")}</span>
-                <input type="text" name="team[short_name]" value={team.short_name} maxlength="12" />
+                <input
+                  type="text"
+                  name="team[short_name]"
+                  value={edit_value(@team_drafts, team, :short_name)}
+                  maxlength="12"
+                />
               </label>
 
               <label class="field">
                 <span>{gettext("Captain")}</span>
-                <input type="text" name="team[captain]" value={team.captain} maxlength="100" />
+                <input
+                  type="text"
+                  name="team[captain]"
+                  value={edit_value(@team_drafts, team, :captain)}
+                  maxlength="100"
+                />
               </label>
 
               <label class="field">
@@ -1427,7 +1467,7 @@ defmodule PairingsEngineWeb.TeamsLive do
                   type="text"
                   id={"team-series-input-#{team.id}"}
                   name="team[series]"
-                  value={team.series}
+                  value={edit_value(@team_drafts, team, :series)}
                   maxlength="30"
                   placeholder={gettext("e.g. Series 1")}
                 />
@@ -1439,7 +1479,7 @@ defmodule PairingsEngineWeb.TeamsLive do
                   type="text"
                   id={"team-club-input-#{team.id}"}
                   name="team[club]"
-                  value={team.club}
+                  value={edit_value(@team_drafts, team, :club)}
                   maxlength="100"
                 />
                 <small
@@ -1472,7 +1512,7 @@ defmodule PairingsEngineWeb.TeamsLive do
                   max="3999"
                   id={"team-rating-override-#{team.id}"}
                   name="team[rating_override]"
-                  value={team.rating_override}
+                  value={edit_value(@team_drafts, team, :rating_override)}
                 />
               </label>
 
