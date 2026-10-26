@@ -217,6 +217,26 @@ defmodule PairingsEngine.Audit do
   defp filter_actions(query, []), do: query
   defp filter_actions(query, actions), do: from(a in query, where: a.action in ^actions)
 
+  @doc """
+  The reasons given for the hand edits to round `round_number` of
+  `tournament_id`, oldest first, as `{inserted_at, action, reason}`. Rows
+  without a reason are left out.
+  """
+  def hand_edit_reasons(tournament_id, round_number) when is_integer(round_number) do
+    from(a in AuditLog,
+      where:
+        a.tournament_id == ^tournament_id and a.action in ^PairingsEngine.HandReason.actions() and
+          fragment("json_extract(?, '$.round')", a.details) == ^round_number and
+          fragment("json_extract(?, '$.reason')", a.details) != "",
+      order_by: [asc: a.inserted_at, asc: a.id],
+      select: {a.inserted_at, a.action, fragment("json_extract(?, '$.reason')", a.details)}
+    )
+    |> Repo.all()
+    |> Enum.reject(fn {_at, _action, reason} -> is_nil(reason) end)
+  end
+
+  def hand_edit_reasons(_tournament_id, _round_number), do: []
+
   @doc "Total number of audit rows for `tournament_id` (optionally filtered by `:actions`)."
   def count_for_tournament(tournament_id, opts \\ []) do
     query = from a in AuditLog, where: a.tournament_id == ^tournament_id

@@ -453,7 +453,9 @@ sentences: `frozen_round` (not the latest round), `sent_round_changed`
 vacant seat or no boards is `409`; boards the pairing checker would not pair
 need `mpa_pibe` acknowledged (the `409` carries the checker's verdict as
 `checker: {checked, line, missing, added, warnings}`), and the line is
-recorded as the round's MPA PIBE. Team events stay at the desk
+recorded as the round's MPA PIBE. Both routes take an optional `reason`
+(free text, cut to 200 characters, never required), which goes into the
+audit row and the ITDX file. Team events stay at the desk
 (`409 desk_only`): their boards count for matches.
 
 `POST /rounds/:n/edits/discard` is "Discard hand edits"

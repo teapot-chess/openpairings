@@ -31,7 +31,8 @@ defmodule PairingsEngineWeb.ManubriumApi.RoundEditController do
   acknowledged: [...]}`. `kind` is `swap` (`a`, `b`: player ids), `vacate`
   (`player`, `bye_type?`), `bye` (`pairing`), `fill` (`pairing`, `player`),
   `pool_pair` (`a`, `b`, `board?`), `pool_bye` (`player`) or
-  `delete` (`pairing`). Answers the round as it now is.
+  `delete` (`pairing`); an optional `reason` (a short line of text) goes
+  into the audit row. Answers the round as it now is.
   """
   def edit(conn, %{"id" => id, "number" => number} = params) do
     with {:ok, t, _role} <- Reply.tournament(conn, id, :desk),
@@ -43,7 +44,8 @@ defmodule PairingsEngineWeb.ManubriumApi.RoundEditController do
              conn.assigns.current_scope,
              round,
              action,
-             acknowledged(params)
+             acknowledged(params),
+             params["reason"]
            ) do
         {:ok, _} ->
           json(conn, %{
@@ -75,7 +77,8 @@ defmodule PairingsEngineWeb.ManubriumApi.RoundEditController do
              t,
              conn.assigns.current_scope,
              round,
-             acknowledged(params)
+             acknowledged(params),
+             params["reason"]
            ) do
         {:ok, line} ->
           json(conn, %{

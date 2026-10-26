@@ -1841,7 +1841,7 @@
    },
    "answer": "Y",
    "status": "met",
-   "note": "Pairing-integrity events are identified, stored and logged as PIBEs: hand edits (MPA, rounds.mpa_pibe, audit pairing.mpa_finished), imports (import_findings, pibe.import), result corrections after a later round was paired (pairings.corrected_from, pibe.correction), TPN exchanges and regenerations (audited), full-point byes and rating-only corrections (audited, ### lines in the copy and the ITDX file). Tests: manual_pairing_test.exs, trf_import_adjustments_test.exs, long_event_and_correction_live_test.exs, tpn_test.exs."
+   "note": "Pairing-integrity events are identified, stored and logged as PIBEs: hand edits (MPA, rounds.mpa_pibe, audit pairing.mpa_finished), imports (import_findings, pibe.import), result corrections after a later round was paired (pairings.corrected_from, pibe.correction), TPN exchanges and regenerations (audited), full-point byes and rating-only corrections (audited, ### lines in the copy and the ITDX file). Each hand edit can also carry an optional free-text reason (audit details.reason, shown on the Pairings and audit pages and written beside the edit in the ITDX OP block), and every round records when it was paired (rounds.paired_at, also in the OP block). Tests: hand_edit_reason_live_test.exs, manual_pairing_test.exs, trf_import_adjustments_test.exs, long_event_and_correction_live_test.exs, tpn_test.exs."
   },
   {
    "q": 113,

@@ -42,6 +42,7 @@ defmodule PairingsEngineWeb.PairingsLive do
 
   alias PairingsEngine.Pairing, as: Engine
   alias PairingsEngine.EngineSlots
+  alias PairingsEngine.HandReason
   alias PairingsEngine.PairTiming
   alias PairingsEngine.{ByeTypes, HalfByes}
   alias PairingsEngine.Tournaments.Tournament
@@ -106,6 +107,7 @@ defmodule PairingsEngineWeb.PairingsLive do
        error: nil,
        # The rounds as this page last saw them - see `RoundChangeNotice`.
        round_marker: PairingsEngineWeb.RoundChangeNotice.marker(tournament.id),
+       hand_reasons: [],
        # What the boards in the hall reported - see `assign_board_reports/1`.
        board_reports: nil,
        # Bumped whenever a result-entry write is REFUSED (e.g. an archived
@@ -424,6 +426,8 @@ defmodule PairingsEngineWeb.PairingsLive do
       assign(socket,
         refreshed_version: version,
         round_marker: PairingsEngineWeb.RoundChangeNotice.marker(t.id),
+        # The reasons given for the hand edits to this round (audit rows).
+        hand_reasons: (round && Audit.hand_edit_reasons(t.id, round.number)) || [],
         round: round,
         # What the players' bye preferences did in this round, and the
         # stored ones a FIDE-rated tournament is ignoring.
@@ -1072,8 +1076,9 @@ defmodule PairingsEngineWeb.PairingsLive do
   def handle_event("rr_swap_cancel", _params, socket),
     do: {:noreply, assign(socket, rr_swap: nil)}
 
-  def handle_event("rr_swap", %{"swap" => %{"a" => a, "b" => b}}, socket) do
+  def handle_event("rr_swap", %{"swap" => %{"a" => a, "b" => b} = swap}, socket) do
     t = socket.assigns.tournament
+    reason = Map.get(swap, "reason", "")
 
     with {a_n, ""} <- Integer.parse(String.trim(a)),
          {b_n, ""} <- Integer.parse(String.trim(b)) do
@@ -1094,7 +1099,7 @@ defmodule PairingsEngineWeb.PairingsLive do
             t.id,
             socket.assigns.current_scope,
             "pairing.rounds_swapped",
-            RoundSwap.audit_details(updated, a_n, b_n)
+            HandReason.put(RoundSwap.audit_details(updated, a_n, b_n), reason)
           )
 
           {:noreply,
@@ -1107,13 +1112,13 @@ defmodule PairingsEngineWeb.PairingsLive do
            |> refresh()}
 
         {:error, message} ->
-          {:noreply, assign(socket, rr_swap: %{a: a, b: b, error: message})}
+          {:noreply, assign(socket, rr_swap: %{a: a, b: b, error: message, reason: reason})}
       end
     else
       _ ->
         {:noreply,
          assign(socket,
-           rr_swap: %{a: a, b: b, error: gettext("Enter two round numbers.")}
+           rr_swap: %{a: a, b: b, error: gettext("Enter two round numbers."), reason: reason}
          )}
     end
   end
@@ -1680,7 +1685,7 @@ defmodule PairingsEngineWeb.PairingsLive do
             t.id,
             socket.assigns.current_scope,
             "pairing.round_created_by_hand",
-            %{round: round.number}
+            HandReason.put(%{round: round.number}, socket.assigns.mpa_dialog[:reason])
           )
 
           {:noreply,
@@ -1726,7 +1731,7 @@ defmodule PairingsEngineWeb.PairingsLive do
             socket.assigns.tournament.id,
             socket.assigns.current_scope,
             "pairing.round_created_by_hand",
-            %{round: round.number}
+            HandReason.put(%{round: round.number}, socket.assigns.mpa_dialog[:reason])
           )
 
           {:noreply,
@@ -2117,6 +2122,27 @@ defmodule PairingsEngineWeb.PairingsLive do
         {:noreply, socket}
     end
   end
+
+  # The optional reason typed in a hand edit's confirmation, or in the dialog
+  # of a hand-made round or of finishing the hand edits. Kept as typed (cut
+  # to the limit) so the box does not eat spaces under the cursor; the audit
+  # row gets `HandReason.clean/1`. Never required, never blocks anything.
+  def handle_event("set_reason", %{"reason" => text}, socket) when is_binary(text) do
+    text = String.slice(text, 0, HandReason.max_length())
+
+    cond do
+      is_map(socket.assigns.confirm) ->
+        {:noreply, assign(socket, confirm: Map.put(socket.assigns.confirm, :reason, text))}
+
+      is_map(socket.assigns.mpa_dialog) ->
+        {:noreply, assign(socket, mpa_dialog: Map.put(socket.assigns.mpa_dialog, :reason, text))}
+
+      true ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("set_reason", _params, socket), do: {:noreply, socket}
 
   def handle_event("apply_confirm", _params, socket) do
     apply_confirm(socket, socket.assigns.confirm)
@@ -3303,6 +3329,7 @@ defmodule PairingsEngineWeb.PairingsLive do
               )
             )
           )
+          |> HandReason.put(confirm[:reason])
         )
 
         socket = socket |> assign(error: nil) |> refresh()
@@ -3875,7 +3902,10 @@ defmodule PairingsEngineWeb.PairingsLive do
           socket.assigns.tournament.id,
           socket.assigns.current_scope,
           "pairing.mpa_finished",
-          %{round: round.number, pibe: line}
+          HandReason.put(
+            %{round: round.number, pibe: line},
+            is_map(socket.assigns.mpa_dialog) && socket.assigns.mpa_dialog[:reason]
+          )
         )
 
         {:noreply,
@@ -6172,6 +6202,19 @@ defmodule PairingsEngineWeb.PairingsLive do
               </label>
             </div>
 
+            <label class="field pe-reason">
+              <span>{gettext("Reason (optional)")}</span>
+              <input
+                type="text"
+                id="rr-swap-reason"
+                name="swap[reason]"
+                value={@swap[:reason]}
+                maxlength={HandReason.max_length()}
+                autocomplete="off"
+                placeholder={gettext("Why is this being changed by hand?")}
+              />
+            </label>
+
             <p
               :if={PairingsEngine.Compliance.fide_mode?(@tournament)}
               id="rr-swap-fide-note"
@@ -6317,6 +6360,29 @@ defmodule PairingsEngineWeb.PairingsLive do
       end
   end
 
+  # The optional reason for a hand edit: one short line, never required. The
+  # form exists only so the box can tell the page what was typed (the dialogs'
+  # buttons sit outside it).
+  attr :id, :string, required: true
+  attr :value, :string, default: nil
+
+  defp reason_field(assigns) do
+    ~H"""
+    <form id={"#{@id}-form"} class="field pe-reason" phx-change="set_reason" phx-submit="set_reason">
+      <label for={@id}>{gettext("Reason (optional)")}</label>
+      <input
+        type="text"
+        id={@id}
+        name="reason"
+        value={@value}
+        maxlength={HandReason.max_length()}
+        autocomplete="off"
+        placeholder={gettext("Why is this being changed by hand?")}
+      />
+    </form>
+    """
+  end
+
   # The manual pairing alteration's two Level-3 confirmations (TEC Manual):
   # finishing hand edits that leave the round different from the pairing
   # checker's (Q69 - the checker's own pairing shown, as the manual asks),
@@ -6429,6 +6495,8 @@ defmodule PairingsEngineWeb.PairingsLive do
               )} <code id="mpa-end-line">### {@dialog.line}</code>
             </p>
 
+            <.reason_field id="mpa-end-reason" value={@dialog[:reason]} />
+
             <label
               class="pe-modal-warn"
               style="display: flex; align-items: center; gap: 6px; font-weight: 400"
@@ -6483,6 +6551,7 @@ defmodule PairingsEngineWeb.PairingsLive do
               )}
             </p>
             <.rr_numbers_chooser :if={@numbers} numbers={@numbers} />
+            <.reason_field id="rr-pair-by-hand-reason" value={@dialog[:reason]} />
             <div class="pe-modal-warn" role="alert">
               <strong>{gettext("A round that differs from the table is a departure from it.")}</strong>
               <p style="margin: 6px 0 0">
@@ -6537,6 +6606,7 @@ defmodule PairingsEngineWeb.PairingsLive do
               )}
             </p>
 
+            <.reason_field id="pair-by-hand-reason" value={@dialog[:reason]} />
             <div class="pe-modal-warn" role="alert">
               <strong>{gettext("These pairings will break the pairing rules.")}</strong>
               <p style="margin: 6px 0 0">
@@ -7815,6 +7885,38 @@ defmodule PairingsEngineWeb.PairingsLive do
         </span>
       </p>
 
+      <%!-- Hand edits come with the reasons the arbiter gave, when they
+            gave any. --%>
+      <div :if={@hand_reasons != []} id="hand-edit-reasons" class="setup-line" role="note">
+        <.icon name="hero-chat-bubble-bottom-center-text-micro" class="setup-line-icon" />
+        <span>
+          <strong>{gettext("Reasons for the hand edits:")}</strong>
+          <span
+            :for={{{at, _action, reason}, i} <- Enum.with_index(@hand_reasons)}
+            class="hand-edit-reason"
+          >
+            <PairingsEngineWeb.Components.LocalTime.local_time
+              id={"hand-reason-#{i}-#{:erlang.phash2(at)}"}
+              at={at}
+              format="time"
+            />
+            {reason}
+          </span>
+        </span>
+      </div>
+
+      <%!-- When the boards were made: quiet, because it is a fact, not a task. --%>
+      <p :if={@round && @round.paired_at} id="round-paired-at" class="setup-line" role="note">
+        <span>
+          {gettext("Paired")}
+          <PairingsEngineWeb.Components.LocalTime.local_time
+            id={"round-paired-at-#{@round.number}-#{DateTime.to_unix(@round.paired_at)}"}
+            at={@round.paired_at}
+            format="stamp"
+          />
+        </span>
+      </p>
+
       <%!-- The players' bye preferences (not a FIDE rule): what they did
             to the pairing-allocated bye in the round on screen. --%>
       <div
@@ -8247,6 +8349,8 @@ defmodule PairingsEngineWeb.PairingsLive do
                 /> {gettext("I understand - apply it anyway")}
               </label>
             </div>
+
+            <.reason_field id="confirm-reason" value={@confirm[:reason]} />
 
             <div :if={@confirm.frozen} class="pe-modal-warn">
               <strong>

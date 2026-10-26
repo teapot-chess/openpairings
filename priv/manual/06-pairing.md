@@ -10,7 +10,9 @@ The page shows one round at a time. A row of round buttons at the top moves
 between the rounds; a round that has not been paired yet is shown empty with
 the button that pairs it. The table has one row per board: the board number,
 the White player, the result, the Black player. A player with a bye is a
-board with *bye* and no Black player.
+board with *bye* and no Black player. Under the round bar, a quiet line says
+when the round was paired (in your own time zone; hover for UTC). Pairing
+a round again after unpairing it replaces that time.
 
 Above the table, the round bar has one button that stands out, and which one
 depends on where the round stands. Beside it are the two or three things that
@@ -458,6 +460,15 @@ Every edit first shows a confirmation with the boards before and after,
 which you accept or cancel (<kbd>Escape</kbd> cancels). While an edit is half-made, a
 banner says so. A result that is on a board that you change is cleared; the
 confirmation says so. Every edit is written to the audit trail.
+
+Each of these confirmations, and the dialogs for finishing hand edits, for
+creating a round by hand and for swapping two rounds of a round robin, has a
+**Reason (optional)** box: one short line (at most 200 characters) saying why
+the pairing is being changed by hand. It is never required and never blocks the
+edit. The reason is kept in the audit trail next to the edit, listed above the
+boards (*Reasons for the hand edits*) while you are on that round, and written
+beside the edit in the ITDX file ([Import and export](12-import-export.md)),
+with accents removed and line breaks and control characters stripped.
 
 ### Rule warnings while editing
 

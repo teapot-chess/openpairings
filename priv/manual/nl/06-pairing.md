@@ -10,7 +10,10 @@ De pagina toont één ronde tegelijk. Een rij rondeknoppen bovenaan verplaats je
 naar andere rondes; een ronde die nog niet gepaard is, wordt leeg getoond met de
 knop die haar paart. De tabel heeft één rij per bord: het bordnummer, de witte
 speler, het resultaat en de zwarte speler. Een speler met een bye is een bord
-met *bye* en zonder zwarte speler.
+met *bye* en zonder zwarte speler. Onder de rondebalk staat een rustige regel die
+zegt wanneer de ronde gepaard is (in je eigen tijdzone; houd de muis erboven voor
+UTC). Paar je een ronde opnieuw nadat je haar ongedaan maakte, dan vervangt dat
+tijdstip het oude.
 
 Boven de tabel heeft de rondebalk één knop die opvalt, en welke dat is hangt af
 van hoe de ronde ervoor staat. Ernaast staan de twee of drie dingen die op dat
@@ -491,6 +494,16 @@ die je accepteert of annuleert (<kbd>Escape</kbd> annuleert). Terwijl een wijzig
 half is gemaakt, toont een banner dat. Een resultaat op een bord dat je wijzigt,
 wordt gewist; de bevestiging meldt dat. Elke wijziging wordt in het auditlogboek
 vastgelegd.
+
+Elk van deze bevestigingen, en de dialogen voor het afronden van handmatige
+wijzigingen, het met de hand aanmaken van een ronde en het omwisselen van twee
+rondes van een rondetoernooi, heeft een vak **Reden (optioneel)**: Ã©Ã©n korte regel
+(hoogstens 200 tekens) waarin je zegt waarom je de paring met de hand aanpast. Het
+is nooit verplicht en houdt de wijziging nooit tegen. De reden wordt in het
+auditlogboek bij de wijziging bewaard, boven de borden getoond (*Redenen voor de
+handmatige wijzigingen*) zolang je op die ronde zit, en in het ITDX-bestand naast de
+wijziging geschreven ([Importeren en exporteren](12-import-export.md)), zonder accenten
+en zonder regeleinden en stuurtekens.
 
 ### Regelwaarschuwingen bij het bewerken {#rule-warnings-while-editing}
 

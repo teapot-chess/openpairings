@@ -322,7 +322,7 @@ defmodule PairingsEngine.TournamentExport do
 
   # `results_public` and `publish_cap` are not cast by `Round.changeset/2`;
   # the import carries them explicitly (`TournamentImport.import_rounds!/3`).
-  @round_fields ~w(number date status published_at results_public publish_cap chess960_position)a
+  @round_fields ~w(number date status published_at paired_at results_public publish_cap chess960_position)a
 
   # Schema fields NOT exported, each with the reason. Paired with a test
   # (`tournament_export_test.exs`) that asserts every field on the Round and

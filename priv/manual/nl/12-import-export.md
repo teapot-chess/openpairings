@@ -216,7 +216,9 @@ en de notities die het programma over het toernooi bijhoudt. **Overzetten naar e
 programma (ITDX)** is een derde bestand, om een lopend toernooi aan een ander
 paringsprogramma over te geven: het schrijft `?` voor partijen zonder uitslag (en `X` in
 record 162), de nationale ratingrecords, alle notities, en een blok `### OP`-regels dat
-alleen geschreven wordt, met instellingen, regels en rondegebeurtenissen. Het is niet
+alleen geschreven wordt, met instellingen, regels, het tijdstip waarop elke ronde gepaard
+werd en de rondegebeurtenissen, met de reden die je bij een handmatige wijziging gaf
+ernaast (gewone ASCII, zonder accenten). Het is niet
 voor rating en zegt dat in de naam (`ITDX-NOT-FOR-RATING`) en erin. Importeer je het,
 dan krijg je dezelfde paringen, kleuren en scores; [Versturen naar FIDE](10-fide-report.md)
 legt het verschil tussen de drie bestanden uit.

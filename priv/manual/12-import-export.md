@@ -213,7 +213,8 @@ the program keeps about the event. **Transfer to another program (ITDX)** is a
 third file, for handing a running tournament to another pairing program: it
 writes `?` for games without a result (and `X` in record 162), the national
 rating records, all the notes, and a write-only block of `### OP` lines with
-settings, rules and round events. It is not for rating, and says so in its name
+settings, rules, the time each round was paired and the round events, with the
+reason you gave for a hand edit beside it (plain ASCII, accents removed). It is not for rating, and says so in its name
 (`ITDX-NOT-FOR-RATING`) and inside. Importing it gives the same pairings,
 colours and scores; [Sending to FIDE](10-fide-report.md) tells the difference
 between the three files. Each paired round can also be selected by
