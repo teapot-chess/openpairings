@@ -205,24 +205,26 @@ the TRF16 layout, and the tournament records: number of rounds (142), initial
 colour (152), the point system if it is not 1, ½, 0 (162), the program (182),
 the type of tournament (192, for example `FIDE_DUTCH_2025` for a Swiss,
 `_BAKU` with acceleration, `BERGER_ROUNDROBIN_Gn`, `FIDE_TEAM_TYPEA_MP_GP`, or
-`CUSTOM_SWISS` for Keizer), the tie-breaks (202), the rate of play (222), the
-virtual points (250), the prohibited pairings (260), a bye granted for a
-round that is not yet paired (240) and the administrative extra points (299).
+`CUSTOM_SWISS` for Keizer), the tie-breaks (202) and the rate of play (222).
+It reports the games played and nothing that is only there to pair the next
+round: no virtual points (250), no prohibited pairings (260), no bye granted
+for a round not yet paired (240) and no administrative extra points (299).
 A copy adds `###` comment lines at the top saying it is a copy, and the notes
 the program keeps about the event. **Transfer to another program (ITDX)** is a
 third file, for handing a running tournament to another pairing program: it
 writes `?` for games without a result (and `X` in record 162), the national
-rating records, all the notes, and a write-only block of `### OP` lines with
-settings, rules, the time each round was paired and the round events, with the
-reason you gave for a hand edit beside it (plain ASCII, accents removed). It is not for rating, and says so in its name
+rating records, the pairing records (250, 260, 240, 299), all the notes, and a
+write-only block of `### OP` lines with settings, rules, the time each round was
+paired and the round events, with the reason you gave for a hand edit beside it
+(plain ASCII, accents removed). It is not for rating, and says so in its name
 (`ITDX-NOT-FOR-RATING`) and inside. Importing it gives the same pairings,
 colours and scores; [Sending to FIDE](10-fide-report.md) tells the difference
 between the three files. Each paired round can also be selected by
 `?rounds=1-5` in the address of the download (ranges and single rounds, such
 as `1-3,6`).
 
-**Extra points in the file.** Extra points that count in the standings are
-written as record 299: a handicap from before round 1 (round `000`), points
+**Extra points in the file.** In the ITDX file (not in the file for
+rating), extra points that count in the standings are written as record 299: a handicap from before round 1 (round `000`), points
 kept in the final standings in acceleration mode at round `999`. Extra points
 in acceleration mode are also virtual points (250): the points each round was
 paired with, and, while rounds remain, the points the next round will be

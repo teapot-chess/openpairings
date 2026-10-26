@@ -209,24 +209,26 @@ in de TRF16-indeling, en de toernooirecords: het aantal rondes (142), de startkl
 (152), het puntensysteem als dat niet 1, ½, 0 is (162), het programma (182), het type
 toernooi (192, bijvoorbeeld `FIDE_DUTCH_2025` voor een Zwitsers toernooi, `_BAKU` met versnelling,
 `BERGER_ROUNDROBIN_Gn`, `FIDE_TEAM_TYPEA_MP_GP`, of `CUSTOM_SWISS` voor Keizer), de
-tiebreaks (202), het speeltempo (222), de virtuele punten (250), de verboden
-paringen (260), een bye die voor een nog niet gepaarde ronde is toegekend (240) en de
+tiebreaks (202) en het speeltempo (222). Het meldt de gespeelde partijen en niets
+wat er alleen is om de volgende ronde te paren: geen virtuele punten (250), geen verboden
+paringen (260), geen bye voor een nog niet gepaarde ronde (240) en geen
 administratieve extra punten (299). Een kopie voegt bovenaan `###`-commentaarregels toe die zeggen dat het een kopie is,
 en de notities die het programma over het toernooi bijhoudt. **Overzetten naar een ander
 programma (ITDX)** is een derde bestand, om een lopend toernooi aan een ander
 paringsprogramma over te geven: het schrijft `?` voor partijen zonder uitslag (en `X` in
-record 162), de nationale ratingrecords, alle notities, en een blok `### OP`-regels dat
-alleen geschreven wordt, met instellingen, regels, het tijdstip waarop elke ronde gepaard
-werd en de rondegebeurtenissen, met de reden die je bij een handmatige wijziging gaf
-ernaast (gewone ASCII, zonder accenten). Het is niet
+record 162), de nationale ratingrecords, de paringsrecords (250, 260, 240, 299), alle
+notities, en een blok `### OP`-regels dat alleen geschreven wordt, met instellingen,
+regels, het tijdstip waarop elke ronde gepaard werd en de rondegebeurtenissen, met de
+reden die je bij een handmatige wijziging gaf ernaast (gewone ASCII, zonder accenten).
+Het is niet
 voor rating en zegt dat in de naam (`ITDX-NOT-FOR-RATING`) en erin. Importeer je het,
 dan krijg je dezelfde paringen, kleuren en scores; [Versturen naar FIDE](10-fide-report.md)
 legt het verschil tussen de drie bestanden uit.
 Elke gepaarde ronde kan ook worden geselecteerd met `?rounds=1-5` in het adres van de
 download (bereiken en losse rondes, zoals `1-3,6`).
 
-**Extra punten in het bestand.** Extra punten die in de rangschikking meetellen, worden
-geschreven als record 299: een handicap van vóór ronde 1 (ronde `000`), punten die in
+**Extra punten in het bestand.** In het ITDX-bestand (niet in het bestand voor rating)
+worden extra punten die in de rangschikking meetellen geschreven als record 299: een handicap van vóór ronde 1 (ronde `000`), punten die in
 versnellingsmodus in de eindrangschikking blijven op ronde `999`. Extra punten in
 versnellingsmodus zijn ook virtuele punten (250): de punten waarmee elke ronde is gepaard,
 en, zolang er rondes over zijn, de punten waarmee de volgende ronde zal worden gepaard. Een
