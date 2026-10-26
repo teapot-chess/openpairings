@@ -120,7 +120,7 @@ defmodule PairingsEngine.TrfRatingFileTest do
   end
 
   describe "an absence entered several rounds ahead" do
-    test "is a 240 record for its round, with no empty columns before it" do
+    test "is not in the file: it reports the games played, not the round after" do
       {t, players} =
         tournament(~w(Alice Bob Carol Dave),
           rounds_count: 5,
@@ -134,14 +134,18 @@ defmodule PairingsEngine.TrfRatingFileTest do
       {:ok, _} = Tournaments.update_player(players["Alice"], %{absent_rounds: "4"})
 
       text = send!(t, [1])
-      rank = rank_of(t, players["Alice"].id)
-      line = line_of(text, rank)
+      line = line_of(text, rank_of(t, players["Alice"].id))
 
-      assert "240 H 004 #{String.pad_leading(Integer.to_string(rank), 4)}" in lines(text)
-      # Round 1's column and nothing after it: no `0000 -` for rounds 2 and 3.
+      refute Enum.any?(lines(text), &String.starts_with?(&1, "240"))
+      # Round 1's column and nothing after it, and the points are its own.
       assert block(line, 2) == ""
-      refute String.slice(line, 101..-1//1) =~ "0000"
+      assert points(line) in [0.0, 1.0]
       assert_only_records(text)
+
+      # The copy is that file, so it has none either.
+      {:ok, copy} = TrfExport.export(Repo.reload!(t), [1], copy: true)
+      refute copy =~ "
+240 "
     end
   end
 
