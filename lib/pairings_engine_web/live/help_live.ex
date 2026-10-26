@@ -786,8 +786,15 @@ defmodule PairingsEngineWeb.HelpLive do
       </div>
 
       <script :type={Phoenix.LiveView.ColocatedHook} name=".Manual">
+        // Every chapter link remounts the page, sidebar included, and a fresh
+        // sidebar starts at the top. Readers who had scrolled down to chapter
+        // 15 did not consider that a feature. The last position lives here,
+        // outside the hook, so it outlives the remount but not a reload.
+        let tocScroll = null
+
         export default {
           mounted() {
+            this.keepTocScroll()
             this.reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
             this.onKey = (e) => this.key(e)
             this.onScroll = () => {
@@ -804,10 +811,31 @@ defmodule PairingsEngineWeb.HelpLive do
           },
           updated() { this.spy() },
           destroyed() {
+            if (this.sidebar) this.sidebar.removeEventListener("scroll", this.onTocScroll)
             window.removeEventListener("keydown", this.onKey)
             window.removeEventListener("scroll", this.onScroll)
           },
           behavior() { return this.reduced ? "auto" : "smooth" },
+          // Back where the reader left the list; on a fresh load, far enough
+          // down that the open chapter is in sight.
+          keepTocScroll() {
+            const sidebar = this.sidebar = document.getElementById("manual-sidebar")
+            if (!sidebar) return
+            if (tocScroll !== null) {
+              sidebar.scrollTop = tocScroll
+            } else {
+              const current = sidebar.querySelector(".manual-toc-link.current")
+              if (current) {
+                const box = sidebar.getBoundingClientRect()
+                const at = current.getBoundingClientRect()
+                if (at.bottom > box.bottom || at.top < box.top) {
+                  sidebar.scrollTop += at.top - box.top - (box.height - at.height) / 2
+                }
+              }
+            }
+            this.onTocScroll = () => { tocScroll = sidebar.scrollTop }
+            sidebar.addEventListener("scroll", this.onTocScroll, {passive: true})
+          },
           scrollToHash() {
             const id = decodeURIComponent(window.location.hash.slice(1))
             if (!id) return
