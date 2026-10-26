@@ -3667,7 +3667,14 @@ defmodule PairingsEngine.Pairing do
             for {category_name, %{} = deferred, by_rank} <- sections,
                 do: {category_name, deferred_account(deferred), by_rank}
 
-          case explanation_payload(accounts) do
+          payload = explanation_payload(accounts)
+
+          # The engine's own trace for the ITDX file, after the account and
+          # on the same terms: commentary, worked out off the click, and
+          # never able to fail the account (`store_engine_trace/3`).
+          store_engine_trace(id, job, sections)
+
+          case payload do
             nil -> {:error, :nothing_to_explain}
             payload -> {:ok, payload}
           end
@@ -3681,6 +3688,38 @@ defmodule PairingsEngine.Pairing do
       _ ->
         returned
     end
+  end
+
+  # The round's engine trace (`PairingsEngine.EngineTrace`), written only
+  # while the round still holds the record this job was started for - the
+  # same guard `ExplanationJobs.store/3` keeps, so a trace never lands on a
+  # round unpaired and paired again meanwhile. A trace that cannot be
+  # worked out leaves the column nil, and the ITDX file falls back to the
+  # account.
+  defp store_engine_trace(round_id, job, sections) do
+    case PairingsEngine.EngineTrace.individual(sections) do
+      nil ->
+        :ok
+
+      trace ->
+        Repo.update_all(
+          from(r in Round,
+            where:
+              r.id == ^round_id and
+                fragment("json_extract(?, '$.job')", r.explanation) == ^job
+          ),
+          set: [engine_trace: trace]
+        )
+
+        :ok
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "The engine trace of round #{round_id} was not stored: #{inspect(e.__struct__)}"
+      )
+
+      :ok
   end
 
   # Deepening re-explains the boards as played; it does not pair the round
@@ -3768,7 +3807,14 @@ defmodule PairingsEngine.Pairing do
           lifted: tournament.bye_exclusion_override,
           soft_pairs_moved: soft_moved?,
           bye_passed_over: passed_over,
-          bye_preference: preference
+          bye_preference: preference,
+          # What the engine trace needs to run the command line on this
+          # very field (`PairingsEngine.EngineTrace`): the parsed
+          # tournament, the options as the click built them (before any
+          # bye preference resolved them) and the preferences.
+          engine_tournament: parsed.tournament,
+          engine_opts: engine_opts,
+          bye_preferences: tournament.engine_bye_preferences || []
         }
 
         {:ok, Enum.map(raw_pairs, &ainalrami_bye_to_zero/1), deferred}

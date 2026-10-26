@@ -219,7 +219,26 @@ paired and the round events, with the reason you gave for a hand edit beside it
 (plain ASCII, accents removed). It is not for rating, and says so in its name
 (`ITDX-NOT-FOR-RATING`) and inside. Importing it gives the same pairings,
 colours and scores; [Sending to FIDE](10-fide-report.md) tells the difference
-between the three files. Each paired round can also be selected by
+between the three files.
+
+**How the engine paired each round.** The ITDX file ends, after the last
+player, with `### OP trace` lines: for every round in the file, how the
+pairing engine paired it, in its own words. For a Swiss round that is the
+engine's own output, the round loaded, the boards with their colours, how the
+score groups fed each other (the float cascade) and, per bracket, who moved
+down, who was paired, who floated and which criteria decided. It is worked out
+just after the round is paired, from exactly what the engine was given, and
+the first line says whether it ends with the boards that were stored. A team
+Swiss round gets the engine's report of the matches, the bye and the colours.
+A round paired before this was kept shows the round's stored explanation
+instead, labelled as such; a round robin, a Keizer round, a match's second
+leg and a round made by hand say there was no engine run to show. If the
+boards were changed after the engine paired them, a line says so. Players
+appear by starting rank only. Like the rest of the `### OP` block it is
+informational: importing the file ignores it, and the file for rating and the
+copy never have it.
+
+Each paired round can also be selected by
 `?rounds=1-5` in the address of the download (ranges and single rounds, such
 as `1-3,6`).
 

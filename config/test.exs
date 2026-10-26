@@ -87,6 +87,12 @@ config :pairings_engine, PairingsEngine.Mailer, adapter: Swoosh.Adapters.Test
 # no task outlives the test's sandbox. Its own tests switch it to `:async`.
 config :pairings_engine, :explanation_jobs, :inline
 
+# The engine trace of an individual Swiss round (`PairingsEngine.EngineTrace`)
+# is the engine's command line run twice more on the round's field: about
+# a sixth on top of every pairing test, for commentary none of them reads.
+# Off here; the trace's own tests switch it on.
+config :pairings_engine, :engine_trace, false
+
 # No machine-wide cap on engine runs here: async tests pair dozens of
 # tournaments at once, and a cap would turn that into flaky "engine busy"
 # failures. The per-tournament lock still applies; the caps themselves are

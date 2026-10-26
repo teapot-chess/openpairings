@@ -224,6 +224,23 @@ Het is niet
 voor rating en zegt dat in de naam (`ITDX-NOT-FOR-RATING`) en erin. Importeer je het,
 dan krijg je dezelfde paringen, kleuren en scores; [Versturen naar FIDE](10-fide-report.md)
 legt het verschil tussen de drie bestanden uit.
+
+**Hoe de engine elke ronde paarde.** Het ITDX-bestand eindigt, na de laatste speler,
+met `### OP trace`-regels: voor elke ronde in het bestand hoe de paringsengine ze paarde,
+in haar eigen woorden. Voor een Zwitserse ronde is dat de eigen uitvoer van de engine:
+de ingeladen ronde, de borden met hun kleuren, hoe de scoregroepen elkaar voedden (de
+float-cascade) en, per groep, wie afzakte, wie gepaard werd, wie floatte en welke criteria
+de doorslag gaven. Dat wordt vlak na het paren berekend, uit precies wat de engine kreeg,
+en de eerste regel zegt of het eindigt met de borden die bewaard werden. Een ronde van een
+Zwitsers teamtoernooi krijgt het verslag van de engine over de matchen, de bye en de
+kleuren. Een ronde die gepaard werd voor dit bewaard werd, toont in de plaats de bewaarde
+uitleg van de ronde, met dat label erbij; een rondetoernooi, een Keizer-ronde, het tweede
+deel van een match en een ronde die je met de hand maakte, zeggen dat er geen run van de
+engine te tonen is. Werden de borden gewijzigd nadat de engine ze paarde, dan zegt een
+regel dat. Spelers staan er enkel met hun startnummer in. Net als de rest van het
+`### OP`-blok is het ter informatie: importeer je het bestand, dan wordt het genegeerd,
+en het bestand voor rating en de kopie hebben het nooit.
+
 Elke gepaarde ronde kan ook worden geselecteerd met `?rounds=1-5` in het adres van de
 download (bereiken en losse rondes, zoals `1-3,6`).
 

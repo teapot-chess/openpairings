@@ -206,9 +206,15 @@ defmodule PairingsEngine.TeamSwiss do
             |> explanation(engine_teams, teams, absent, opts)
             |> with_keep_apart(keep_apart, soft_moved?)
 
+          # And the engine's own trace of the same result, for the ITDX
+          # file (`PairingsEngine.EngineTrace.team/3`): rendered from what
+          # it returned, no second run, so it is taken here in the click.
           round =
             round
-            |> Ecto.Changeset.change(explanation: explanation)
+            |> Ecto.Changeset.change(
+              explanation: explanation,
+              engine_trace: PairingsEngine.EngineTrace.team(result, engine_teams, opts)
+            )
             |> Repo.update!()
 
           Tournaments.broadcast_tournament_change(tournament.id, :rounds)

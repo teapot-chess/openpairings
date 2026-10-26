@@ -351,6 +351,11 @@ defmodule PairingsEngine.TournamentExport do
     # diagnostic panel, not tournament state, so losing it costs an
     # explanation and not a result.
     :explanation,
+    # Ainalrami's trace of the round, for the ITDX file. Commentary, like
+    # `explanation` above, and dropped with it: a restored round is better
+    # off saying it has neither than carrying the engine's words without
+    # the account they go with.
+    :engine_trace,
     # Carried outside the field list, like `id`: `round_map/1` writes it
     # under `"virtual_points"`, and it is keyed by DB player id too - but
     # unlike `explanation` its shape is one flat map, so the import remaps
