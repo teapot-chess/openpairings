@@ -516,8 +516,13 @@ defmodule PairingsEngineWeb.ExportControllerTest do
 
       fide = conn |> get(~p"/t/#{tournament.id}/export/trf") |> response(200)
       assert fide =~ "\r\n192 "
-      assert fide =~ "\r\n260 "
+      # The TRF26 copy is the file sent for rating, which keeps the pairing
+      # records to itself; the ITDX file carries the `260`.
+      refute fide =~ "\r\n260 "
       refute fide =~ "XXP"
+
+      itdx = conn |> get(~p"/t/#{tournament.id}/export/itdx") |> response(200)
+      assert itdx =~ "\r\n260 "
 
       engine = conn |> get(~p"/t/#{tournament.id}/export/trf?dialect=engine") |> response(200)
       assert engine =~ "\r\nXXP "

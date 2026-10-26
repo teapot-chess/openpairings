@@ -74,8 +74,15 @@ defmodule PairingsEngine.TrfExport do
   report of the games - the copy, being this file, has none either; the ITDX
   file and the engine's dialect keep it), no round column past the file's
   last round, and a points column that is what the file's own columns add up
-  to. (Baku's and acceleration's `250` for the file's own rounds stay;
-  `260`, `299` and the team records are the open questions of the audit.)
+  to.
+
+  And none of the pairing program's homework: no `250` (Baku's or
+  acceleration's virtual points), no `260` (players kept apart, by hand or
+  by a rule) and no `299` (extra points). They decide who meets whom next;
+  the rating server rates what happened and has no use for the
+  scaffolding. `172` stays - national rating is a rating matter - and so do
+  the team records, which report games. The ITDX file and the plain
+  download keep all of it.
 
   And no unknown result. A postponed game whose result is not known when
   its round is sent - or one already sent that way, whose result went or
@@ -822,14 +829,18 @@ defmodule PairingsEngine.TrfExport do
       # the rounds in the file, and sometimes the round after
       # (`virtual_point_rounds/4`). The report had left them out
       # altogether once; TRF26 wants them (`250`) for pairing.
-      |> then(
-        &Pairing.accelerated_rows(
-          tournament,
-          &1,
-          players,
-          virtual_point_rounds(tournament, rounds, paired, rating?)
-        )
-      )
+      # None at all in the file sent for rating: see the moduledoc.
+      |> then(fn rows ->
+        if rating?,
+          do: rows,
+          else:
+            Pairing.accelerated_rows(
+              tournament,
+              rows,
+              players,
+              virtual_point_rounds(tournament, rounds, paired, rating?)
+            )
+      end)
       |> append_future_byes(tournament, players, rounds, paired, rating?)
       |> with_final_ranks(tournament, rounds, dialect)
 
@@ -994,19 +1005,22 @@ defmodule PairingsEngine.TrfExport do
             tie_break_codes(PairingsEngine.Standings.with_unrated_rating(tournament, players)),
           time_control_code: PairingsEngine.RateOfPlay.trf26_code(tournament.rate_of_play),
           point_system: point_system,
-          free_points: free_point_records(players, tournament),
+          # The pairing records (`299`, `260`, the team keep-apart lines) stay
+          # out of the file sent for rating: see the moduledoc.
+          free_points: if(rating?, do: [], else: free_point_records(players, tournament)),
           # A team event names no players to keep apart: `XXP`/`260` are
           # refused in a team Swiss file (Ainalrami 0.46.0), which keeps
           # TEAMS apart with `XXO team-forbidden` / `team-soft-pairs`.
           forbidden_pairs:
-            if(Tournament.team?(tournament),
+            if(rating? or Tournament.team?(tournament),
               do: [],
               else:
                 forbidden_groups(tournament, players, dialect, last_round) ++
                   rule_groups(tournament, players, dialect, last_round)
             ),
-          team_forbidden_pairs: team_keep_apart(tournament, dialect, false),
-          team_soft_pairs: team_keep_apart(tournament, dialect, true),
+          team_forbidden_pairs:
+            if(rating?, do: [], else: team_keep_apart(tournament, dialect, false)),
+          team_soft_pairs: if(rating?, do: [], else: team_keep_apart(tournament, dialect, true)),
           team_point_system: team_point_system(tournament, dialect),
           team_pab: team_pab(tournament, rounds, dialect),
           forfeited_matches:

@@ -2,15 +2,16 @@ defmodule PairingsEngine.TrfRatingRecordsTest do
   @moduledoc """
   The file SENT FOR RATING reports the games of its rounds and nothing the
   event has not played: no `240` for a round nobody has paired, no round
-  column past the file's last round, no virtual point for such a round, and
-  a points column that is what its own columns add up to. The same file is
+  column past the file's last round, none of the pairing records (`250`
+  virtual points, `260` players kept apart, `299` extra points), and a
+  points column that is what its own columns add up to. The same file is
   generated for a spread of tournaments - byes entered ahead, a withdrawal,
   a late entrant, a postponed game, Baku, prohibitions, a team event - and
   each is held to the same list. The file also reads back
   (`Ainalrami.Trf.parse/1`).
 
-  The ITDX file and the engine's dialect keep the future byes: they are for
-  pairing the round after.
+  The ITDX file and the engine's dialect keep the future byes and the
+  pairing records: they are for pairing the round after.
   """
   use PairingsEngine.DataCase, async: true
 
@@ -217,7 +218,8 @@ defmodule PairingsEngine.TrfRatingRecordsTest do
 
         # Reports games, not what comes next.
         assert records(text, "240") == []
-        assert records(text, "250") |> Enum.all?(&(last_round_of_250(&1) <= file_rounds))
+        # Nor how the next round gets paired.
+        for code <- ~w(250 260 299), do: assert(records(text, code) == [], code)
 
         # Team records name rounds too (`300` lineups, `330` forfeits).
         for line <- records(text, "300"), do: assert(round_at(line, 4, 6) <= file_rounds)
@@ -256,9 +258,6 @@ defmodule PairingsEngine.TrfRatingRecordsTest do
 
   defp round_at(line, from, to),
     do: line |> String.slice(from, to - from + 1) |> String.trim() |> String.to_integer()
-
-  defp last_round_of_250(line),
-    do: line |> String.slice(18, 3) |> String.trim() |> String.to_integer()
 
   defp assert_points_are_the_columns(text) do
     parsed = Trf.parse(text)
@@ -299,6 +298,26 @@ defmodule PairingsEngine.TrfRatingRecordsTest do
       {:ok, copy} = TrfExport.export(t, nil, copy: true)
       assert records(sent, "240") == []
       assert records(copy, "240") == []
+    end
+  end
+
+  describe "the other files keep the pairing records" do
+    for {name, code} <- [
+          {"Baku acceleration", "250"},
+          {"prohibitions", "260"},
+          {"extra points in acceleration mode", "299"}
+        ] do
+      test "#{code} for #{name}" do
+        {t, spec} = Map.fetch!(scenarios(), unquote(name)).()
+
+        {:ok, itdx} = TrfExport.export(t, spec, itdx: true)
+        {:ok, plain} = TrfExport.export(t, spec, [])
+        {:ok, sent} = TrfExport.export(t, spec, for: :rating)
+
+        assert [_ | _] = records(itdx, unquote(code))
+        assert [_ | _] = records(plain, unquote(code))
+        assert records(sent, unquote(code)) == []
+      end
     end
   end
 end
