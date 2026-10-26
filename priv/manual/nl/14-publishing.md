@@ -32,7 +32,7 @@ Instellingen, **OpenResults**.
 
 ### Wat het publiek ziet, ronde per ronde {#what-the-public-sees-round-by-round}
 
-Op de pagina Paringen stelt een bediening **Toeschouwers zien:** in hoeveel van elke ronde openbaar is, in vier cumulatieve niveaus:
+Op de pagina Paringen stelt een bediening **Vrijgegeven:** in hoeveel van elke ronde openbaar is, in vier cumulatieve niveaus:
 
 | Niveau | Openbaar |
 | --- | --- |
@@ -40,6 +40,12 @@ Op de pagina Paringen stelt een bediening **Toeschouwers zien:** in hoeveel van 
 | Paringen | wie tegen wie speelt |
 | + Resultaten | de resultaten naarmate ze binnenkomen |
 | + Standen | de standen na de ronde ook |
+
+Het niveau hoort bij de ronde; de uitslagensite hoort bij het toernooi. Hetzelfde
+niveau bepaalt ook wat het zaalscherm en de telefoonapp tonen, dus het werkt ook
+met het toernooi op **Uit**: dan geldt het alleen daar, en dat staat onder de
+ronde. Zet je **Op de uitslagensite** op *Alleen link* of *Op de voorpagina*, dan
+gaat elke ronde naar buiten op het niveau dat ze al heeft.
 
 Een nieuw gepubliceerde ronde begint bij *Paringen*: live resultaten zijn een bewuste keuze. Naar beneden gaan vraagt eerst om bevestiging en noemt wat er verdwijnt.
 

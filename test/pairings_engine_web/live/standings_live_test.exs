@@ -580,7 +580,7 @@ defmodule PairingsEngineWeb.StandingsLiveTest do
       assert html =~ "Public page"
       refute has_element?(lv, "[id^='standings-toggle-']")
       assert has_element?(lv, "#standings-initial-status[data-level='0']", "Before round 1")
-      assert has_element?(lv, "#standings-initial-text", "Spectators see: nothing yet")
+      assert has_element?(lv, "#standings-initial-text", "Released: nothing yet")
 
       assert has_element?(
                lv,
@@ -682,7 +682,7 @@ defmodule PairingsEngineWeb.StandingsLiveTest do
       assert has_element?(
                lv,
                "#standings-spectator-text",
-               "Spectators see: pairings, results and standings"
+               "Released: pairings, results and standings"
              )
 
       assert has_element?(
@@ -696,9 +696,9 @@ defmodule PairingsEngineWeb.StandingsLiveTest do
       tournament = scope |> public_tournament("Level Words") |> complete_round_one()
 
       for {level, words} <- [
-            {2, "Spectators see: pairings and results"},
-            {1, "Spectators see: pairings"},
-            {0, "Spectators see: nothing yet"}
+            {2, "Released: pairings and results"},
+            {1, "Released: pairings"},
+            {0, "Released: nothing yet"}
           ] do
         {:ok, _tournament, _steps} =
           Tournaments.set_round_publish_level(

@@ -1235,7 +1235,9 @@ defmodule PairingsEngineWeb.PairingsLive do
   ## ---------- Manual pairing alteration (VCL4THP Q63-Q69) ----------
   #
   # A round's hand edits form one session (`PairingsEngine.ManualPairing`):
-  # it starts with "Edit pairings by hand" or with the first edit applied,
+  # it starts with the first edit applied (a right-click on a seat - the
+  # "Edit pairings by hand" menu item that opened an empty one was a button
+  # with nothing behind it, and went; the event stays for the tests),
   # and it ends with "Finish hand edits", which holds the round to the
   # pairing checker. Boards that are not the checker's are kept only after
   # an explicit confirmation, and recorded as the round's MPA PIBE.
@@ -5293,13 +5295,16 @@ defmodule PairingsEngineWeb.PairingsLive do
   defp match_number(n), do: div(n - 1, 2) + 1
   defp leg_number(n), do: if(rem(n, 2) == 1, do: 1, else: 2)
 
-  ## ---------- the round's "Spectators see:" level control ----------
+  ## ---------- the round's "Released:" level control ----------
   #
   # One cumulative choice per round instead of three switches - see the
   # "One public level per round" section of `PairingsEngine.Tournaments`.
   # Four stops on one track: the thumb sits on the chosen stop and a tint
   # fills every public step up to it, so the control reads "up to here".
-  # Labelled for who it is about - "Spectators see: Nothing · Pairings ·
+  # "Released:" since 2026-10-26: "Spectators see:" read as "on the results
+  # site", and the level also feeds the hall screen and the phone app, so a
+  # tournament not on the site looked like it had a switch wired to nothing.
+  # Before that it was labelled for who it is about - "Spectators see: Nothing · Pairings ·
   # Results · Standings" - since 2026-09-28; it read "Public: Hidden ..."
   # before, which named a state rather than an audience. The Standings page
   # has no control of its own: it says what this one is set to and links
@@ -5378,7 +5383,13 @@ defmodule PairingsEngineWeb.PairingsLive do
         })
       end
 
-    note = extra_note(state.extra)
+    note =
+      [extra_note(state.extra), unpublished_note(tournament)]
+      |> Enum.reject(&is_nil/1)
+      |> case do
+        [] -> nil
+        notes -> Enum.join(notes, " ")
+      end
 
     assigns =
       assign(assigns,
@@ -5395,23 +5406,27 @@ defmodule PairingsEngineWeb.PairingsLive do
       class="pe-level"
       data-level={@level}
     >
-      <%!-- The visible caption is the audience ("Spectators see:"); the
+      <%!-- The visible caption ("Released:"); the
             group's accessible name also names the round, which the caption
             leaves to the round picker beside it. --%>
       <span
         id={"#{@id}-caption"}
         class="pe-level-caption"
         aria-hidden="true"
-        title={gettext("What spectators see on the results site")}
+        title={
+          gettext(
+            "What spectators see: on the hall screen, in the phone app, and on the results site when the tournament is on it"
+          )
+        }
       >
-        {gettext("Spectators see:")}
+        {gettext("Released:")}
       </span>
 
       <div
         id={"#{@id}-radios"}
         class="pe-level-track"
         role="radiogroup"
-        aria-label={gettext("Round %{n}: what spectators see", n: @round.number)}
+        aria-label={gettext("Round %{n}: released", n: @round.number)}
         aria-describedby={@described_by}
         phx-hook=".PublishLevel"
       >
@@ -5464,6 +5479,18 @@ defmodule PairingsEngineWeb.PairingsLive do
 
   defp extra_note(_both),
     do: gettext("Results and standings are also public - choose a level to tidy this up.")
+
+  # The level is the round's, the results site is the tournament's. With
+  # the tournament off the site, choosing "Results" here still puts them on
+  # the hall screen - and on the site the moment publishing goes on - which
+  # is reasonable behaviour that looked, unannounced, exactly like a bug.
+  defp unpublished_note(%Tournament{publish_to_openresults: true}), do: nil
+
+  defp unpublished_note(%Tournament{}),
+    do:
+      gettext(
+        "Not on the results site: publishing is off for this tournament (Settings, OpenResults). These levels apply to the hall screen and the phone app until it is on."
+      )
 
   defp level_blocked_text(:round_not_complete, round_number),
     do:
@@ -7264,11 +7291,13 @@ defmodule PairingsEngineWeb.PairingsLive do
           </a>
 
           <%!-- The last round is over: the file for the rating officer is on
-                the Export settings page, and that is where this goes. --%>
+                the Export settings page, and that is where this goes. The
+                main button now - the Standings one it used to stand beside
+                went, the Standings page being one click away in the nav. --%>
           <.link
             :if={@round_stage == :finished}
             id="round-send-rating-link"
-            class="pe-btn"
+            class="pe-btn primary"
             navigate={~p"/t/#{@tournament.id}/settings/export"}
             title={gettext("The rating report (TRF) is made and sent on the Export page")}
           >
@@ -7408,18 +7437,6 @@ defmodule PairingsEngineWeb.PairingsLive do
             end}
           </button>
 
-          <%!-- Over: the standings. A plain button beside "On to round N",
-                and THE button once the last round is over. Printing them
-                stays on the Standings page, where it moved in September. --%>
-          <.link
-            :if={@round_stage in [:complete, :finished]}
-            id="round-standings-link"
-            class={["pe-btn", @round_stage == :finished && "primary"]}
-            navigate={~p"/t/#{@tournament.id}/standings"}
-          >
-            <.icon name="hero-trophy-micro" class="pe-btn-icon" /> {gettext("Standings")}
-          </.link>
-
           <%!-- Over, and not the last: the next round, where its pair button
                 is. Only a change of round - pairing still asks there, with
                 everything it asks about. --%>
@@ -7526,16 +7543,6 @@ defmodule PairingsEngineWeb.PairingsLive do
                     whole schedule, so it is here even on a round not paired. --%>
               <%= if @more_swap? or @more_edits? do %>
                 <hr :if={@round != nil} /> <span class="pe-dropdown-label">{gettext("Round")}</span>
-                <button
-                  :if={@more_edits? && !@round.mpa_session}
-                  type="button"
-                  role="menuitem"
-                  id={"mpa-start-#{@round_number}"}
-                  phx-click="mpa_start"
-                >
-                  {gettext("Edit pairings by hand")}
-                </button>
-
                 <button
                   :if={@more_edits?}
                   type="button"
@@ -9752,7 +9759,7 @@ defmodule PairingsEngineWeb.PairingsLive do
       </script>
 
       <script :type={Phoenix.LiveView.ColocatedHook} name=".PublishLevel">
-        // The round's "Spectators see:" radio group (`publish_level/1`). One tab stop
+        // The round's "Released:" radio group (`publish_level/1`). One tab stop
         // - the chosen level - and the arrow keys, Home and End move focus
         // between the four stops without choosing one: every stop publishes
         // or withdraws something, so choosing stays a deliberate Space or

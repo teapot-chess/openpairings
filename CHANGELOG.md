@@ -17,6 +17,10 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **Two buttons on the Pairings page retired for having nothing to do.** *Standings*, beside "On to round N" and as the main button after the last round, repeated the menu entry one click away; after the last round the main button is now *Send for rating*, which is what is actually left to do. *More*, *Edit pairings by hand* opened a hand-edit session with no edit in it - the first right-click on a player has always opened one by itself, and that is now the only way in.
+
+- [Change] **The two publishing switches stop pretending to be one.** A round's *Spectators see:* level and the tournament's results-site switch are separate things: the level also decides what the hall screen and the phone app show, so it could be set to *Results* on a tournament that was not on the results site at all, which looked like a switch wired to nothing. The tournament's card is now called *On the results site* (it was *Publish this tournament*, which the manual had already stopped calling it), the round's control is captioned *Released:* instead of *Spectators see:* - how much of the round you have let out, wherever it goes - its hover text names all three places, and while the tournament is off the site the round says so under the level.
+
 - [Fix] **Adding a team no longer forgets its name.** The *Add a team* form kept what you typed in the browser alone, so any redraw of the page - a change made in another tab will do - emptied every field except the one you were typing in. Type the name, move on to the captain, and the name was gone; saving the name first and editing the rest afterwards was the workaround nobody should have had to find. The page now keeps the draft as you type and draws it back.
 
 ## [0.108.0] - 2026-10-26

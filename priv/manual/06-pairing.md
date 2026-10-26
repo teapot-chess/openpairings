@@ -22,8 +22,8 @@ matter at that moment:
 | --- | --- | --- |
 | Not paired yet | **Pair round N** | **Absences** (the Players page, where you mark who sits the round out); in a round robin **Pair round N by hand…**; when it applies, **Record missing results as postponed and pair round N** |
 | Being played | None: entering the results is the work | **Print pairings**, and the control that decides what spectators see of the round ([Publishing](14-publishing.md)) |
-| Every result in | **On to round N**, which opens the next round with its **Pair round N** button | **Standings**, and what spectators see |
-| The last round, every result in | **Standings** | **Send for rating** (the Export page, see [Sending to FIDE](10-fide-report.md)), and what spectators see |
+| Every result in | **On to round N**, which opens the next round with its **Pair round N** button | What spectators see |
+| The last round, every result in | **Send for rating** (the Export page, see [Sending to FIDE](10-fide-report.md)) | What spectators see |
 
 In a Chess960 tournament **Draw Chess960 position** also sits there until the
 round's position is drawn.
@@ -32,8 +32,8 @@ Everything else is in **More**, at the end of the bar, in groups:
 
 - **Print**: pairings, pairings with the absentees section, result cards, a
   test print of the first three cards, stack-cut order;
-- **Round**: **Edit pairings by hand**, **Import results (CSV)** and, in a
-  round robin, **Swap rounds…**;
+- **Round**: **Import results (CSV)** and, in a round robin, **Swap
+  rounds…**;
 - **PGN**: this round or all rounds, with or without board numbers, or a
   range of boards;
 - **Views**: **Local view**, **Phone QR** (a large dialog with the QR codes for a
@@ -418,8 +418,8 @@ name. The program calls it a
 
 ### The session
 
-- A session on a round **starts** with **More**, **Edit pairings by hand**,
-  or implicitly with the first hand edit of the round. While it is open, a
+- A session on a round **starts** with the first hand edit of the round:
+  right-click (or tap) a player. While it is open, a
   banner says *Hand edits to round N are open*, reminds you how to make one
   (right-click, or tap on a touch screen, a player on a board or in the
   not-playing list) and carries the buttons **Discard hand edits** and
