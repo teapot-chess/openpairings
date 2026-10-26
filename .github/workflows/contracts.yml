@@ -9,9 +9,9 @@ name: Contracts
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
   schedule:
     - cron: '17 5 * * *' # daily, 05:17 UTC
   workflow_dispatch:
