@@ -31,6 +31,7 @@ Traversal.FileModule: Directory Traversal in `File.mkdir_p!`,lib/pairings_engine
 Traversal.FileModule: Directory Traversal in `File.mkdir_p!`,lib/pairings_engine/desktop/data_home.ex:499,56DB8F1
 Traversal.FileModule: Directory Traversal in `File.mkdir_p!`,lib/pairings_engine/desktop/data_home.ex:534,3437F15
 Traversal.FileModule: Directory Traversal in `File.mkdir_p!`,lib/pairings_engine/engine_trace.ex:94,3B8E357
+Traversal.FileModule: Directory Traversal in `File.mkdir_p!`,lib/pairings_engine/engine_trace.ex:95,428AE6
 Traversal.FileModule: Directory Traversal in `File.mkdir_p`,lib/pairings_engine/backup.ex:163,2797131
 Traversal.FileModule: Directory Traversal in `File.mkdir_p`,lib/pairings_engine/launcher_details.ex:203,76BB38C
 Traversal.FileModule: Directory Traversal in `File.mkdir_p`,lib/pairings_engine/publishing/takedown_journal.ex:150,34F7B74
@@ -65,6 +66,7 @@ Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_we
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/backup.ex:167,592C3DF
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/backup.ex:663,33444C3
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/engine_trace.ex:155,64F2B9
+Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/engine_trace.ex:156,602B2DA
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/federations/bel/swar_import.ex:645,4005D4C
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/federations/bel/swar_import.ex:804,C87ABE
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/launcher_details/cli.ex:265,350B34
@@ -76,6 +78,7 @@ Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine_web
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine_web/live/rating_lists_live.ex:65,378EBED
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine_web/live/rating_lists_live.ex:68,355750C
 Traversal.FileModule: Directory Traversal in `File.rm_rf`,lib/pairings_engine/engine_trace.ex:124,C601B
+Traversal.FileModule: Directory Traversal in `File.rm_rf`,lib/pairings_engine/engine_trace.ex:125,46C5838
 Traversal.FileModule: Directory Traversal in `File.rm`,lib/pairings_engine/backup.ex:183,15829FF
 Traversal.FileModule: Directory Traversal in `File.rm`,lib/pairings_engine/backup.ex:204,383CDC0
 Traversal.FileModule: Directory Traversal in `File.rm`,lib/pairings_engine/backup.ex:276,4F910B4
@@ -90,6 +93,7 @@ Traversal.FileModule: Directory Traversal in `File.rm`,lib/pairings_engine/ratin
 Traversal.FileModule: Directory Traversal in `File.rm`,lib/pairings_engine/updates/install_kind.ex:91,6C69329
 Traversal.FileModule: Directory Traversal in `File.stream!`,lib/pairings_engine/desktop/data_home.ex:391,17D1C2
 Traversal.FileModule: Directory Traversal in `File.write!`,lib/pairings_engine/engine_trace.ex:99,4D81E05
+Traversal.FileModule: Directory Traversal in `File.write!`,lib/pairings_engine/engine_trace.ex:100,C81F21
 Traversal.FileModule: Directory Traversal in `File.write!`,lib/pairings_engine/federations/bel/sqlite_file.ex:90,73FF361
 Traversal.FileModule: Directory Traversal in `File.write!`,lib/pairings_engine/rating_inbox.ex:415,4C3FC44
 Traversal.FileModule: Directory Traversal in `File.write`,lib/pairings_engine/backup.ex:321,6DDE7B
