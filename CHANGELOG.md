@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Fix] **Adding a team no longer forgets its name.** The *Add a team* form kept what you typed in the browser alone, so any redraw of the page - a change made in another tab will do - emptied every field except the one you were typing in. Type the name, move on to the captain, and the name was gone; saving the name first and editing the rest afterwards was the workaround nobody should have had to find. The page now keeps the draft as you type and draws it back.
+
 ## [0.108.0] - 2026-10-26
 
 - [Feature] **A hand edit can say why.** The confirmation of a swap, an emptied seat, a moved bye, a filled seat, a pool pairing or a deleted board, the dialog that finishes the hand edits, the one that creates a round by hand and the one that swaps two rounds of a round robin each have a *Reason (optional)* line, 200 characters at most. It is never required and never in the way; a blank reason is simply no reason. The reason is kept in the edit's audit row (`reason` in its details, control characters and line breaks turned into spaces), spoken on the audit page, listed above the boards while you are on that round, and accepted by the Manubrium edit and finish routes as an optional `reason`. The ITDX file writes it beside the edit in the `### OP` block as `reason "..."`, with accents stripped and anything else outside ASCII dropped; the original stays in the app. Nothing reads it back, which is how free text should be treated by anyone who has met free text.
