@@ -17,6 +17,7 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Fix] **The manual's contents list stays where you left it.** Every chapter you picked sent the list back to the top, so reaching chapter 15 meant scrolling down to it again each time. Worse, the pointer was then resting over some other chapter, whose hover colour made two chapters look selected at once. The list now keeps its place from chapter to chapter, and a chapter opened from a link scrolls the list far enough to show it.
 - [Fix] **Adding a team no longer forgets its name.** The *Add a team* form kept what you typed in the browser alone, so any redraw of the page - a change made in another tab will do - emptied every field except the one you were typing in. Type the name, move on to the captain, and the name was gone; saving the name first and editing the rest afterwards was the workaround nobody should have had to find. The page now keeps the draft as you type and draws it back.
 
 ## [0.108.0] - 2026-10-26
