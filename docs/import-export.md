@@ -122,7 +122,9 @@ export writes them in FIDE's own spelling:
     has paired yet. Everything else in the report is a record of rounds
     played; this is the one forward-looking thing in it, because whoever
     pairs the next round from this file needs to know who is not playing.
-    Only on a full export - a round slice is a historical excerpt.
+    Only on a full export - a round slice is a historical excerpt - and
+    never in the file sent for rating, which reports games and leaves the
+    next round to whoever holds the tournament.
   * **`299`** - a player's administrative extra points, the bonus or
     penalty the standings add on top of the game points. TRF's own points
     column is game points by definition, so before this the bonus left the

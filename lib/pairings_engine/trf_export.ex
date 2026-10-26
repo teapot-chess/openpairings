@@ -69,6 +69,14 @@ defmodule PairingsEngine.TrfExport do
   twice): no column ruler and no comment line (`###`) of any kind - no copy
   mark, no FIDE-mode note, no receipt.
 
+  And nothing the file's rounds did not play: no `240` for a round not yet
+  paired (a bye entered ahead belongs to whoever pairs that round, not to a
+  report of the games - the copy, being this file, has none either; the ITDX
+  file and the engine's dialect keep it), no round column past the file's
+  last round, and a points column that is what the file's own columns add up
+  to. (Baku's and acceleration's `250` for the file's own rounds stay;
+  `260`, `299` and the team records are the open questions of the audit.)
+
   And no unknown result. A postponed game whose result is not known when
   its round is sent - or one already sent that way, whose result went or
   goes in the postponed-games file (`finalised_open`) - is written as not
@@ -822,7 +830,7 @@ defmodule PairingsEngine.TrfExport do
           virtual_point_rounds(tournament, rounds, paired, rating?)
         )
       )
-      |> append_future_byes(tournament, players, rounds, paired)
+      |> append_future_byes(tournament, players, rounds, paired, rating?)
       |> with_final_ranks(tournament, rounds, dialect)
 
     last_round = Enum.reduce(trf_players, length(rounds), &max(length(&1.games), &2))
@@ -2171,11 +2179,15 @@ defmodule PairingsEngine.TrfExport do
   # come from the same game entry, which `Ainalrami.Trf.serialize/2` lifts
   # out again in the TRF26 dialect.
   #
-  # Only on a full export. A `?rounds=1-3` slice is a historical excerpt
+  # Only on a full export, and never in the file sent for rating: that
+  # reports the games of its rounds and leaves the next round to whoever
+  # holds the tournament (`virtual_point_rounds/4` says the same), so a
+  # `240` there reported a round nobody had played. The copy of the sent
+  # file is that file, so it has none either. A `?rounds=1-3` slice is a historical excerpt
   # and says nothing about what comes next, and appending a future round to
   # one would put a column where the reader expects the file to end.
-  defp append_future_byes(rows, tournament, players, rounds, paired) do
-    if rounds == Enum.to_list(1..paired//1) do
+  defp append_future_byes(rows, tournament, players, rounds, paired, rating?) do
+    if not rating? and rounds == Enum.to_list(1..paired//1) do
       byes =
         tournament.id
         |> Tournaments.list_byes_from_round(paired + 1)
