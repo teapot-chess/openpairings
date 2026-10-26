@@ -1,7 +1,7 @@
 {
   "programs": [
     {
-      "commit": "e129db00ea114616c125637722964d72262ade3a",
+      "commit": "c945ad58f5abb0cd40404b1576c6415bc1b0317a",
       "dirty": false,
       "files": [
         {
@@ -16,7 +16,7 @@
       "slug": "ainalrami"
     },
     {
-      "commit": "f32fc706a81228380cefaf4640bee2f25af025c1",
+      "commit": "6ed2595f394dec4744784d4e24f499ad6b25f153",
       "dirty": false,
       "files": [
         {
@@ -36,7 +36,7 @@
       "slug": "openresults"
     },
     {
-      "commit": "afe69acae88934679f8a0af8885220b50c3fed15",
+      "commit": "01814d56ee39dcd96a461d646fe57e431067ce38",
       "dirty": false,
       "files": [
         {
@@ -86,7 +86,7 @@
       "slug": "alnasl"
     },
     {
-      "commit": "0d044f09dc9bcb94674d0dbc082dced1addf8a2b",
+      "commit": "998543e6a09f6a6c244facb3795416a4d4158059",
       "dirty": false,
       "files": [
         {
@@ -101,7 +101,7 @@
       "slug": "arkab"
     },
     {
-      "commit": "505a5cf78f1136bb71f29d77d88fa55eddba225e",
+      "commit": "9f73274e7ba02132e8e2fcd2046eeebc6e89536f",
       "dirty": false,
       "files": [
         {
@@ -131,7 +131,7 @@
       "slug": "nunki"
     },
     {
-      "commit": "667bd77b2bff6d3285fe82abf082f983ce4ef5ba",
+      "commit": "1e28c9336845729fc58fec900e04fb5b4e49d8ee",
       "dirty": false,
       "files": [
         {

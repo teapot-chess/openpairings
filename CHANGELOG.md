@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Docs] **Setting up boards tells the flow as it is.** Pairing a round is all it takes for the box: it gets every paired round, released or not, and says *Waiting for OpenPairings to pair round N* while it waits; its *Start round N* button is for a box with no link. The manual had still sent arbiters to that button, and the other programs' pages are refreshed from their latest releases.
+
 - [Security] **Bandit 1.14.0.** The web server had eleven advisories published against 1.13.1 on one day, mostly HTTP/2 frames and chunked bodies made to eat memory or CPU; 1.14.0 fixes them. Nothing in the app changed, which is the best kind of release note.
 
 - [Change] **Two buttons on the Pairings page retired for having nothing to do.** *Standings*, beside "On to round N" and as the main button after the last round, repeated the menu entry one click away; after the last round the main button is now *Send for rating*, which is what is actually left to do. *More*, *Edit pairings by hand* opened a hand-edit session with no edit in it - the first right-click on a player has always opened one by itself, and that is now the only way in.

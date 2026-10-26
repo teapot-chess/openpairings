@@ -50,7 +50,7 @@ Under **Reports** on the same page, open the report of a tournament. It lists th
 - **Counted moves**: how many moves went into the numbers (below, what is left out).
 - **Matches the engine**, and what was **expected** for that player's rating in those positions.
 - **Average loss**, and what was expected. The loss is how much worse the move played was than the engine's best, scaled so that a pawn thrown away in an even position counts for more than one thrown away when you are two pawns up.
-- **Score**, with its interval, and one of the two wordings below.
+- **Score**, with its interval, and one of the two wordings below. When one game decided it, the report says **decided by one game** and gives its round.
 - **Left out**: how many moves did not count, and why.
 
 Press a player's name for the **positions to look at**: the moves the player made that were the engine's first choice, where that choice stood out most from the second, each on a board with the move played and the engine's four best.
@@ -62,6 +62,7 @@ A move says nothing about the player, or Alnasl is not sure it was played, in th
 | Left out | Why |
 | --- | --- |
 | no rating | Without a rating there is nothing to compare with. Ratings come from the pairing |
+| rating under 1000 | The games the model is made from hold too few players rated under 1000 to say what to expect of them, and a guess is not an expectation |
 | guessed by the tracker | The tracker was not sure what was played, and neither is any move after it in that game |
 | rewritten, result not yet confirmed | The tracker corrected it, and the arbiter has not yet confirmed the result |
 | opening (moves 1 to 8) | Book, not thought |
@@ -75,14 +76,18 @@ A player gets a score only with at least 40 counted moves in the event; below th
 
 ## What the numbers mean {#what-the-numbers-mean}
 
-The **expected** values come from a model fitted on real games from over-the-board events (Lichess broadcasts, with FIDE ratings and clocks): for a player of that rating, in a position with that many good moves, how often does the engine's first choice get played, and how much is lost on average. The **score** is how far the player is from that expectation, in units of standard deviation, taking the three measures (matching the first choice, matching an equally good move, loss) together. Zero means as expected. Higher means stronger than the rating predicts.
+The **expected** values come from a model fitted on real games from over-the-board events (Lichess broadcasts, with FIDE ratings and clocks): for a player of that rating, against an opponent of that rating, in a position with that many good moves and that evaluation, having spent that share of the clock on the move, how often does the engine's first choice get played, and how much is lost on average. The **score** is how far the player is from that expectation, in units of standard deviation, taking the three measures (matching the first choice, matching an equally good move, loss) together. Zero means as expected. Higher means stronger than the rating predicts.
 
-- **From 2: "worth a closer look".** Such scores come up by chance in a few of every hundred honest players. Look at the games, not at the number.
+The standard deviation is the one the player's own games have: the moves of one game are not independent of each other (a good day lasts more than one move), and nine short games spread differently from five long ones. How strongly moves hang together within a game, and across one player's games in an event, is measured on real games when the model is made.
+
+Each game of at least 20 counted moves is also looked at on its own. One game played far better than the rest disappears in the score of a whole event of nine games; on its own it does not. Alnasl takes the most unusual of the player's games and asks how unusual that is, given how many games there were to pick from (with nine games, one of them is bound to be the player's best). The **score** is whichever of the two is higher, the whole event or that one game, corrected for having had two looks at the same moves: taking the better of two numbers every time would make an honest player look a little better than they are, on average about a third of a standard deviation. After the correction an honest player is again at zero on average, and scores 2 or more no more often than the standard deviation promises. When the game is the higher of the two, the report says **decided by one game: round N**. Open that game first.
+
+- **From 2: "worth a closer look".** Such scores come up by chance in about two of every hundred honest players. Look at the games, not at the number.
 - **Above 5: "statistically very unusual".** Honest players almost never have such a score in a model that fits. It is still not proof of anything, and the next section says what you may do with it.
 
 Those two words and those two numbers are Alnasl's own, for its own score. They are not FIDE's thresholds (FIDE's 5.00 for over-the-board play belongs to the approved method, and its 2.50 only supports other evidence), and a 5 here is not a 5 there.
 
-The interval beside the score is the range the player's true standing probably lies in: a score of 2.4 from 40 moves is not very different from a score of 0.5.
+The interval beside the score is the range the player's true standing probably lies in: a score of 2.4 from 40 moves is not very different from a score of 0.5. When one game decided the score there is no interval: a range around the best of several games would be a different number, and not a more honest one.
 
 ### How often an honest player scores this high {#false-positives}
 
@@ -96,6 +101,8 @@ Beside a score of 2 or more the report says how rare it is: **"about 1 in N norm
 
 > [!IMPORTANT] No calibration, no score
 > The model is a file that belongs to one engine build. Until Alnasl has one for the engine you installed, the report shows the counts and says plainly that there is **no score**. The counts are real. They are not a score, and they should not be read as one. The model is made for standard time controls; rapid and blitz are not calibrated.
+
+Alnasl comes with a model for Stockfish 19, the engine it installs. It was tested once, after it was frozen, on 25,000 broadcast games from 2026 it had never seen: of 7,914 honest player-events, none scored 3.75 or more, and 2 scored 3 or more. In other words: an honest player is very unlikely to be flagged, an engine game played in full or engine help at the critical moments usually shows, and a player who copies an engine carefully (a good move, not the best) does not show at all.
 
 What the screening cannot see: a game played without the boards (unless you upload it, below), a move the tracker could not read, opening knowledge, a player who is simply much stronger than their rating, a player who prepared one line very well. Strong, simple, forced-looking positions give high matching without anybody doing anything wrong.
 
@@ -157,3 +164,7 @@ A case that is going to the FIDE Fair Play Commission may need the data longer. 
 An uploaded PGN attached to a tournament is kept as long as the tournament. One on its own counts its 30 days from the moment it was uploaded, and can be kept longer in the same way. A share of one report goes with the report. Shares of the whole hall, and the lines about them in the hall's own record, are deleted a year after they ended.
 
 Switching fair play off stops the analysis of new moves. It does not delete what is there; the retention does that.
+
+### Deleting an analysis on request {#delete-analysis}
+
+The owner can delete a tournament's analysis before the retention does: "Delete this analysis" on its report, with a reason if one wants to be written down. What is deleted is every analysed move. What is kept is a frozen copy of the report as it was (each player, the moves counted and the score), who deleted it, when and why. The copy is shown to the owner under the report, lives exactly as long as the report would have, and goes with it. The deletion is a line in the report's record of who did what. Games analysed again later, or a round asked for, make a new analysis.
