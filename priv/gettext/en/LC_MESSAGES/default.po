@@ -27341,7 +27341,7 @@ msgid "Not on the results site: publishing is off for this tournament (Settings,
 msgstr ""
 
 #: lib/pairings_engine_web/live/settings_results_live.ex:1262
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "On the results site"
 msgstr ""
 
@@ -27377,6 +27377,6 @@ msgid "Released: pairings, results and standings"
 msgstr ""
 
 #: lib/pairings_engine_web/live/pairings_live.ex:5429
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Round %{n}: released"
 msgstr ""
