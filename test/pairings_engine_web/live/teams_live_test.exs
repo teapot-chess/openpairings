@@ -336,6 +336,34 @@ defmodule PairingsEngineWeb.TeamsLiveTest do
       assert has_element?(lv, "#create-team-captain-0[value=Anna]")
     end
 
+    test "what is typed in a team's edit form survives a redraw, until saved", %{
+      conn: conn,
+      scope: scope
+    } do
+      t = team_tournament(scope)
+      {:ok, team} = Tournaments.create_team(t, %{"name" => "Rooks"})
+      {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/teams")
+      edit = "#edit-team-#{team.id}"
+
+      lv |> form(edit, team: %{name: "Knights", captain: "Anna"}) |> render_change()
+
+      Tournaments.broadcast_tournament_change(t.id, :teams)
+      _ = render(lv)
+
+      assert has_element?(lv, ~s(#{edit} input[name="team[name]"][value=Knights]))
+      assert has_element?(lv, ~s(#{edit} input[name="team[captain]"][value=Anna]))
+
+      lv |> form(edit, team: %{name: "Knights", captain: "Anna"}) |> render_submit()
+      assert Repo.reload!(team).name == "Knights"
+
+      Tournaments.update_team(Repo.reload!(team), %{"name" => "Bishops"})
+      Tournaments.broadcast_tournament_change(t.id, :teams)
+      _ = render(lv)
+
+      # Saved, so no draft is left to hide what changed afterwards.
+      assert has_element?(lv, ~s(#{edit} input[name="team[name]"][value=Bishops]))
+    end
+
     test "a team that is gone answers instead of doing nothing", %{conn: conn, scope: scope} do
       t = team_tournament(scope)
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/teams")
