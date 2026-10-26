@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Fix] **The manual's contents list stays where you left it.** Every chapter you picked sent the list back to the top, so reaching chapter 15 meant scrolling down to it again each time. Worse, the pointer was then resting over some other chapter, whose hover colour made two chapters look selected at once. The list now keeps its place from chapter to chapter, and a chapter opened from a link scrolls the list far enough to show it.
+
 - [Change] **Setting up boards tells the flow as it is.** Pairing a round is all it takes for the box: it gets every paired round, released or not, and says *Waiting for OpenPairings to pair round N* while it waits; its *Start round N* button is for a box with no link. The manual had still sent arbiters to that button, and the other programs' pages are refreshed from their latest releases.
 
 - [Security] **Bandit 1.14.0.** The web server had eleven advisories published against 1.13.1 on one day, mostly HTTP/2 frames and chunked bodies made to eat memory or CPU; 1.14.0 fixes them. Nothing in the app changed, which is the best kind of release note.
