@@ -538,6 +538,7 @@ defmodule PairingsEngine.Keizer do
           tournament_id: tournament.id,
           number: next_number,
           status: "playing",
+          paired_at: Round.paired_now(),
           published_at: published_at,
           publish_due_at: Tournaments.due_publish_at(published_at)
         })

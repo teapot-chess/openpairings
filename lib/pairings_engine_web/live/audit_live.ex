@@ -865,19 +865,22 @@ defmodule PairingsEngineWeb.AuditLive do
       )
 
   def describe("pairing.rounds_swapped", d) do
-    case {d["rounds"], d["table_rounds"]} do
-      {[a, b], [ta, tb]} ->
-        gettext(
-          "Swapped rounds %{a} and %{b}: round %{a} now plays table round %{ta}, round %{b} table round %{tb}.",
-          a: a,
-          b: b,
-          ta: ta,
-          tb: tb
-        )
+    sentence =
+      case {d["rounds"], d["table_rounds"]} do
+        {[a, b], [ta, tb]} ->
+          gettext(
+            "Swapped rounds %{a} and %{b}: round %{a} now plays table round %{ta}, round %{b} table round %{tb}.",
+            a: a,
+            b: b,
+            ta: ta,
+            tb: tb
+          )
 
-      _ ->
-        gettext("Swapped two rounds of the round robin.")
-    end
+        _ ->
+          gettext("Swapped two rounds of the round robin.")
+      end
+
+    sentences([sentence, reason_sentence(d)])
   end
 
   def describe("pairing.chess960_drawn", d),
@@ -1044,24 +1047,33 @@ defmodule PairingsEngineWeb.AuditLive do
 
   def describe("pairing.mpa_finished", %{"pibe" => line} = d) when is_binary(line),
     do:
-      gettext(
-        "Finished hand edits to round %{round}, keeping pairings that differ from the pairing checker's. Recorded in the TRF as: %{line}",
-        round: value(d, "round"),
-        line: line
-      )
+      sentences([
+        gettext(
+          "Finished hand edits to round %{round}, keeping pairings that differ from the pairing checker's. Recorded in the TRF as: %{line}",
+          round: value(d, "round"),
+          line: line
+        ),
+        reason_sentence(d)
+      ])
 
   def describe("pairing.mpa_finished", d),
     do:
-      gettext("Finished hand edits to round %{round}: nothing to record.",
-        round: value(d, "round")
-      )
+      sentences([
+        gettext("Finished hand edits to round %{round}: nothing to record.",
+          round: value(d, "round")
+        ),
+        reason_sentence(d)
+      ])
 
   def describe("pairing.round_created_by_hand", d),
     do:
-      gettext(
-        "Created round %{round} with no boards, to pair by hand: the pairing engine found no legal pairing.",
-        round: value(d, "round")
-      )
+      sentences([
+        gettext(
+          "Created round %{round} with no boards, to pair by hand: the pairing engine found no legal pairing.",
+          round: value(d, "round")
+        ),
+        reason_sentence(d)
+      ])
 
   def describe("pairing.pool_paired", d),
     do:
@@ -2724,7 +2736,14 @@ defmodule PairingsEngineWeb.AuditLive do
   # ever after a sentence of the reader's own: it was written in whatever
   # language the confirmation had, which so far has always been English.
   defp hand_edit(sentence, d),
-    do: sentences([sentence, recorded_summary(d), confirmed_sentence(d)])
+    do: sentences([sentence, recorded_summary(d), confirmed_sentence(d), reason_sentence(d)])
+
+  # The arbiter's own words for a hand edit, quoted as recorded: free text,
+  # in whatever language it was typed in.
+  defp reason_sentence(%{"reason" => reason}) when is_binary(reason) and reason != "",
+    do: gettext(~s(Reason given: "%{reason}".), reason: reason)
+
+  defp reason_sentence(_d), do: nil
 
   defp recorded_summary(%{"summary" => summary}) when is_binary(summary) and summary != "",
     do: gettext(~s(Recorded as "%{summary}".), summary: summary)

@@ -19,6 +19,14 @@ defmodule PairingsEngine.Tournaments.Round do
     # visibility is just "is this timestamp in the past", checked live.
     field :published_at, :utc_datetime
 
+    # When this round's boards were made (UTC): set by every path that pairs
+    # a round, so a round paired again after an unpair carries the new time.
+    # nil for a round imported from a file that does not say, and for an old
+    # round with no audit row to take it from. Carried by an export file (the only
+    # caller of `changeset/2` that casts it). Shown on the Pairings page and
+    # written in the ITDX file; never an input to a pairing.
+    field :paired_at, :utc_datetime
+
     # This round's own due-at for `PairingsEngine.Publishing.promote_due_rounds/1` -
     # a copy of `published_at`, set ONLY when it was genuinely in the future
     # at pairing time (see `Tournaments.due_publish_at/1`). Cleared the
@@ -128,9 +136,12 @@ defmodule PairingsEngine.Tournaments.Round do
     Ecto.Query.select(query, [r], struct(r, ^fields))
   end
 
+  @doc "The instant to store in `paired_at` for a round paired now."
+  def paired_now, do: DateTime.utc_now() |> DateTime.truncate(:second)
+
   def changeset(round, attrs) do
     round
-    |> cast(attrs, [:number, :date, :status, :published_at, :explanation])
+    |> cast(attrs, [:number, :date, :status, :published_at, :paired_at, :explanation])
     |> validate_required([:number])
     |> validate_inclusion(:status, ~w(pairing playing finished))
   end

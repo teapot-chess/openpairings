@@ -37,6 +37,7 @@ defmodule PairingsEngineWeb.DeskActions do
     Tpn
   }
 
+  alias PairingsEngine.HandReason
   alias PairingsEngine.Pairing, as: Engine
   alias PairingsEngine.Tournaments.{Player, Round, Team, Tournament}
   alias PairingsEngineWeb.{ByePreferenceText, SettingsSupport}
@@ -640,11 +641,18 @@ defmodule PairingsEngineWeb.DeskActions do
   teams are the desk's (`:team_event`): their boards count for matches,
   which a phone has no way to see.
   """
-  def hand_edit(%Tournament{} = t, scope, %Round{} = round, action, acknowledged \\ []) do
+  def hand_edit(
+        %Tournament{} = t,
+        scope,
+        %Round{} = round,
+        action,
+        acknowledged \\ [],
+        reason \\ nil
+      ) do
     with :ok <- editable_from_phone(t),
          {:ok, staged} <- stage_edit(t, round, action),
          :ok <- edit_gates(t, round, staged, acknowledged) do
-      apply_edit(t, scope, round, staged, acknowledged)
+      apply_edit(t, scope, round, staged, acknowledged, reason)
     end
   end
 
@@ -845,7 +853,7 @@ defmodule PairingsEngineWeb.DeskActions do
     end
   end
 
-  defp apply_edit(t, scope, round, staged, acknowledged) do
+  defp apply_edit(t, scope, round, staged, acknowledged, reason) do
     ack = [
       acknowledged: Enum.filter(acknowledged, &(&1 in [:sent_round_changed, :second_half_bye]))
     ]
@@ -874,6 +882,7 @@ defmodule PairingsEngineWeb.DeskActions do
             )
           )
           |> Map.put(:via, "mobile")
+          |> HandReason.put(reason)
 
         Audit.log(t.id, scope, Map.fetch!(@hand_edit_audit, staged.kind), details)
         ok
@@ -954,21 +963,27 @@ defmodule PairingsEngineWeb.DeskActions do
   `{:error, reason}`: `:no_hand_edits` when none are open, `{:vacant, board}`
   and `:no_boards` as the page says them.
   """
-  def finish_hand_edits(%Tournament{} = t, scope, %Round{} = round, acknowledged \\ []) do
+  def finish_hand_edits(
+        %Tournament{} = t,
+        scope,
+        %Round{} = round,
+        acknowledged \\ [],
+        reason \\ nil
+      ) do
     if ManualPairing.open?(round) do
       case ManualPairing.assess(t, round) do
         {:error, _reason} = error ->
           error
 
         :unchanged ->
-          finish_mpa(t, scope, round, :keep)
+          finish_mpa(t, scope, round, :keep, reason)
 
         {:matches, _info} ->
-          finish_mpa(t, scope, round, :clear)
+          finish_mpa(t, scope, round, :clear, reason)
 
         {kind, info} when kind in [:differs, :unchecked] ->
           if :mpa_pibe in acknowledged do
-            finish_mpa(t, scope, round, {:set, info.line})
+            finish_mpa(t, scope, round, {:set, info.line}, reason)
           else
             {:error,
              {:needs_acknowledgement, [:mpa_pibe],
@@ -989,7 +1004,7 @@ defmodule PairingsEngineWeb.DeskActions do
     end
   end
 
-  defp finish_mpa(t, scope, round, pibe) do
+  defp finish_mpa(t, scope, round, pibe, reason) do
     with :ok <- ManualPairing.finish(round, pibe) do
       line =
         case pibe do
@@ -998,7 +1013,13 @@ defmodule PairingsEngineWeb.DeskActions do
           :clear -> nil
         end
 
-      Audit.log(t.id, scope, "pairing.mpa_finished", %{round: round.number, pibe: line})
+      Audit.log(
+        t.id,
+        scope,
+        "pairing.mpa_finished",
+        HandReason.put(%{round: round.number, pibe: line}, reason)
+      )
+
       {:ok, line}
     end
   end

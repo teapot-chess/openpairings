@@ -13,10 +13,13 @@ defmodule PairingsEngine.ItdxNotes do
 
   Plain ASCII, English, one fact per line, every line starting `OP `. No
   personal data beyond what the TRF records already hold: players appear as
-  starting ranks, and no e-mail address, key, token, address or free-text
-  field is written. Left out on purpose: audit rows carry player names and
-  free text, so only their kind, round and time are used; the engine's
-  per-board pairing explanation is not summarised here.
+  starting ranks, and no e-mail address, key, token or address is written.
+  The one piece of free text is the reason an arbiter gave for a hand edit
+  (`HandReason`), written next to that edit with accents stripped, control
+  characters and line breaks gone and the length capped. Left out on
+  purpose: the rest of what audit rows carry (player names, summaries), so
+  only their kind, round and time are used; the engine's per-board pairing
+  explanation is not summarised here.
   """
 
   import Ecto.Query, only: [from: 2]
@@ -42,9 +45,12 @@ defmodule PairingsEngine.ItdxNotes do
                team_rating_method team_unrated_rating team_primary_score team_tpn_until_round
                team_pairing_mode)a
 
-  @audit_actions ~w(pairing.round_paired pairing.mpa_started pairing.mpa_finished
-                    pairing.result_changed pairing.result_cleared pairing.players_swapped
-                    pairing.player_substituted pairing.rounds_swapped pairing.round_deleted)
+  @audit_actions Enum.uniq(
+                   ~w(pairing.round_paired pairing.mpa_started pairing.mpa_finished
+                      pairing.result_changed pairing.result_cleared pairing.players_swapped
+                      pairing.player_substituted pairing.rounds_swapped pairing.round_deleted) ++
+                     PairingsEngine.HandReason.actions()
+                 )
 
   @doc """
   The block for `tournament`, limited to `rounds`, as the lines (without
@@ -57,7 +63,7 @@ defmodule PairingsEngine.ItdxNotes do
        setting_lines(tournament) ++
        rule_lines(tournament, tpn) ++
        round_lines(tournament, rounds) ++
-       audit_lines(tournament, rounds) ++
+       audit_lines(tournament, rounds, paired_rounds(tournament, rounds)) ++
        player_lines(tournament, rounds, tpn))
     |> Enum.map(&ascii/1)
   end
@@ -133,26 +139,56 @@ defmodule PairingsEngine.ItdxNotes do
     for r <- query |> PairingsEngine.Tournaments.Round.without_explanation() |> Repo.all() do
       "OP round #{r.number}: status #{r.status}" <>
         if(r.date not in [nil, ""], do: ", date #{r.date}", else: "") <>
+        if(r.paired_at, do: ", paired #{stamp(r.paired_at)}", else: "") <>
         if(r.mpa_pibe, do: ", hand-edited (see the MPA line)", else: "")
     end
   end
 
-  # When each round was paired and what was done to it afterwards, from the
-  # audit trail's kind, round and time only.
-  defp audit_lines(t, rounds) do
+  # The rounds (of `rounds`) that carry their own pairing time. The round
+  # line says when those were paired, so their `pairing.round_paired` audit
+  # rows are not repeated; a round without one (an old round, an imported
+  # one) keeps the audit row's time as the fallback.
+  defp paired_rounds(t, rounds) do
+    Repo.all(
+      from r in PairingsEngine.Tournaments.Round,
+        where: r.tournament_id == ^t.id and r.number in ^rounds and not is_nil(r.paired_at),
+        select: r.number
+    )
+  end
+
+  # What was done to each round by hand, and when a round without a pairing
+  # time of its own was paired, from the audit trail's kind, round and time -
+  # and, for a hand edit, the reason the arbiter gave.
+  defp audit_lines(t, rounds, stamped) do
     t.id
     |> Audit.list_for_tournament(actions: @audit_actions, limit: 500)
     |> Enum.reverse()
     |> Enum.flat_map(fn row ->
       round = row.details["round"]
 
-      if is_integer(round) and round in rounds do
-        ["OP event #{stamp(row.inserted_at)} round #{round}: #{row.action}#{counts(row)}"]
-      else
-        []
+      cond do
+        not (is_integer(round) and round in rounds) ->
+          []
+
+        row.action == "pairing.round_paired" and round in stamped ->
+          []
+
+        true ->
+          [
+            "OP event #{stamp(row.inserted_at)} round #{round}: #{row.action}#{counts(row)}#{reason(row)}"
+          ]
       end
     end)
   end
+
+  defp reason(%{details: %{"reason" => text}}) when is_binary(text) do
+    case PairingsEngine.HandReason.ascii(text) do
+      "" -> ""
+      ascii -> ~s( reason "#{String.replace(ascii, ~s("), "'")}")
+    end
+  end
+
+  defp reason(_row), do: ""
 
   defp counts(%{action: "pairing.round_paired", details: d}) do
     parts =
