@@ -1969,7 +1969,7 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
 
       assert has_element?(
                lv,
-               "#round-publish-group #publish-level-2-radios[role='radiogroup'][aria-label='Round 2: what spectators see'][phx-hook]"
+               "#round-publish-group #publish-level-2-radios[role='radiogroup'][aria-label='Round 2: released'][phx-hook]"
              )
 
       assert has_element?(lv, "#publish-level-2[data-level='0']")
@@ -1994,7 +1994,7 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
       refute has_element?(lv, "#pairings-toggle-2")
       refute has_element?(lv, "#standings-toggle-2")
       refute has_element?(lv, "#results-toggle-2")
-      refute has_element?(lv, "#publish-level-2-note")
+      refute has_element?(lv, "#publish-level-2-note", "tidy this up")
     end
 
     test "each level sets exactly its flags, and audits every write as its old switch did",
@@ -2197,7 +2197,7 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
       lv |> element("#publish-level-2-1") |> render_click()
 
       assert public_flags(tournament, 2) == %{pairings: true, results: false, standings: false}
-      refute has_element?(lv, "#publish-level-2-note")
+      refute has_element?(lv, "#publish-level-2-note", "tidy this up")
     end
 
     test "a payload no stop sends leaves the page standing and writes nothing",
@@ -2304,7 +2304,6 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
       refute has_element?(lv, "#round-publish-group")
       refute has_element?(lv, "[id^='print-pairings-']")
       refute has_element?(lv, "[id^='quick-print-']")
-      refute has_element?(lv, "#round-standings-link")
       assert has_element?(lv, "#round-actions #round-absences-link")
 
       assert has_element?(lv, "#round-actions #round-more-menu-1 #local-view-link")
@@ -2344,7 +2343,6 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
 
       assert has_element?(lv, "#round-actions #round-publish-group")
       refute has_element?(lv, "#round-actions .pe-btn.primary")
-      refute has_element?(lv, "#round-standings-link")
     end
 
     test "a finished round that is not the last leads on to the next one",
@@ -2355,10 +2353,7 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
       assert has_element?(lv, "#round-actions[data-stage='complete']")
       assert has_element?(lv, "#round-actions #round-next-go.primary", "On to round 3")
 
-      assert has_element?(
-               lv,
-               "#round-actions #round-standings-link:not(.primary)[href='/t/#{tournament.id}/standings']"
-             )
+      refute has_element?(lv, "#round-standings-link")
 
       refute has_element?(lv, "#round-send-rating-link")
 
@@ -2369,7 +2364,7 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
       assert has_element?(lv, "#round-actions #pair-round.primary")
     end
 
-    test "the last round finished puts the standings first, with sending for rating beside them",
+    test "the last round finished leads to sending for rating",
          %{conn: conn, scope: scope} do
       tournament = fixture(scope)
 
@@ -2381,14 +2376,11 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
 
       assert has_element?(lv, "#round-actions[data-stage='finished']")
 
-      assert has_element?(
-               lv,
-               "#round-actions #round-standings-link.primary[href='/t/#{tournament.id}/standings']"
-             )
+      refute has_element?(lv, "#round-standings-link")
 
       assert has_element?(
                lv,
-               "#round-actions #round-send-rating-link[href='/t/#{tournament.id}/settings/export']"
+               "#round-actions #round-send-rating-link.primary[href='/t/#{tournament.id}/settings/export']"
              )
 
       refute has_element?(lv, "#round-next-go")
@@ -2412,7 +2404,21 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
                "#{menu} .pe-dropdown-label.is-danger + #unpair-round-2.is-danger[data-confirm]"
              )
 
-      assert has_element?(lv, "#{menu} #mpa-start-2[role='menuitem']")
+      refute has_element?(lv, "#{menu} #mpa-start-2")
+    end
+
+    test "the level says when the tournament is not on the results site",
+         %{conn: conn, scope: scope} do
+      tournament = fixture(scope)
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/pairings")
+      assert has_element?(lv, "#publish-level-2-note", "Not on the results site")
+
+      tournament
+      |> Ecto.Changeset.change(publish_to_openresults: true)
+      |> PairingsEngine.Repo.update!()
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/pairings")
+      refute has_element?(lv, "#publish-level-2-note", "Not on the results site")
     end
 
     test "the level is captioned for spectators", %{conn: conn, scope: scope} do
@@ -2421,8 +2427,8 @@ defmodule PairingsEngineWeb.PairingsLiveTest do
 
       assert has_element?(
                lv,
-               "#publish-level-2-caption[title='What spectators see on the results site']",
-               "Spectators see:"
+               "#publish-level-2-caption[title^='What spectators see: on the hall screen']",
+               "Released:"
              )
 
       assert has_element?(lv, "#publish-level-2-0 .pe-level-text", "Nothing")

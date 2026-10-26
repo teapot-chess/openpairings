@@ -56,12 +56,8 @@ given twice. How releases are cut and what each file is:
 
 ## Using it
 
-```sh
-mix deps.get
-mix phx.server
-```
-
-Open `http://localhost:4061`. In OpenPairings (on pairings.cloud): the
+Start Polis (the installer and the Mac app do it for you; the Linux service
+starts with the machine) and open its page at `http://localhost:4061`. In OpenPairings (on pairings.cloud): the
 tournament's *Settings* → *Print station* → *Add a print station*; paste the
 link it shows into the page. Choose the printer and the paper. That is the
 setup.
@@ -102,6 +98,18 @@ a reverse proxy that forwards one) gets a 403.
 `POLIS_PRINTER=dry-run` writes every sheet as a PDF into
 `<data>/dry-run/` instead of printing it; development and the tests always
 do that.
+
+## For developers
+
+To run Polis from a checkout instead of an installed copy:
+
+```sh
+mix deps.get
+mix phx.server
+```
+
+The page is then at `http://localhost:4061` as above. Everything below this
+heading is about how it is built, not how it is used.
 
 ## Licence
 

@@ -62,15 +62,14 @@ defmodule PairingsEngineWeb.ManualPairingLiveTest do
   defp actions(t), do: t.id |> Audit.list_for_tournament() |> Enum.map(& &1.action)
 
   describe "a session with a start and an end (Q65)" do
-    test "started from the More menu, finished with nothing changed", %{conn: conn, scope: scope} do
+    test "started explicitly, finished with nothing changed", %{conn: conn, scope: scope} do
       {t, _} = tournament(scope, 3, ~w(Ann Ben Cas Dan))
       pair!(t)
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/pairings")
 
       refute has_element?(lv, "#mpa-banner")
-      lv |> element("#mpa-start-1") |> render_click()
+      render_click(lv, "mpa_start", %{})
       assert has_element?(lv, "#mpa-banner #mpa-end")
-      refute has_element?(lv, "#mpa-start-1")
 
       lv |> element("#mpa-end") |> render_click()
       refute has_element?(lv, "#mpa-banner")

@@ -30,21 +30,31 @@ Als een poort toegevoegd is toen er één bord op zat, en er nu meer op zitten, 
 > [!NOTE] Wat op echte borden gecontroleerd is
 > Het vinden van de borden, wie ze zijn en wat erop staat, met twee borden op één kabel. Nog niet gezien op een echte lus: een zet terwijl hij gespeeld wordt, een klok, en meer dan twee borden. Het kastje leest ook om de paar seconden het hele bord, dus op een lus kan een zet te laat komen, maar niet fout zijn.
 
+## Een bord hernoemen en verwijderen {#removing-a-board}
+
+"Hernoemen" onder de naam van een bord verandert hoe de pagina's het noemen; verder verandert er niets. "Verwijderen" aan het eind van zijn rij haalt het bord van de lijst en stopt met lezen. Zijn partijen blijven, en zijn opnames ook (ze staan op de pagina Opnames als "verwijderd bord N", en alleen de eigenaar van de zaal waarin het bord stond, of een beheerder, kan ze openen). Wordt er op het bord een partij gespeeld, dan vraagt Verwijderen eerst en zegt dat erbij.
+
+Een bord dat van een brug komt, wordt ook aan de brug doorgegeven, die het niet meer meldt; zonder dat was het een ogenblik later terug. Is de brug niet verbonden, dan is het bord hier weg maar meldt de brug het opnieuw zodra ze dat wel is: laat de brug het bord vergeten op haar eigen pagina om dat te stoppen. Het bord terugzetten is de poort opnieuw toevoegen, op de brug of hier.
+
 ## Welk bord is welk {#which-board-is-which}
 
 Twaalf borden lijken op elkaar, en twaalf kabels ook. Het kastje houdt drie dingen uit elkaar.
 
-- **Welk bord het is.** Een elektronisch bord vertelt het kastje zijn serienummer (het staat ook op een etiket onder het bord). Daaraan kent het kastje het, niet aan de usb-poort. Haal het los, steek het elders in, herstart het kastje: het is nog altijd hetzelfde bord en houdt zijn nummer. Komt het terug op een andere poort, voeg het dan op die poort toe: het kastje herkent het serienummer en zet het terug op zijn oude plaats. Een bord dat het kastje nooit gezien heeft, krijgt de markering "Nieuw bord" en vraagt om een nummer.
+- **Welk bord het is.** Een elektronisch bord vertelt het kastje zijn serienummer (het staat ook op een etiket onder het bord). Daaraan kent het kastje het, niet aan de usb-poort. Haal het los, steek het elders in, herstart het kastje: het is nog altijd hetzelfde bord en houdt zijn nummer. Komt het terug op een andere poort - een andere usb-hub, een andere adapter (een kapotte vervangen), of een andere bridge in dezelfde zaal - voeg het dan op die poort toe, of laat de bridge het melden: het kastje herkent het serienummer en haalt zijn oude rij terug, met zijn naam, tafelnummer, bord van de ronde, partij, instelling "omgedraaid" en geschiedenis. Er komt geen tweede rij bij, of het bord al een nummer had of niet. Steek je het zo snel om dat de oude poort het nog niet gemerkt heeft (dat duurt een paar seconden), dan worden de twee rijen één zodra dat wel zo is; tot dan staat het bord als twee keer gezien. Midden in een partij kan dat gerust: de partij loopt verder in dezelfde rij. Een bord in een andere zaal is van die zaal: het wordt daar nooit vanzelf heen verhuisd. Een bord dat het kastje nooit gezien heeft, krijgt de markering "Nieuw bord" en vraagt om een nummer.
 - **Zijn tafelnummer.** De sticker op het bord: "dit is tafel 7". Je stelt het één keer in voor de zaal en het blijft. "Etiketten" op de pagina Borden drukt een vel stickers af met het tafelnummer en het serienummer.
 - **Zijn bord van de ronde.** Normaal hetzelfde nummer als de tafel. Voor één ronde kun je iets anders zeggen in de kolom "Bord van ronde N" ("tafel 7 speelt vandaag bord 3"), twee borden omwisselen, of alles terugzetten. De volgende ronde begint weer bij de tafelnummers. Op de pagina Live is het bordnummer het grote; "tafel 7 · serienummer 06310" is de kleine letter.
 
 ### De tafelnummers geven {#giving-numbers}
 
-Drie manieren:
+Drie manieren, naast elkaar in het blok "De borden nummeren" op de pagina Borden:
 
-- **Nummeren door aan te raken.** Druk op Start, til dan een stuk op het bord van tafel 1, dan op dat van tafel 2, enzovoort. Elk bord krijgt het volgende nummer op het moment dat het het stuk voelt weggaan. Ongedaan maken neemt het laatste terug, Overslaan laat een nummer weg, Stop beëindigt het.
-- **Alles nummeren in aansluitvolgorde.** Eén klik, wanneer de borden in de volgorde van de tafels aangesloten zijn.
+- **Borden nummeren door ze aan te raken.** Druk op de knop, dan op Start, til dan een stuk op het bord van tafel 1, dan op dat van tafel 2, enzovoort. Elk bord krijgt het volgende nummer op het moment dat het het stuk voelt weggaan. Ongedaan maken neemt het laatste terug, Overslaan laat een nummer weg, Stop beëindigt het.
+- **In volgorde nummeren.** Eén klik: alle borden, in de volgorde van de lijst - de volgorde waarin ze aangesloten zijn. Handig wanneer je de borden in de volgorde van de tafels aangesloten hebt.
 - **Met de hand.** Typ het nummer in de kolom "Tafel".
+
+"Toon mij" op een rij is geen van de drie: het helpt je dat bord in de zaal te vinden, en geeft geen nummer.
+
+De lijst houdt haar volgorde terwijl je nummert: een bord schuift niet op of neer omdat het een nummer kreeg, dus de volgende rij die je aantikt is het bord dat je bedoelt. Een tafelnummer staat op één bord, en een bord van de ronde wordt door één bord gespeeld: neemt het nummer dat je geeft er een af van een ander bord, dan zegt de pagina welk bord wat kwijt is. En blijkt een bord dat je nummerde een bord dat het kastje al kende aan zijn serienummer (omgestoken op een andere poort), dan houdt het kastje het nummer waaronder het dat bord kende, en zegt het logboek welk nummer verdween.
 
 ### Welk bord is dit? {#which-board-is-this}
 
@@ -56,7 +66,7 @@ Met een telefoon in je hand langs de tafels lopen is makkelijker dan heen en wee
 
 1. Instellingen, Toegang, "Toegang vanaf andere machines": stel een pincode in, laat dan andere machines in de zaal de site openen, en start Alnasl opnieuw. Doe het voor de zaal volloopt.
 2. Open op het kastje Borden (of Instellingen, Toegang): "Open deze site op je telefoon" toont het adres en een QR-code. Richt de camera van de telefoon erop en geef de pincode. (Op een kastje met accounts meldt de code je aan; zie [Accounts, zalen en rollen](06-accounts-and-halls.md).)
-3. Op de telefoon: Borden, "Nummeren door aan te raken", Start. Het volgende tafelnummer vult het scherm. Loop naar die tafel en til een willekeurig stuk op; de telefoon laat het nummer en het serienummer van het bord oplichten, trilt (alleen Android) en piept eenmaal zodra "Geluid uit" aangetikt is tot "Geluid aan". Een telefoon wil per bezoek één tik voor hij geluid maakt, en een iPhone op stil speelt niets af.
+3. Op de telefoon: Borden, "Borden nummeren door ze aan te raken", Start. Het volgende tafelnummer vult het scherm. Loop naar die tafel en til een willekeurig stuk op; de telefoon laat het nummer en het serienummer van het bord oplichten, trilt (alleen Android) en piept eenmaal zodra "Geluid uit" aangetikt is tot "Geluid aan". Een telefoon wil per bezoek één tik voor hij geluid maakt, en een iPhone op stil speelt niets af.
 4. Ongedaan maken, Overslaan en Stop staan onderaan het scherm. Valt het netwerk van de telefoon tussen twee tafels weg, dan gaat er niets verloren: de ronde wordt op het kastje bewaard.
 
 > [!WARNING] Nooit zonder pincode

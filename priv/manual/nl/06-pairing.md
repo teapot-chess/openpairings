@@ -23,8 +23,8 @@ moment tellen:
 | --- | --- | --- |
 | Nog niet gepaard | **Ronde N paren** | **Afwezigheden** (de pagina Spelers, waar je aanduidt wie de ronde niet speelt); in een round robin **Ronde N met de hand paren…**; als het van toepassing is, **Ontbrekende resultaten als uitgesteld noteren en ronde N paren** |
 | Wordt gespeeld | Geen: de resultaten invoeren is het werk | **Paringen afdrukken**, en de bediening die bepaalt wat toeschouwers van de ronde zien ([Publiceren](14-publishing.md)) |
-| Alle resultaten binnen | **Door naar ronde N**, die de volgende ronde opent met haar knop **Ronde N paren** | **Stand**, en wat toeschouwers zien |
-| De laatste ronde, alle resultaten binnen | **Stand** | **Insturen voor rating** (de pagina Exporteren, zie [Versturen naar FIDE](10-fide-report.md)), en wat toeschouwers zien |
+| Alle resultaten binnen | **Door naar ronde N**, die de volgende ronde opent met haar knop **Ronde N paren** | Wat toeschouwers zien |
+| De laatste ronde, alle resultaten binnen | **Insturen voor rating** (de pagina Exporteren, zie [Versturen naar FIDE](10-fide-report.md)) | Wat toeschouwers zien |
 
 In een Chess960-toernooi staat daar ook **Chess960-stelling trekken**, tot de
 stelling van de ronde getrokken is.
@@ -34,8 +34,8 @@ Al de rest zit in **Meer**, aan het einde van de balk, in groepen:
 - **Afdrukken**: paringen, paringen met de rubriek afwezigen,
   resultaatkaartjes, een testafdruk van de eerste drie kaartjes, volgorde voor
   stapelsnijden;
-- **Ronde**: **Paringen met de hand aanpassen**, **Resultaten importeren
-  (CSV)** en, in een round robin, **Rondes wisselen…**;
+- **Ronde**: **Resultaten importeren (CSV)** en, in een round robin,
+  **Rondes wisselen…**;
 - **PGN**: deze ronde of alle rondes, met of zonder bordnummers, of een reeks
   borden;
 - **Weergaven**: **Lokale weergave**, **Telefoon-QR** (een groot venster met de QR-codes om
@@ -448,8 +448,8 @@ naam tegen elkaar gespeeld. Het programma noemt dit een
 
 ### De sessie {#the-session}
 
-- Een sessie op een ronde **begint** met **Meer**, **Paringen met de hand
-  aanpassen**, of impliciet met de eerste wijziging met de hand in de ronde. Zolang
+- Een sessie op een ronde **begint** met de eerste wijziging met de hand in de
+  ronde: rechtsklik (of tik) op een speler. Zolang
   ze open is, toont een banner *Wijzigingen met de hand aan ronde N zijn open*,
   die je eraan herinnert hoe je er een maakt (rechtsklik, of tik op een
   aanraakscherm, op een speler aan een bord of in de lijst met niet-spelenden),

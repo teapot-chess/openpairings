@@ -1259,7 +1259,7 @@ defmodule PairingsEngineWeb.SettingsResultsLive do
         </div>
 
         <div class="card">
-          <h2>{gettext("Publish this tournament")}</h2>
+          <h2>{gettext("On the results site")}</h2>
 
           <%!-- The results site's operator deleted it there, and publishing
               was switched off here so the queue stopped asking

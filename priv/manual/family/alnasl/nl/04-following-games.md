@@ -56,6 +56,8 @@ Sommige meldingen noemen wat het bord toont:
 - "Er ontbreekt een zet hiervoor" brengt je naar waar je zetten typt, voor als het bord een zet miste.
 - "Klok niet in beginstand" of een klok die verkeerd om loopt: stop hem, zet hem goed, start hem opnieuw. De melding verdwijnt vanzelf. De zetten worden intussen gewoon gevolgd.
 - "Witte paard niet gezien op f3" is een waarschuwing, geen alarm: een stuk verliet zijn veld (naast het bord geparkeerd, of de sensor verloor het) en de partij ging door, dus Alnasl neemt aan dat het er nog staat. Het verdwijnt als het stuk er weer gezien wordt, zet, of geslagen wordt. Was het stuk wel degelijk geslagen, verbeter dan de zetten op de pagina van het bord.
+- "Wit: loper op e4 leest als paard" is een waarschuwing, geen alarm: het bord hoort een stuk als een ander stuk van dezelfde kleur, meestal omdat het dicht bij een ander stuk staat. Alnasl houdt het stuk dat de partij heeft en volgt de zetten zoals altijd. Pas een zet die dat stuk niet kan doen, geeft een alarm. De waarschuwing verdwijnt als het bord het stuk weer juist leest; het stuk rechtzetten helpt vaak.
+- "dame aangenomen" naast een promotie betekent dat de pion op het laatste veld bleef staan, of dat het nieuwe stuk weg was voor het bord het kon lezen. Alnasl neemt een dame en markeert de zet. Zet het stuk later als een toren, loper of paard, dan wordt de promotie naar dat stuk herschreven. Toont niets ooit wat het was, kijk dan het notatieformulier na en verbeter het op de pagina van het bord.
 - "gelezen als d3" naast een zet betekent dat het bord die zet één veld ernaast las (een stuk neergezet tussen twee velden) en een latere zet toonde waar het echt heen ging - of iemand zette het stuk recht, wat het bord als een zet op zich kan lezen; met een klok verraadt een druk die bij geen enkele zet hoort dat. Alnasl heeft het rechtgezet en zegt het boven de zetten; "Kijk het na" heeft de zet zoals hij gelezen werd.
 
 ## Een bord herstellen {#repairing}
@@ -87,9 +89,13 @@ Stel op elk bord het resultaat in, of bevestig het voorstel: "Partij beëindigen
 
 Een partij die helemaal niet vastgelegd werd: pagina Partijen, lees de zetten van het partijformulier in en wijs ze toe aan haar bord.
 
+## Een partij verwijderen {#deleting-a-game}
+
+"Deze partij verwijderen" onderaan "Deze partij" op de pagina van een bord is voor de eigenaar van de zaal. Het haalt de zetten van de partij weg, haar PGN-bestand en wat nog wachtte om verstuurd te worden; het bord is dan weer leeg voor de pairing. Wat al naar de resultatensite of het pairingprogramma is gestuurd, blijft daar staan. Een partij die een verbonden bord leest, kan niet verwijderd worden: koppel het bord eerst los op de pagina Borden. Elke verwijdering staat in het logboek, met wie speelde en hoe ver de partij kwam.
+
 ## Rondes {#rounds}
 
-Met OpenPairings begint een ronde vanzelf een paar seconden nadat de arbiter ze daar paart: de borden van dat toernooi tonen de nieuwe ronde met namen, ratings en kleuren. De borden van de andere toernooien blijven ongemoeid. "Ronde N starten" op de pagina Live blijft er voor als er geen verbinding is, en een toernooi kan ingesteld worden om rondes niet vanzelf te starten (Instellingen, Toernooien, open het toernooi).
+Met OpenPairings begint een ronde vanzelf een paar seconden nadat de arbiter ze daar paart: de borden van dat toernooi tonen de nieuwe ronde met namen, ratings en kleuren. De borden van de andere toernooien blijven ongemoeid. Tot het zover is, staat op de pagina Live "Wacht op OpenPairings om ronde N te paren - de borden schakelen vanzelf over zodra dat gebeurt." en is er geen knop "Ronde N starten": er valt niets in te drukken. De knop komt terug als je het toernooi instelt om rondes niet vanzelf te starten (Instellingen, Toernooien, open het toernooi), en bij een toernooi zonder OpenPairings. Staat OpenPairings al op een andere ronde dan de borden (er loopt nog een partij, dus de borden blijven staan), dan zegt de pagina welke ronde dat is en biedt ze "Ronde N volgen" aan.
 
 Zonder OpenPairings zet "Ronde N starten" de borden van het toernooi door naar de volgende ronde.
 

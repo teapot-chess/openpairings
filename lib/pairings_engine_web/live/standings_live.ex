@@ -299,7 +299,7 @@ defmodule PairingsEngineWeb.StandingsLive do
         <span id="standings-initial-text">
           {if @public?,
             do: gettext("Spectators see the starting ranking"),
-            else: gettext("Spectators see: nothing yet")}
+            else: gettext("Released: nothing yet")}
         </span>
       </span>
 
@@ -316,7 +316,7 @@ defmodule PairingsEngineWeb.StandingsLive do
 
   ## ---------- what spectators see of the round the standings are after ----------
   #
-  # Read-only: the round's "Spectators see:" level on the Pairings page, said
+  # Read-only: the round's "Released:" level on the Pairings page, said
   # in words, with a link that opens that round there. `round` is the round
   # the standings are after (`Tournaments.latest_complete_round/1`, the round
   # public standings can reach), already loaded by `reload_standings/1`.
@@ -351,12 +351,12 @@ defmodule PairingsEngineWeb.StandingsLive do
     """
   end
 
-  defp spectators_see_text(0), do: gettext("Spectators see: nothing yet")
-  defp spectators_see_text(1), do: gettext("Spectators see: pairings")
-  defp spectators_see_text(2), do: gettext("Spectators see: pairings and results")
+  defp spectators_see_text(0), do: gettext("Released: nothing yet")
+  defp spectators_see_text(1), do: gettext("Released: pairings")
+  defp spectators_see_text(2), do: gettext("Released: pairings and results")
 
   defp spectators_see_text(3),
-    do: gettext("Spectators see: pairings, results and standings")
+    do: gettext("Released: pairings, results and standings")
 
   # An archived tournament refuses every write (Tournaments.ensure_writable/1).
   # These controls are hidden while archived, so reaching one of these clauses
