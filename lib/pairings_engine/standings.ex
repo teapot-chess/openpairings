@@ -24,6 +24,7 @@ defmodule PairingsEngine.Standings do
   alias PairingsEngine.Standings.AinalramiBridge
   alias PairingsEngine.StandingsCache
   alias PairingsEngine.Tiebreaks
+  alias PairingsEngine.Tiebreaks.Custom
   alias PairingsEngine.Tournaments
   alias PairingsEngine.Tournaments.{Pairing, Player, Round}
 
@@ -155,7 +156,13 @@ defmodule PairingsEngine.Standings do
   def dropped_tiebreaks_with_reasons(tournament, players) do
     configured = tournament.tiebreaks || []
 
-    not_calculable = Enum.reject(configured, &Tiebreaks.individual_calculable?/1)
+    # A custom formula with nothing in it would rank nobody: a column of
+    # noughts, dropped like any other code that cannot be calculated.
+    not_calculable =
+      Enum.reject(configured, fn code ->
+        Tiebreaks.individual_calculable?(code) and
+          (code != "CUSTOM" or Custom.usable?(Map.get(tournament, :custom_tiebreak)))
+      end)
 
     # For a tournament lasting more than 30 days, the ratings valid in the
     # round the tie-breaks use (`PeriodRatings`).
@@ -1712,8 +1719,12 @@ defmodule PairingsEngine.Standings do
     # One code at a time: Ainalrami refuses a code the event cannot use
     # (Buchholz in a round robin, C.07 Article 8), and one refused code must
     # not blank the others.
+    # The custom formula may read Buchholz or SB without either being on the
+    # list; they are computed the same way, just not shown.
+    custom = if "CUSTOM" in tiebreak_codes, do: Map.get(tournament, :custom_tiebreak)
+
     values =
-      for code <- tiebreak_codes,
+      for code <- Enum.uniq(tiebreak_codes ++ Custom.computed_codes(custom)),
           code not in @direct_encounter,
           Map.has_key?(AinalramiBridge.codes(), code),
           into: %{} do
@@ -1732,7 +1743,17 @@ defmodule PairingsEngine.Standings do
             {code, tiebreak_value(code, entry, values)}
           end
 
-        Map.put(entry, :tiebreaks, tiebreaks)
+        if custom do
+          computed = Map.new(values, fn {code, map} -> {code, Map.get(map, entry.player.id)} end)
+          figures = Custom.figures_for(entry, tournament, computed)
+          {total, parts} = Custom.evaluate(custom, figures)
+
+          entry
+          |> Map.put(:tiebreaks, Map.put(tiebreaks, "CUSTOM", total))
+          |> Map.put(:custom_working, parts)
+        else
+          Map.put(entry, :tiebreaks, tiebreaks)
+        end
       end)
 
     Enum.reduce(@direct_encounter, entries, fn code, entries ->
@@ -1744,6 +1765,8 @@ defmodule PairingsEngine.Standings do
 
   # `EXT` is typed by the arbiter, not computed: the player's own value.
   defp tiebreak_value("EXT", entry, _values), do: as_float(entry.player.external_tiebreak)
+  # Worked out per entry from the formula, in `compute_tiebreaks/3`.
+  defp tiebreak_value("CUSTOM", _entry, _values), do: 0.0
   defp tiebreak_value(code, entry, values), do: as_float(get_in(values, [code, entry.player.id]))
 
   # Values were floats here before the switch, and screens format them as
@@ -1765,30 +1788,43 @@ defmodule PairingsEngine.Standings do
     event = tiebreak_event(entries, tournament)
     score = Map.new(entries, &{&1.player.id, ranking_score(&1, tournament)})
 
-    case Enum.split_while(ranking_codes, &(&1 != "EXT")) do
+    staged_places(entries, event, tournament, ranking_codes, score)
+  end
+
+  # `EXT` (the arbiter's typed value) and `CUSTOM` (the tournament's own
+  # formula) are values Ainalrami does not know: the codes before one rank
+  # the players, its value splits whoever is still level, and the codes
+  # after it go on from there. The split is handed on as a score of its own,
+  # so each stage sees the one before it as the score it starts from - and
+  # a list with both, in either order, is just two stages.
+  defp staged_places(entries, event, tournament, ranking_codes, score) do
+    case Enum.split_while(ranking_codes, &(not Tiebreaks.own?(&1))) do
       {_all, []} ->
         rank_places(event, ranking_codes, tournament, score)
 
-      {before, ["EXT" | after_codes]} ->
-        # `EXT` is the arbiter's own value, which Ainalrami does not know:
-        # the codes before it rank the players, the typed value splits
-        # whoever is still level, and the codes after it go on from there.
-        # The split is handed on as a score of its own, so each stage sees
-        # the one before it as the score it starts from.
+      {before, [own | after_codes]} ->
         first = rank_places(event, before, tournament, score)
 
         keys =
           Map.new(entries, fn e ->
-            {e.player.id, {Map.get(first, e.player.id, 0), -(e.player.external_tiebreak || 0.0)}}
+            {e.player.id, {Map.get(first, e.player.id, 0), own_key(own, e, tournament)}}
           end)
 
         dense = keys |> Map.values() |> Enum.uniq() |> Enum.sort() |> Enum.with_index(1)
         dense = Map.new(dense)
         split = Map.new(keys, fn {id, key} -> {id, -Map.fetch!(dense, key) * 1.0} end)
 
-        rank_places(event, after_codes, tournament, split)
+        staged_places(entries, event, tournament, after_codes, split)
     end
   end
+
+  # Ascending sort keys: the higher external value first; the custom total
+  # whichever way its formula says.
+  defp own_key("EXT", e, _tournament), do: -(e.player.external_tiebreak || 0.0)
+
+  defp own_key("CUSTOM", e, tournament),
+    do:
+      Custom.sort_key(Map.get(e.tiebreaks, "CUSTOM", 0.0), Map.get(tournament, :custom_tiebreak))
 
   defp rank_places(event, ranking_codes, tournament, score) do
     codes =

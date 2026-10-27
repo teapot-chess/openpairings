@@ -1481,6 +1481,9 @@ defmodule PairingsEngine.Tournaments do
   #   * `pairing_system` - Q93. Already frozen with the round-1 list above,
   #     but there an arbiter can click "Unlock"; in FIDE mode they cannot.
   #   * `tiebreaks` - Q200/Q201 (announced before the start, C.07).
+  #     The custom formula (`custom_tiebreak`) with it: a list that keeps
+  #     its codes while the arithmetic behind one of them changes has not
+  #     stayed as announced.
   #
   # TEC's own scale calls this Level 5: refused in FIDE mode, or allowed only
   # after leaving it. So these are not unlockable while the tournament is in
@@ -1491,7 +1494,8 @@ defmodule PairingsEngine.Tournaments do
                   team_match_points_win team_match_points_draw team_match_points_loss
                   bye_value presence_value presence_on_allocated_bye
                   team_pab_match_points team_pab_game_points team_forfeit_board_points
-                  team_board_order team_primary_score acceleration pairing_system tiebreaks)a
+                  team_board_order team_primary_score acceleration pairing_system tiebreaks
+                  custom_tiebreak)a
 
   @doc """
   The settings `tournament` cannot change at all while it is in FIDE mode

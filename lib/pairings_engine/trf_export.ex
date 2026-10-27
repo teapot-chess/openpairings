@@ -2089,9 +2089,11 @@ defmodule PairingsEngine.TrfExport do
 
     # `EXT`, the arbiter's own typed values, is not a tie-break any reader
     # can compute; TRF26 has no record for it, so it stays out of the list.
+    # `CUSTOM`, the tournament's own formula, goes the same way: inventing
+    # a code a checker has never heard of would only make it refuse the line.
     (t.tiebreaks || [])
     |> Enum.map(&String.upcase(to_string(&1)))
-    |> Enum.reject(&(&1 == "EXT"))
+    |> Enum.reject(&PairingsEngine.Tiebreaks.own?/1)
     |> Enum.map(fn code ->
       c07_code = Map.get(c07, code, code)
 

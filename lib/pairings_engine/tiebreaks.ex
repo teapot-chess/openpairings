@@ -441,6 +441,14 @@ defmodule PairingsEngine.Tiebreaks do
       available: true,
       description:
         "A value calculated outside the program for a tie-break of the tournament's own, typed on the Standings page. Higher ranks higher. It is not a C.07 tie-break and is not written to the TRF."
+    },
+    %{
+      code: "CUSTOM",
+      name: "Custom formula",
+      scope: :individual,
+      available: true,
+      description:
+        "The tournament's own tie-break: a weighted sum of figures such as forfeit losses or wins with Black (`PairingsEngine.Tiebreaks.Custom`). Not a FIDE tie-break, and not written to the TRF."
     }
   ]
 
@@ -482,6 +490,7 @@ defmodule PairingsEngine.Tiebreaks do
     "REP" => :results,
     "STD" => :results,
     "EXT" => :results,
+    "CUSTOM" => :custom,
     "TPN" => :results,
     "TPN/R" => :results,
     "ARO" => :rating,
@@ -511,7 +520,7 @@ defmodule PairingsEngine.Tiebreaks do
                })
              end)
 
-  @group_order [:results, :buchholz, :sonneborn, :progressive, :rating, :team]
+  @group_order [:results, :buchholz, :sonneborn, :progressive, :rating, :team, :custom]
 
   @doc "The picker's groups, in the order they are shown."
   def group_order, do: @group_order
@@ -611,6 +620,30 @@ defmodule PairingsEngine.Tiebreaks do
   def valid?(_code, _type), do: false
 
   def fide_defaults(type), do: Map.get(@fide_defaults, type, [])
+
+  # Codes of the tournament's own making rather than FIDE's: the typed
+  # external value and the custom formula. Neither is a C.07 tie-break, and
+  # neither is written to a TRF tie-break line.
+  @own_codes ~w(EXT CUSTOM)
+
+  @doc "Whether `code` is one of the tournament's own (`EXT`, `CUSTOM`) rather than FIDE's."
+  def own?(code), do: code in @own_codes
+
+  @doc "The codes of the tournament's own making (`own?/1`)."
+  def own_codes, do: @own_codes
+
+  @doc """
+  Whether the custom formula sits above a FIDE tie-break in `codes` - it
+  then decides ties before any FIDE tie-break gets a say.
+  """
+  def custom_above_fide?(codes) when is_list(codes) do
+    case Enum.split_while(codes, &(&1 != "CUSTOM")) do
+      {_before, ["CUSTOM" | after_codes]} -> Enum.any?(after_codes, &(not own?(&1)))
+      _ -> false
+    end
+  end
+
+  def custom_above_fide?(_), do: false
 
   @doc """
   `fide_defaults/1` for this tournament: a team event whose rules make game

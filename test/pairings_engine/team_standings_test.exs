@@ -279,7 +279,7 @@ defmodule PairingsEngine.TeamStandingsTest do
       assert Enum.take(individual, 13) == ~w(BH BHC1 BHC2 MBH SB DE WIN WON BPG PS KS ARO AROC1)
 
       assert length(individual) ==
-               45 + length(PairingsEngine.Tiebreaks.TableCodes.individual_codes())
+               46 + length(PairingsEngine.Tiebreaks.TableCodes.individual_codes())
 
       assert Tiebreaks.selectable() |> Enum.map(& &1.code) == individual
 
