@@ -153,8 +153,8 @@ XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_contr
 XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_controller.ex:1884,36853B6
 XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_controller.ex:1927,4906879
 XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_controller.ex:2425,60D98F8
-XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_controller.ex:2501,7222016
-XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_controller.ex:2519,49A6197
+XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_controller.ex:2516,397E6C8
+XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/print_controller.ex:2534,26458B4
 XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/team_print_controller.ex:216,44DFC51
 XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/team_print_controller.ex:354,4DBC9EE
 XSS.SendResp: XSS in `send_resp`,lib/pairings_engine_web/controllers/team_print_controller.ex:462,509B58
