@@ -1394,7 +1394,12 @@ defmodule PairingsEngine.Snapshot do
       # the failure this is fixing.
       "manual_stale" => manual?(t) and Standings.manual_ranking_stale?(t),
       "manual_incomplete" => manual?(t) and Standings.manual_ranking_incomplete?(entries),
-      "tiebreaks" => Enum.map(shown, &%{"code" => &1, "label" => tiebreak_label(&1)}),
+      # The custom formula's label is the formula itself, marked as not
+      # FIDE's: OpenResults shows a label as the column's name and the code
+      # as its heading, so "CUSTOM" heads the column and the label says what
+      # it adds up. Its working is not per round and is not sent (it is not
+      # in `TiebreakWorking.publishable_codes/0`).
+      "tiebreaks" => Enum.map(shown, &%{"code" => &1, "label" => tiebreak_label(&1, t)}),
 
       # Whether the ORDER above used a tie-break that is not in the list.
       # Added 2026-08-30 with per-tie-break visibility.
@@ -1469,6 +1474,9 @@ defmodule PairingsEngine.Snapshot do
   defp put_unless(map, :nil_opponent, key, no), do: Map.put(map, key, no)
   defp put_unless(map, :played, _key, :played), do: map
   defp put_unless(map, :played, key, kind), do: Map.put(map, key, to_string(kind))
+
+  defp tiebreak_label("CUSTOM", t), do: Tiebreaks.Custom.label(t.custom_tiebreak)
+  defp tiebreak_label(code, _t), do: tiebreak_label(code)
 
   defp tiebreak_label(code) do
     case Tiebreaks.get(code) do

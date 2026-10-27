@@ -18,6 +18,7 @@ defmodule PairingsEngineWeb.StandingsLive do
   }
 
   alias PairingsEngine.Tournaments.{Player, Tournament}
+  alias PairingsEngine.Tiebreaks.Custom
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
@@ -1040,6 +1041,21 @@ defmodule PairingsEngineWeb.StandingsLive do
         )}
       </p>
 
+      <p
+        :if={
+          @entries != [] and !@keizer? and !@team? and !@final_refused and
+            "CUSTOM" in @effective_tiebreaks
+        }
+        id="custom-tiebreak-note"
+        class="hint"
+      >
+        <strong>CUSTOM</strong>
+        <span class="tb-custom-badge">{gettext("custom")}</span>
+        = {Custom.describe_local(@tournament.custom_tiebreak)}. {gettext(
+          "Not a FIDE tie-break. Point at a player's CUSTOM value to see how it was reached."
+        )}
+      </p>
+
       <div
         :if={@entries != [] and !@keizer? and !@team? and !@final_refused}
         id="standings-table"
@@ -1109,7 +1125,8 @@ defmodule PairingsEngineWeb.StandingsLive do
               <th
                 :for={code <- visible_tiebreak_codes(@effective_tiebreaks, @visible)}
                 class="num"
-                title={tb_name(code)}
+                id={if code == "CUSTOM", do: "custom-tiebreak-header"}
+                title={tb_title(code, @tournament)}
               >
                 {code}
               </th>
@@ -1201,7 +1218,18 @@ defmodule PairingsEngineWeb.StandingsLive do
                   />
                 </form>
 
-                <span :if={code != "EXT" or @tournament.archived_at}>
+                <span
+                  :if={code == "CUSTOM"}
+                  id={"custom-tiebreak-#{entry.player.id}"}
+                  class="tb-custom-value"
+                  title={custom_working(entry)}
+                >
+                  {format_tb(Map.get(entry.tiebreaks, code, 0.0))}
+                </span>
+
+                <span :if={
+                  code not in ["EXT", "CUSTOM"] or (code == "EXT" and @tournament.archived_at)
+                }>
                   {format_tb(Map.get(entry.tiebreaks, code, 0.0))}
                 </span>
               </td>
@@ -1372,6 +1400,21 @@ defmodule PairingsEngineWeb.StandingsLive do
   end
 
   defp tb_name(code), do: (Tiebreaks.get(code) || %{name: code}).name
+
+  # A column heading's tooltip: the name, or for the custom formula the
+  # formula itself, marked as not FIDE's.
+  defp tb_title("CUSTOM", tournament), do: Custom.label(tournament.custom_tiebreak)
+  defp tb_title(code, _tournament), do: tb_name(code)
+
+  # One player's working for the custom formula, term by term:
+  # "-1 x Forfeit losses (2) = -2".
+  defp custom_working(entry) do
+    Custom.working_text(
+      Map.get(entry, :custom_working, []),
+      Map.get(entry.tiebreaks, "CUSTOM", 0.0),
+      &Custom.figure_text/1
+    )
+  end
 
   attr :tournament, :map, required: true
   attr :entries, :list, required: true

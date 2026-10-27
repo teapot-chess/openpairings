@@ -105,6 +105,12 @@ the program applies*.
 | TPN/R | Tournament pairing number, reversed | The higher number ranks higher. |
 | EXT | External value | A value calculated outside the program: see below. |
 
+**Your own**
+
+| Code | Name | Meaning |
+| --- | --- | --- |
+| CUSTOM | Custom formula | A tie-break of the tournament's own, built from figures such as forfeit losses: see [Custom tie-break formula](#custom-tie-break-formula). Not a FIDE tie-break. |
+
 **Buchholz**
 
 | Code | Name | Meaning |
@@ -287,6 +293,62 @@ outside the program (a number, comma or point as decimal separator; empty
 clears it). A higher value ranks higher. EXT is not a C.07 tie-break and is
 not written to the TRF. The values can be typed until the tournament is
 archived.
+
+## Custom tie-break formula
+
+When the regulations want a tie-break FIDE does not have - "forfeits lost,
+the more the worse" is the usual one - build it as a formula. In the
+builder, pick **CUSTOM - Custom formula (not FIDE)** under *Your own*. The
+builder then shows:
+
+- a warning: *Not a FIDE tie-break - only use it if your tournament
+  regulations name it, with this formula*;
+- three starting points, each with its explanation:
+  - **Forfeits lost (fewer is better)**, the default: −1 × forfeit losses,
+    higher is better. Of two players level on everything above it, the one
+    who failed to turn up less often goes first. Byes and games lost at the
+    board do not count.
+  - **Forfeits won count for you**: +1 × forfeit wins, higher is better.
+    The other way round, for regulations that want a forfeit win rewarded.
+  - **Your own formula**: an empty one to fill in yourself.
+- the formula as rows: a sign (**+** counts for, **−** counts against), a
+  weight (0 to 1000, decimals allowed) and a figure. **Add a figure** adds a
+  row (up to eight); **✕** removes one.
+- **Which total ranks first**: *Higher is better* or *Lower is better*.
+  With a sign per row and a direction for the whole, the same figure can
+  count either way.
+
+The figures are counted from the results: wins, draws and losses over the
+board, games played over the board, forfeit wins, forfeit losses,
+full-point, half-point and zero-point byes (the pairing-allocated bye is a
+figure of its own), pairing-allocated byes received, games played and won
+with Black, unplayed rounds, points, Buchholz and Sonneborn-Berger. The
+formula only multiplies and adds: nothing you type is run as code.
+
+**Add tie-break** puts **CUSTOM** in the list; move it where the
+regulations put it. A tournament has one custom formula, saved with the
+other tie-break settings. When it sits above a FIDE tie-break, the list
+warns that it decides ties before any FIDE tie-break below it.
+
+On the Standings page the column is headed **CUSTOM**, a line above the
+table gives the formula, and pointing at a player's value shows the
+working, term by term (for example *−1 × Forfeit losses (2) = −2*). Prints
+carry the column and the formula under the table. On the results site the
+column is headed CUSTOM, and its name is the formula marked *Custom
+tie-break, not FIDE*; it has no per-round working there, because it is not
+a per-round sum.
+
+The formula travels with the tournament export and import. It is not
+written to the TRF: like **EXT**, it has no code there, so the tie-break
+line lists only the FIDE tie-breaks and the file sent for rating is the
+same as without it. It is for individual standings only; team events do
+not offer it.
+
+> [!FIDE]
+> C.07 leaves the choice of tie-breaks to the tournament regulations,
+> announced in advance, so a custom formula does not take the tournament
+> out of FIDE mode. Once round 1 is paired the formula is locked with the
+> list, exactly like the other tie-breaks.
 
 ## Prize places
 

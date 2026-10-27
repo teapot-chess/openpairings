@@ -257,6 +257,12 @@ defmodule PairingsEngine.Tournaments.Tournament do
     field :presence_on_allocated_bye, :boolean, default: false
     field :tiebreaks, {:array, :string}, default: []
 
+    # The tournament's own tie-break, read when `CUSTOM` is on the list: a
+    # weighted sum of per-player figures (`PairingsEngine.Tiebreaks.Custom`,
+    # which also says the shape). Data, never code - nothing in it is run.
+    # nil until somebody builds one.
+    field :custom_tiebreak, :map
+
     # What a player without a rating counts as in the rating-based tie-breaks
     # (C.07 Article 10: ARO and its cuts, TPR, PTP, APRO, APPO, RTNG). nil, the
     # default, is Article 10's own answer: with an unrated player present
@@ -1448,6 +1454,7 @@ defmodule PairingsEngine.Tournaments.Tournament do
       :postponed_report_name,
       :postponed_fide_tournament_id,
       :tiebreaks,
+      :custom_tiebreak,
       :tiebreak_unrated_rating,
       :tiebreak_unrated_method,
       :chess960,
@@ -1540,6 +1547,9 @@ defmodule PairingsEngine.Tournaments.Tournament do
     |> validate_inclusion(:initial_order_tiebreak, @initial_order_tiebreaks)
     |> validate_inclusion(:late_entry_numbering, @late_entry_numberings)
     |> validate_inclusion(:tiebreak_unrated_method, ~w(fixed lowest average))
+    # Whatever arrives - a form, a file, a phone - is boiled down to the
+    # formula's own shape; nothing else is ever stored.
+    |> update_change(:custom_tiebreak, &PairingsEngine.Tiebreaks.Custom.normalize/1)
     |> validate_number(:tiebreak_unrated_rating,
       greater_than_or_equal_to: 0,
       less_than_or_equal_to: 4000

@@ -88,8 +88,11 @@ would actually be moved by one of them. See
 Things that FIDE's own regulations allow are not departures and do not
 change the mode: other point values for a win, draw and loss (as long as no
 game scores less than a lesser result), a half-point bye, extra points,
-the choice of tie-breaks, forbidden pairings and pairing rules set before
-round 1 is paired (C.05 5.2), a hand-set standings order, and changing the
+the choice of tie-breaks (a [custom tie-break
+formula](08-standings-and-tiebreaks.md#custom-tie-break-formula) included,
+as long as the regulations name it; it is marked *custom* wherever it
+appears and locks with the list), forbidden pairings and pairing rules set
+before round 1 is paired (C.05 5.2), a hand-set standings order, and changing the
 boards of a round by hand ([Pairing a round](06-pairing.md): hand edits are
 a manual pairing alteration that the regulations foresee, so they do not end
 FIDE mode; a difference from the pairing checker is recorded in the report

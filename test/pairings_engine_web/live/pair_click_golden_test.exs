@@ -99,6 +99,10 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
   With that key taken out the regenerated file is equal, term for term, to
   the one before.
 
+  And for the custom tie-break formula (custom-tiebreak): every JSON export
+  gains `tournament.custom_tiebreak` (nil). With that key taken out the
+  regenerated file is equal, term for term, to the one before.
+
   And by hand when the engine choice went: `tournament.pairing_engine` taken out
   of the three JSON exports, the only place it appeared. Every other term,
   the pairings included, is the file as it was.
