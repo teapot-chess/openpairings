@@ -472,6 +472,7 @@ naam tegen elkaar gespeeld. Het programma noemt dit een
 | Paren met een andere speler die niet speelt… | Paart twee spelers van de lijst *Lijst met niet-spelenden* op een nieuw bord; je kiest het tafelnummer. |
 | De door de paring toegekende bye geven | Geeft een speler van de lijst *Lijst met niet-spelenden* de door de paring toegekende bye, gescoord zoals ingesteld op de pagina Puntentelling. |
 | Een bye toekennen aan de overblijvende speler | Geeft de bye aan de speler die alleen op een bord is overgebleven, nadat de tegenstander is verwijderd. |
+| Spelerskaart | Opent de kaart van de speler, dezelfde als op de pagina Spelers: elke partij met tegenstander, kleur, uitslag en tussenstand. Er verandert niets. |
 | Dit bord verwijderen… | Verwijdert een leeg bord (een volledig leeggemaakt bord kan worden verborgen en weer zichtbaar gemaakt). |
 
 Een bord waar niemand meer aan zit, is geen partij en wacht niet op een uitslag:

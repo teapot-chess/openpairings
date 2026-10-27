@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Feature] **Right-click a player for their Players Card, on Pairings and on Standings.** On the Pairings page it is the third item of the seat menu (and in the menu of the *Not playing* list); on the Standings page a player's name now opens a small menu of its own, with the same keyboard keys and tap as the Pairings seats, and a way to the Players list. It is the card the Players page already had, now one shared piece rather than a copy per page. A team standings table has no card to open, so it keeps no menu; the individual ranking of a team tournament does.
+
 ## [0.109.0] - 2026-10-26
 
 - [Fix] **A team's edit form keeps what you type, and stays open.** The same lapse the *Add a team* form had: a redraw of the page put every field back to the saved team and folded the form shut, mid-sentence. Each team now keeps its own draft until you save it.

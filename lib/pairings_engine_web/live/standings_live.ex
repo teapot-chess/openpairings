@@ -1,6 +1,7 @@
 defmodule PairingsEngineWeb.StandingsLive do
   use PairingsEngineWeb, :live_view
 
+  alias PairingsEngineWeb.PlayerCardComponents
   alias PairingsEngineWeb.PublicLink
 
   alias PairingsEngine.{
@@ -49,7 +50,10 @@ defmodule PairingsEngineWeb.StandingsLive do
        team_view: :teams,
        selected_series: nil,
        series_labels: [],
-       player_ranking: []
+       player_ranking: [],
+       menu: nil,
+       card_player_id: nil,
+       card_entries: []
      )
      |> reload_standings()}
   end
@@ -236,6 +240,61 @@ defmodule PairingsEngineWeb.StandingsLive do
   # Display panel already persists to, so ticking/unticking a column
   # there is reflected here too, without a second, separate preference to
   # keep in sync by hand.
+  # The row menu. The `PairingMenu` hook of the Pairings page opens it (right
+  # click, the context-menu key, Shift+F10, Enter or Space on the name, a tap
+  # on a touch screen) and `HandEditMenu` walks it; both are reused as they
+  # are, so this page answers the same `open_menu` / `close_menu` events.
+  # The payload is the hook's, so it is checked rather than trusted.
+  def handle_event("open_menu", %{"scope" => "standing"} = params, socket) do
+    case PlayerCardComponents.parse_id(params["player-id"]) do
+      nil ->
+        {:noreply, socket}
+
+      player_id ->
+        {:noreply,
+         assign(socket,
+           menu: %{
+             x: menu_coord(params["x"]),
+             y: menu_coord(params["y"]),
+             player_id: player_id,
+             keyboard: params["keyboard"] in [true, "true"]
+           }
+         )}
+    end
+  end
+
+  def handle_event("open_menu", _params, socket), do: {:noreply, socket}
+  def handle_event("close_menu", _params, socket), do: {:noreply, assign(socket, menu: nil)}
+
+  # The Players Card, the one the Players list and the Pairings page open.
+  def handle_event("show_card", %{"player-id" => id}, socket) do
+    case PlayerCardComponents.parse_id(id) do
+      nil ->
+        {:noreply, assign(socket, menu: nil)}
+
+      player_id ->
+        {:noreply,
+         assign(socket,
+           menu: nil,
+           card_player_id: player_id,
+           card_entries: PlayerCardComponents.entries(socket.assigns.tournament)
+         )}
+    end
+  end
+
+  def handle_event("show_card", _params, socket), do: {:noreply, socket}
+
+  def handle_event("close_card", _params, socket) do
+    {:noreply, assign(socket, card_player_id: nil, card_entries: [])}
+  end
+
+  def handle_event("card_prev", _params, socket), do: {:noreply, step_card(socket, -1)}
+  def handle_event("card_next", _params, socket), do: {:noreply, step_card(socket, 1)}
+
+  def handle_event("open_in_players", _params, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/t/#{socket.assigns.tournament.id}/players")}
+  end
+
   def handle_event("columns_loaded", %{"columns" => columns}, socket) when is_list(columns) do
     {:noreply, assign(socket, visible: columns)}
   end
@@ -1047,7 +1106,7 @@ defmodule PairingsEngineWeb.StandingsLive do
         phx-hook="ColumnPrefs"
       >
         <% display_entries = @filtered_entries || @entries %>
-        <table class="pe-table">
+        <table class="pe-table" id="standings-grid" phx-hook="PairingsEngineWeb.PairingsLive.PairingMenu">
           <thead>
             <tr>
               <th class="num">
@@ -1125,7 +1184,12 @@ defmodule PairingsEngineWeb.StandingsLive do
           </thead>
 
           <tbody>
-            <tr :for={entry <- display_entries}>
+            <tr
+              :for={entry <- display_entries}
+              id={"standing-row-#{entry.player.id}"}
+              data-scope="standing"
+              data-player-id={entry.player.id}
+            >
               <% place =
                 Map.get(entry, :category_place) || Standings.shown_rank_label(entry, @tournament) %> <% prize? =
                 !Map.get(entry, :c05_uncounted) && @selected_category &&
@@ -1138,7 +1202,14 @@ defmodule PairingsEngineWeb.StandingsLive do
               </td>
 
               <td>
-                <strong>
+                <strong
+                  id={"standing-name-#{entry.player.id}"}
+                  role="button"
+                  tabindex="0"
+                  aria-haspopup="menu"
+                  data-seat
+                  title={gettext("Right-click for the Players Card")}
+                >
                   {if entry.player.title != "", do: "#{entry.player.title} "}{entry.player.name}
                 </strong>
 
@@ -1257,7 +1328,7 @@ defmodule PairingsEngineWeb.StandingsLive do
 
       <div :if={@entries != [] and @keizer?} class="card table-card">
         <% display_entries = @filtered_entries || @entries %>
-        <table class="pe-table">
+        <table class="pe-table" id="keizer-grid" phx-hook="PairingsEngineWeb.PairingsLive.PairingMenu">
           <thead>
             <tr>
               <th class="num">
@@ -1295,7 +1366,12 @@ defmodule PairingsEngineWeb.StandingsLive do
           </thead>
 
           <tbody>
-            <tr :for={entry <- display_entries}>
+            <tr
+              :for={entry <- display_entries}
+              id={"standing-row-#{entry.player.id}"}
+              data-scope="standing"
+              data-player-id={entry.player.id}
+            >
               <% place = Map.get(entry, :category_place) || entry.rank %> <% prize? =
                 @selected_category && Categories.prize_place?(@tournament, @selected_category, place) %>
               <td class={["num", prize? && "pe-cat-place is-prize"]}>
@@ -1303,7 +1379,14 @@ defmodule PairingsEngineWeb.StandingsLive do
               </td>
 
               <td>
-                <strong>
+                <strong
+                  id={"standing-name-#{entry.player.id}"}
+                  role="button"
+                  tabindex="0"
+                  aria-haspopup="menu"
+                  data-seat
+                  title={gettext("Right-click for the Players Card")}
+                >
                   {if entry.player.title != "", do: "#{entry.player.title} "}{entry.player.name}
                 </strong>
 
@@ -1349,6 +1432,14 @@ defmodule PairingsEngineWeb.StandingsLive do
           "Keizer points, not FIDE tiebreaks - the whole ladder is recalculated from results, byes and absences every time (see docs/pairing-systems.md)."
         )}
       </p>
+
+      <.player_menu :if={@menu} menu={@menu} tournament={@tournament} />
+      <PlayerCardComponents.player_card_modal
+        :if={@card_player_id}
+        entry={Map.get(PlayerCardComponents.by_id(@card_entries), @card_player_id)}
+        by_id={PlayerCardComponents.by_id(@card_entries)}
+        tournament={@tournament}
+      />
     </Layouts.app>
     """
   end
@@ -1687,7 +1778,7 @@ defmodule PairingsEngineWeb.StandingsLive do
         {gettext("No games played yet.")}
       </p>
 
-      <table :if={@ranking != []} class="pe-table">
+      <table :if={@ranking != []} class="pe-table" id="player-ranking-grid" phx-hook="PairingsEngineWeb.PairingsLive.PairingMenu">
         <caption class="sr-only">{gettext("Individual ranking")}</caption>
 
         <thead>
@@ -1711,10 +1802,26 @@ defmodule PairingsEngineWeb.StandingsLive do
         </thead>
 
         <tbody>
-          <tr :for={row <- @ranking} id={"player-ranking-#{row.player.id}"}>
+          <tr
+            :for={row <- @ranking}
+            id={"player-ranking-#{row.player.id}"}
+            data-scope="standing"
+            data-player-id={row.player.id}
+          >
             <td class="num">{row.rank}</td>
 
-            <td><strong>{row.player.name}</strong></td>
+            <td>
+              <strong
+                id={"ranking-name-#{row.player.id}"}
+                role="button"
+                tabindex="0"
+                aria-haspopup="menu"
+                data-seat
+                title={gettext("Right-click for the Players Card")}
+              >
+                {row.player.name}
+              </strong>
+            </td>
 
             <td class="num">{if row.rating > 0, do: row.rating, else: "-"}</td>
 
@@ -1739,6 +1846,57 @@ defmodule PairingsEngineWeb.StandingsLive do
           {gettext("Print")}
         </.link>
       </p>
+    </div>
+    """
+  end
+
+  defp menu_coord(value) when is_integer(value), do: max(value, 0)
+  defp menu_coord(value) when is_float(value), do: value |> round() |> max(0)
+  defp menu_coord(_value), do: 0
+
+  defp step_card(socket, delta) do
+    %{card_entries: entries, card_player_id: current} = socket.assigns
+    assign(socket, card_player_id: PlayerCardComponents.adjacent_id(entries, current, delta))
+  end
+
+  # The row menu, drawn the way the Pairings page draws its seat menu (same
+  # classes, same `HandEditMenu` hook for focus and the arrow keys).
+  attr :menu, :map, required: true
+  attr :tournament, :map, required: true
+
+  defp player_menu(assigns) do
+    ~H"""
+    <div class="ctx-backdrop" phx-click="close_menu" phx-window-keydown="close_menu" phx-key="escape">
+      <div
+        class="ctx-menu"
+        id="standings-player-menu"
+        role="menu"
+        aria-label={gettext("Player")}
+        style={"left: #{@menu.x}px; top: #{@menu.y}px"}
+        phx-click-away="close_menu"
+        phx-hook="PairingsEngineWeb.PairingsLive.HandEditMenu"
+        data-keyboard={@menu.keyboard}
+        data-transient-menu
+      >
+        <button
+          type="button"
+          role="menuitem"
+          id="menu-players-card"
+          phx-click="show_card"
+          phx-value-player-id={@menu.player_id}
+        >
+          {gettext("Players Card")}
+        </button>
+
+        <button
+          type="button"
+          role="menuitem"
+          id="menu-open-players"
+          phx-click="open_in_players"
+        >
+          {gettext("Open the Players list")}
+        </button>
+      </div>
     </div>
     """
   end

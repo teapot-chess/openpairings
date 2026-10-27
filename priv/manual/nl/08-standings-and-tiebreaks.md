@@ -30,6 +30,13 @@ instelling *Spelers die nog gelijk staan delen een plaats* (Instellingen, Tiebre
 - **Afdrukken** opent de stand als document; **Publieke pagina** opent de
   gepubliceerde pagina van een gepubliceerd toernooi.
 
+- **Rechtsklik op een speler** (of druk op de toets voor het contextmenu of
+  Shift+F10 op de naam, of tik erop op een aanraakscherm) voor een klein menu:
+  **Spelerskaart** opent dezelfde kaart als de pagina Spelers en de pagina
+  Paringen, en **Open de lijst met spelers** gaat naar de pagina Spelers. Dat
+  werkt ook op de individuele ranglijst van een teamtoernooi; de teamtabel heeft
+  geen kaart, dus ook geen menu.
+
 De stand wordt elke keer opnieuw berekend uit de partijen wanneer dat nodig is, dus
 ze loopt altijd gelijk met de resultaten.
 
