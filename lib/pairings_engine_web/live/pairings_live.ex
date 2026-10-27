@@ -5,6 +5,7 @@ defmodule PairingsEngineWeb.PairingsLive do
 
   alias PairingsEngineWeb.ByePreferenceText
   alias PairingsEngineWeb.LateEntryNotice
+  alias PairingsEngineWeb.PlayerCardComponents
   alias PairingsEngineWeb.PublicLink
   alias PairingsEngineWeb.Components.PhoneQr
   alias PairingsEngineWeb.DeskActions
@@ -173,6 +174,8 @@ defmodule PairingsEngineWeb.PairingsLive do
        # waiting to be told WHICH vacancy to fill; `confirm` is the staged
        # change, and the only one of these that can write anything.
        menu: nil,
+       card_player_id: nil,
+       card_entries: [],
        swap_first: nil,
        pool_first: nil,
        seat_pick: nil,
@@ -1822,6 +1825,33 @@ defmodule PairingsEngineWeb.PairingsLive do
 
   def handle_event("close_menu", _params, socket), do: {:noreply, assign(socket, menu: nil)}
 
+  # The Players Card, the same one the Players list opens (`PlayerCardComponents`).
+  # Read-only, so it needs no confirmation and touches no gesture state. The
+  # standings behind it are read when the card opens, not on every render.
+  def handle_event("show_card", %{"player-id" => id}, socket) do
+    case PlayerCardComponents.parse_id(id) do
+      nil ->
+        {:noreply, assign(socket, menu: nil)}
+
+      player_id ->
+        {:noreply,
+         assign(socket,
+           menu: nil,
+           card_player_id: player_id,
+           card_entries: PlayerCardComponents.entries(socket.assigns.tournament)
+         )}
+    end
+  end
+
+  def handle_event("show_card", _params, socket), do: {:noreply, socket}
+
+  def handle_event("close_card", _params, socket) do
+    {:noreply, assign(socket, card_player_id: nil, card_entries: [])}
+  end
+
+  def handle_event("card_prev", _params, socket), do: {:noreply, step_card(socket, -1)}
+  def handle_event("card_next", _params, socket), do: {:noreply, step_card(socket, 1)}
+
   # Arming says so out loud as well as in the banner: a screen reader has no
   # other way to learn that the next seat it presses Enter on is the swap.
   def handle_event("arm_swap", %{"player-id" => id}, socket) do
@@ -2691,6 +2721,11 @@ defmodule PairingsEngineWeb.PairingsLive do
   # nil when the payload names no id, the id when it is a whole number, and
   # :error for anything else - which `open_menu` refuses rather than passing
   # a non-id on to the menu's buttons.
+  defp step_card(socket, delta) do
+    %{card_entries: entries, card_player_id: current} = socket.assigns
+    assign(socket, card_player_id: PlayerCardComponents.adjacent_id(entries, current, delta))
+  end
+
   defp menu_id(nil), do: nil
   defp menu_id(""), do: nil
   defp menu_id(value) when is_integer(value), do: value
@@ -6014,6 +6049,16 @@ defmodule PairingsEngineWeb.PairingsLive do
             >
               {gettext("Mark absent for this round")}
             </button>
+
+            <button
+              type="button"
+              role="menuitem"
+              id="menu-players-card"
+              phx-click="show_card"
+              phx-value-player-id={@menu.player_id}
+            >
+              {gettext("Players Card")}
+            </button>
           <% "pool" -> %>
             <button
               type="button"
@@ -6041,6 +6086,16 @@ defmodule PairingsEngineWeb.PairingsLive do
               phx-value-player-id={@menu.player_id}
             >
               {gettext("Pair with another player who isn't playing…")}
+            </button>
+
+            <button
+              type="button"
+              role="menuitem"
+              id="menu-players-card"
+              phx-click="show_card"
+              phx-value-player-id={@menu.player_id}
+            >
+              {gettext("Players Card")}
             </button>
 
             <button
@@ -8131,6 +8186,12 @@ defmodule PairingsEngineWeb.PairingsLive do
         round={@round}
         tournament={@tournament}
         pool={@round_pool}
+      />
+      <PlayerCardComponents.player_card_modal
+        :if={@card_player_id}
+        entry={Map.get(PlayerCardComponents.by_id(@card_entries), @card_player_id)}
+        by_id={PlayerCardComponents.by_id(@card_entries)}
+        tournament={@tournament}
       />
       <div :if={@confirm} class="pe-modal" phx-window-keydown="cancel_confirm" phx-key="escape">
         <div

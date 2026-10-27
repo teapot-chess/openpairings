@@ -440,6 +440,7 @@ name. The program calls it a
 | Pair with another player who isn't playing… | Pairs two players of the *Not playing* list on a new board; you choose the table number. |
 | Give the pairing-allocated bye | Gives a player of the *Not playing* list the pairing-allocated bye, scored as set on the Scoring page. |
 | Award a bye to the remaining player | Gives the bye to the player left alone on a board whose opponent was removed. |
+| Players Card | Opens the player's card, the same one the Players page opens: every game with opponent, colour, result and running score. It changes nothing. |
 | Delete this board… | Removes an empty board (a fully-vacated board can be hidden and un-hidden). |
 
 A board with nobody left on it is not a game and does not wait for a result:

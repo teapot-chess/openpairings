@@ -28,6 +28,12 @@ setting *Players still level share a place* (Settings, Tie-breaks, advanced) say
 - **Print** opens the standings as a document; **Public page** opens the
   published page of a published tournament.
 
+- **Right-click a player** (or press the context-menu key or Shift+F10 on the
+  name, or tap it on a touch screen) for a small menu: **Players Card** opens
+  the same card the Players page and the Pairings page open, and **Open the
+  Players list** goes to the Players page. The same works on the individual
+  ranking of a team tournament; the team table has no card, so no menu.
+
 The standings are recalculated from the games every time they are needed, so
 they are always in step with the results.
 
