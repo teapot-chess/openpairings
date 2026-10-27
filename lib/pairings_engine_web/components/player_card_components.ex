@@ -41,7 +41,6 @@ defmodule PairingsEngineWeb.PlayerCardComponents do
     end
   end
 
-
   attr :entry, :map, default: nil
   attr :by_id, :map, required: true
   attr :tournament, :map, required: true

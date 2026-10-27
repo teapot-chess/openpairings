@@ -1122,7 +1122,11 @@ defmodule PairingsEngineWeb.StandingsLive do
         phx-hook="ColumnPrefs"
       >
         <% display_entries = @filtered_entries || @entries %>
-        <table class="pe-table" id="standings-grid" phx-hook="PairingsEngineWeb.PairingsLive.PairingMenu">
+        <table
+          class="pe-table"
+          id="standings-grid"
+          phx-hook="PairingsEngineWeb.PairingsLive.PairingMenu"
+        >
           <thead>
             <tr>
               <th class="num">
@@ -1821,7 +1825,12 @@ defmodule PairingsEngineWeb.StandingsLive do
         {gettext("No games played yet.")}
       </p>
 
-      <table :if={@ranking != []} class="pe-table" id="player-ranking-grid" phx-hook="PairingsEngineWeb.PairingsLive.PairingMenu">
+      <table
+        :if={@ranking != []}
+        class="pe-table"
+        id="player-ranking-grid"
+        phx-hook="PairingsEngineWeb.PairingsLive.PairingMenu"
+      >
         <caption class="sr-only">{gettext("Individual ranking")}</caption>
 
         <thead>
