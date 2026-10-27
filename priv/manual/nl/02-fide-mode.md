@@ -95,8 +95,11 @@ zou verschuiven. Zie [Byes en afwezigheid](05-byes-and-absences.md) en
 Zaken die de eigen FIDE-regels toestaan, zijn geen afwijkingen en veranderen de
 modus niet: andere puntwaarden voor winst, remise en verlies (zolang geen
 partij minder oplevert dan een lager resultaat), een halvepuntsbye, extra
-punten, de keuze van tiebreaks, verboden paringen en paringsregels die vóór het
-paren van ronde 1 zijn ingesteld (C.05 5.2), een met de hand vastgestelde
+punten, de keuze van tiebreaks (een [eigen
+tiebreakformule](08-standings-and-tiebreaks.md#custom-tie-break-formula)
+inbegrepen, zolang het reglement hem noemt; hij is overal gemarkeerd als
+*eigen* en is samen met de lijst vergrendeld), verboden paringen en
+paringsregels die vóór het paren van ronde 1 zijn ingesteld (C.05 5.2), een met de hand vastgestelde
 rangschikking, en
 het met de hand wijzigen van de borden van een ronde ([Een ronde paren](06-pairing.md):
 handmatige wijzigingen zijn een handmatige aanpassing van de paring die de

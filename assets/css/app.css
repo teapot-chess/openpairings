@@ -9215,6 +9215,67 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; opacity: 0.6;
 .tb-preview code { font-weight: 700; }
 .tb-add-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .tb-add:disabled { opacity: .5; cursor: not-allowed; }
+
+/* the custom formula: the tournament's own tie-break, never FIDE's */
+.tb-custom { display: flex; flex-direction: column; gap: 12px; }
+.tb-custom-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  color: var(--warn);
+  font-size: 13px;
+}
+.tb-list .tb-custom-warning { margin-top: 4px; }
+.tb-custom-warning-icon { width: 18px; height: 18px; flex: none; }
+.tb-custom-presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.tb-custom-preset {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.tb-custom-preset:hover { border-color: var(--accent); transform: translateY(-1px); }
+.tb-custom-preset.is-on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.tb-custom-preset-name { font-weight: 600; font-size: 14px; }
+.tb-custom-preset-text { font-size: 12.5px; color: var(--text-soft); line-height: 1.45; }
+.tb-custom-terms { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.tb-custom-term { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tb-custom-sign { min-width: 36px; padding: 6px 10px; font-weight: 700; }
+.tb-custom-weight { width: 5.5em !important; text-align: right; }
+.tb-custom-times { color: var(--text-soft); }
+.tb-custom-figure { width: auto !important; max-width: 100%; flex: 1 1 14em; }
+.tb-custom-remove { padding: 2px 9px; font-size: 13px; }
+.tb-custom-add-term { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; }
+.tb-custom-plus { width: 16px; height: 16px; }
+.tb-custom-formula { margin: 0; padding: 8px 10px; border-radius: 6px; background: rgba(127, 127, 127, .08); font-size: 14px; }
+.tb-custom-formula code { font-weight: 700; }
+.tb-custom-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+  color: var(--warn);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
 @media (prefers-reduced-motion: reduce) {
-  .tb-seg-btn { transition: none; }
+  .tb-seg-btn, .tb-custom-preset { transition: none; }
+  .tb-custom-preset:hover { transform: none; }
 }

@@ -15,7 +15,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
   import PairingsEngineWeb.SettingsSupport
 
   alias PairingsEngine.{Tournaments, Tiebreaks}
-  alias PairingsEngine.Tiebreaks.Builder
+  alias PairingsEngine.Tiebreaks.{Builder, Custom}
 
   # SWAR §5.22 Tie-break Presets (TB_PERSONEL) - see the original SettingsLive
   # for the best-effort mapping rationale onto our own catalogue codes.
@@ -43,6 +43,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
        page_title: "#{tournament.name} · " <> gettext("Tie-breaks"),
        tiebreaks: tournament.tiebreaks,
        tb_state: Builder.initial(tournament.type),
+       custom_formula: tournament.custom_tiebreak || Custom.default(),
        fide_locked: Tournaments.fide_locked_fields(tournament),
        note: nil,
        error: nil,
@@ -72,6 +73,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
          assign(socket,
            tournament: tournament,
            tiebreaks: tournament.tiebreaks,
+           custom_formula: tournament.custom_tiebreak || Custom.default(),
            fide_locked: Tournaments.fide_locked_fields(tournament),
            stale: false
          )}
@@ -128,6 +130,63 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
     end
   end
 
+  # The custom formula: a preset, a direction, and rows of figure, sign and
+  # weight. Every event hands back a formula `Custom.normalize/1` has been
+  # over, so the page never shows one that would not be stored as shown.
+  def handle_event("cf_preset", %{"preset" => preset}, socket),
+    do: {:noreply, assign(socket, custom_formula: Custom.preset(preset), note: nil)}
+
+  def handle_event("cf_direction", %{"direction" => direction}, socket),
+    do: {:noreply, cf_update(socket, &Map.put(&1, "direction", direction))}
+
+  def handle_event("cf_sign", %{"index" => index, "sign" => sign}, socket) do
+    i = String.to_integer(index)
+    {:noreply, cf_update(socket, &update_term(&1, i, fn t -> Map.put(t, "sign", sign) end))}
+  end
+
+  def handle_event("cf_add_term", _params, socket) do
+    term = %{"figure" => "forfeit_losses", "sign" => "-", "weight" => 1.0}
+
+    {:noreply,
+     cf_update(socket, fn f ->
+       if length(f["terms"]) < Custom.max_terms(),
+         do: Map.update!(f, "terms", &(&1 ++ [term])),
+         else: f
+     end)}
+  end
+
+  def handle_event("cf_remove_term", %{"index" => index}, socket) do
+    i = String.to_integer(index)
+
+    {:noreply,
+     cf_update(socket, &Map.update!(&1, "terms", fn terms -> List.delete_at(terms, i) end))}
+  end
+
+  # A row's figure or weight. Reads whichever `cf_figure_N` / `cf_weight_N`
+  # arrived; a weight that is not (yet) a number keeps the one before it.
+  def handle_event("cf_terms", params, socket) do
+    {:noreply,
+     cf_update(socket, fn f ->
+       terms =
+         f["terms"]
+         |> Enum.with_index()
+         |> Enum.map(fn {t, i} ->
+           t =
+             case params["cf_figure_#{i}"] do
+               nil -> t
+               figure -> Map.put(t, "figure", figure)
+             end
+
+           case Custom.weight(params["cf_weight_#{i}"]) do
+             {:ok, w} -> Map.put(t, "weight", w)
+             :error -> t
+           end
+         end)
+
+       Map.put(f, "terms", terms)
+     end)}
+  end
+
   def handle_event("tb_reset", _params, socket) do
     {:noreply,
      assign(socket, tiebreaks: Tiebreaks.fide_defaults_for(socket.assigns.tournament), note: nil)}
@@ -156,6 +215,16 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
         do: params,
         else: Map.put(params, "tiebreaks", socket.assigns.tiebreaks)
 
+    # The formula goes with the list, under the same FIDE-mode lock - and
+    # only once somebody has used it, so a tournament that never built one
+    # does not gain a default formula by being saved.
+    params =
+      if :custom_tiebreak in socket.assigns.fide_locked or
+           ("CUSTOM" not in socket.assigns.tiebreaks and
+              is_nil(socket.assigns.tournament.custom_tiebreak)),
+         do: params,
+         else: Map.put(params, "custom_tiebreak", socket.assigns.custom_formula)
+
     base = Tournaments.get_tournament!(socket.assigns.tournament.id)
 
     case Tournaments.update_tournament(base, params) do
@@ -166,6 +235,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
          assign(socket,
            tournament: tournament,
            tiebreaks: tournament.tiebreaks,
+           custom_formula: tournament.custom_tiebreak || socket.assigns.custom_formula,
            fide_locked: Tournaments.fide_locked_fields(tournament),
            note: gettext("Saved."),
            error: nil,
@@ -179,6 +249,23 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
   end
 
   ## ---------- helpers ----------
+
+  defp cf_update(socket, fun) do
+    before = Custom.normalize(socket.assigns.custom_formula)
+    formula = socket.assigns.custom_formula |> fun.() |> Custom.normalize()
+
+    # Any edit by hand makes it the arbiter's own formula, whatever preset
+    # it started from - the preset's explanation no longer describes it.
+    formula = if formula == before, do: formula, else: Map.put(formula, "preset", "custom")
+
+    assign(socket, custom_formula: formula, note: nil)
+  end
+
+  defp update_term(formula, i, fun) do
+    Map.update!(formula, "terms", fn terms ->
+      if i >= 0 and i < length(terms), do: List.update_at(terms, i, fun), else: terms
+    end)
+  end
 
   defp swap(list, index, delta) do
     target = index + delta
@@ -229,12 +316,14 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
 
   # `{:ok, code}` / `{:error, reason}` for the builder as it stands, with the
   # reason an Add button that cannot be pressed gives.
-  defp tb_candidate(type, state, selected) do
+  defp tb_candidate(type, state, selected, formula) do
     case Builder.compose(type, state) do
       {:ok, code} ->
-        if code in selected,
-          do: {:error, :duplicate, code},
-          else: {:ok, code}
+        cond do
+          code in selected -> {:error, :duplicate, code}
+          code == "CUSTOM" and not Custom.usable?(formula) -> {:error, :empty_formula, code}
+          true -> {:ok, code}
+        end
 
       {:error, :factor} ->
         {:error, :factor, nil}
@@ -245,6 +334,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
   end
 
   defp tb_reason(:duplicate), do: gettext("Already in the list.")
+  defp tb_reason(:empty_formula), do: gettext("Add at least one figure to the formula.")
   defp tb_reason(:factor), do: gettext("The normalising factor is a whole number from 1.")
   defp tb_reason(:invalid), do: gettext("This combination is not a tie-break.")
 
@@ -277,6 +367,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
   defp tb_group_label(:progressive), do: gettext("Progressive score")
   defp tb_group_label(:rating), do: gettext("Rating-based")
   defp tb_group_label(:team), do: gettext("Team events")
+  defp tb_group_label(:custom), do: gettext("Your own")
 
   defp tb_name(code), do: (Tiebreaks.get(code) || %{name: code}).name
   defp tb_desc(code), do: (Tiebreaks.get(code) || %{description: ""}).description
@@ -284,6 +375,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
   attr :state, :map, required: true
   attr :type, :string, required: true
   attr :selected, :list, required: true
+  attr :formula, :map, required: true
 
   # Adding a tie-break in two steps: the family, then only the modifiers it
   # accepts, with the code that comes out shown before it is added. The
@@ -291,7 +383,7 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
   # their own events rather than a form of their own (forms do not nest).
   defp tb_builder(assigns) do
     spec = tb_spec(assigns.type, assigns.state)
-    candidate = tb_candidate(assigns.type, assigns.state, assigns.selected)
+    candidate = tb_candidate(assigns.type, assigns.state, assigns.selected, assigns.formula)
 
     assigns =
       assign(assigns,
@@ -422,6 +514,12 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
         />
       </div>
 
+      <.custom_formula
+        :if={@spec[:custom?]}
+        formula={@formula}
+        in_list?={"CUSTOM" in @selected}
+      />
+
       <div id="tb-preview" class="tb-preview">
         <%= case @candidate do %>
           <% {:ok, code} -> %>
@@ -455,6 +553,160 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
           {tb_reason(elem(@candidate, 1))}
         </span>
       </div>
+    </div>
+    """
+  end
+
+  attr :formula, :map, required: true
+  attr :in_list?, :boolean, required: true
+
+  # The custom formula's editor: what it is not (a FIDE tie-break), the
+  # three presets each with its explanation, the rows, and the direction.
+  # Plain controls with their own events, like the rest of the builder - it
+  # sits inside the settings form.
+  defp custom_formula(assigns) do
+    ~H"""
+    <div id="tb-custom" class="tb-custom">
+      <p id="tb-custom-warning" class="tb-custom-warning" role="note">
+        <.icon name="hero-exclamation-triangle" class="tb-custom-warning-icon" />
+        <span>
+          {gettext(
+            "Not a FIDE tie-break - only use it if your tournament regulations name it, with this formula."
+          )}
+        </span>
+      </p>
+
+      <div class="tb-field">
+        <span class="tb-field-label">{gettext("Start from")}</span>
+        <div class="tb-custom-presets">
+          <button
+            :for={id <- Custom.preset_ids()}
+            type="button"
+            id={"tb-custom-preset-#{id}"}
+            class={["tb-custom-preset", @formula["preset"] == id && "is-on"]}
+            aria-pressed={to_string(@formula["preset"] == id)}
+            phx-click="cf_preset"
+            phx-value-preset={id}
+          >
+            <span class="tb-custom-preset-name">{elem(Custom.preset_text(id), 0)}</span>
+            <span class="tb-custom-preset-text" id={"tb-custom-explanation-#{id}"}>
+              {elem(Custom.preset_text(id), 1)}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="tb-field">
+        <span class="tb-field-label">{gettext("Formula")}</span>
+        <ol id="tb-custom-terms" class="tb-custom-terms">
+          <li
+            :for={{term, i} <- Enum.with_index(@formula["terms"])}
+            id={"tb-custom-term-#{i}"}
+            class="tb-custom-term"
+          >
+            <div class="tb-seg" role="group" aria-label={gettext("Sign")}>
+              <button
+                :for={{sign, text} <- [{"+", "+"}, {"-", "−"}]}
+                type="button"
+                id={"tb-custom-sign-#{i}-#{if sign == "+", do: "plus", else: "minus"}"}
+                class={["tb-seg-btn tb-custom-sign", term["sign"] == sign && "is-on"]}
+                aria-pressed={to_string(term["sign"] == sign)}
+                aria-label={
+                  if sign == "+", do: gettext("counts for"), else: gettext("counts against")
+                }
+                phx-click="cf_sign"
+                phx-value-index={i}
+                phx-value-sign={sign}
+              >
+                {text}
+              </button>
+            </div>
+
+            <input
+              type="text"
+              inputmode="decimal"
+              id={"tb-custom-weight-#{i}"}
+              name={"cf_weight_#{i}"}
+              class="pe-input tb-custom-weight"
+              value={Custom.format_number(term["weight"])}
+              phx-change="cf_terms"
+              phx-debounce="300"
+              aria-label={gettext("Weight")}
+              onkeydown="if (event.key === 'Enter') event.preventDefault()"
+            />
+            <span class="tb-custom-times" aria-hidden="true">×</span>
+            <select
+              id={"tb-custom-figure-#{i}"}
+              name={"cf_figure_#{i}"}
+              class="pe-select tb-custom-figure"
+              phx-change="cf_terms"
+              aria-label={gettext("Figure")}
+            >
+              <option
+                :for={{id, _label} <- Custom.figures()}
+                value={id}
+                selected={term["figure"] == id}
+              >
+                {Custom.figure_text(id)}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              id={"tb-custom-remove-#{i}"}
+              class="pe-btn tb-custom-remove"
+              title={gettext("Remove")}
+              aria-label={gettext("Remove this term")}
+              phx-click="cf_remove_term"
+              phx-value-index={i}
+            >
+              ✕
+            </button>
+          </li>
+        </ol>
+
+        <button
+          :if={length(@formula["terms"]) < Custom.max_terms()}
+          type="button"
+          id="tb-custom-add-term"
+          class="pe-btn tb-custom-add-term"
+          phx-click="cf_add_term"
+        >
+          <.icon name="hero-plus" class="tb-custom-plus" /> {gettext("Add a figure")}
+        </button>
+      </div>
+
+      <div class="tb-field" id="tb-custom-direction">
+        <span class="tb-field-label">{gettext("Which total ranks first")}</span>
+        <div class="tb-seg" role="group" aria-label={gettext("Which total ranks first")}>
+          <button
+            :for={
+              {dir, text} <- [
+                {"higher", gettext("Higher is better")},
+                {"lower", gettext("Lower is better")}
+              ]
+            }
+            type="button"
+            id={"tb-custom-direction-#{dir}"}
+            class={["tb-seg-btn", @formula["direction"] == dir && "is-on"]}
+            aria-pressed={to_string(@formula["direction"] == dir)}
+            phx-click="cf_direction"
+            phx-value-direction={dir}
+          >
+            {text}
+          </button>
+        </div>
+      </div>
+
+      <p id="tb-custom-formula" class="tb-custom-formula">
+        <code>CUSTOM</code> = {Custom.describe_local(@formula)}
+      </p>
+
+      <p :if={@in_list?} id="tb-custom-in-list" class="hint" style="margin: 0">
+        {gettext(
+          "The formula is already in the list; changes to it are kept when you save the settings."
+        )}
+      </p>
     </div>
     """
   end
@@ -564,9 +816,38 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
                 <li :for={{code, i} <- Enum.with_index(@tiebreaks)}>
                   <span class="tb-order">{i + 1}.</span>
                   <div>
-                    <div class="tb-name">{tb_name(code)}</div>
+                    <div class="tb-name">
+                      {tb_name(code)}
+                      <span :if={code == "CUSTOM"} class="tb-custom-badge">
+                        {gettext("custom")}
+                      </span>
+                    </div>
 
-                    <div class="tb-desc">{tb_desc(code)}</div>
+                    <div :if={code != "CUSTOM"} class="tb-desc">{tb_desc(code)}</div>
+
+                    <div :if={code == "CUSTOM"} id="tb-list-custom-formula" class="tb-desc">
+                      {Custom.describe_local(@custom_formula)}
+                    </div>
+
+                    <div :if={code == "CUSTOM"} id="tb-list-custom-not-fide" class="tb-desc">
+                      {gettext(
+                        "Not a FIDE tie-break - only use it if your tournament regulations name it, with this formula."
+                      )}
+                    </div>
+
+                    <div
+                      :if={code == "CUSTOM" and Tiebreaks.custom_above_fide?(@tiebreaks)}
+                      id="tb-custom-above-fide"
+                      class="tb-custom-warning"
+                      role="note"
+                    >
+                      <.icon name="hero-exclamation-triangle" class="tb-custom-warning-icon" />
+                      <span>
+                        {gettext(
+                          "It decides ties before any FIDE tie-break below it. Move it down unless the regulations put it first."
+                        )}
+                      </span>
+                    </div>
                   </div>
 
                   <%!-- Three glyphs, each named for the tiebreak it acts on: a
@@ -616,7 +897,12 @@ defmodule PairingsEngineWeb.SettingsTiebreaksLive do
                   "No tiebreaks selected - players level on points are ordered by rating and name."
                 )}
               </p>
-              <.tb_builder state={@tb_state} type={@tournament.type} selected={@tiebreaks} />
+              <.tb_builder
+                state={@tb_state}
+                type={@tournament.type}
+                selected={@tiebreaks}
+                formula={@custom_formula}
+              />
               <div class="actions" style="flex-wrap: wrap">
                 <button type="button" class="pe-btn" phx-click="tb_reset">{gettext(
                   "Reset to FIDE default"

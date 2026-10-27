@@ -54,7 +54,10 @@ defmodule PairingsEngine.Tiebreaks.Builder do
        {"APRO", "Average performance rating of opponents", %{}},
        {"APPO", "Average perfect performance of opponents", %{}},
        {"RTNG", "Tournament rating", %{reversed?: true}}
-     ]}
+     ]},
+    # The tournament's own formula. Its modifiers are the formula itself,
+    # held by the page and stored beside the list (`Tiebreaks.Custom`).
+    {:custom, [{"CUSTOM", "Custom formula (not FIDE)", %{custom?: true}}]}
   ]
 
   @team [

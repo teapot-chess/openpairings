@@ -53,7 +53,13 @@ defmodule PairingsEngine.TiebreaksTest do
 
     test "every selectable code computes and none of them is dropped", %{tournament: t} do
       for %{code: code} <- Tiebreaks.selectable() do
-        t = %{t | tiebreaks: [code]}
+        # The custom formula is computed from a formula, and dropped
+        # without one - so it gets the default here.
+        t = %{
+          t
+          | tiebreaks: [code],
+            custom_tiebreak: PairingsEngine.Tiebreaks.Custom.default()
+        }
 
         assert Standings.dropped_tiebreaks(t) == [],
                "#{code} is offered in the picker but dropped by Standings"

@@ -59,7 +59,9 @@ defmodule PairingsEngine.TiebreakTableCodesTest do
         do: TeamStandings.c07_codes(),
         else: AinalramiBridge.codes()
 
-    for %{code: code} <- Tiebreaks.selectable(type), code != "EXT", do: Map.get(c07, code, code)
+    for %{code: code} <- Tiebreaks.selectable(type),
+        not Tiebreaks.own?(code),
+        do: Map.get(c07, code, code)
   end
 
   # A table code as the app stores it: through the alias the app has always

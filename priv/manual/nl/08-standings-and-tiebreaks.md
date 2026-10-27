@@ -116,6 +116,12 @@ onder *Regels die het programma toepast*.
 | TPN/R | Paringsnummer van het toernooi, omgekeerd | Het hogere nummer staat hoger. |
 | EXT | Externe waarde | Een waarde die buiten het programma wordt berekend: zie hieronder. |
 
+**Eigen**
+
+| Code | Naam | Betekenis |
+| --- | --- | --- |
+| CUSTOM | Eigen formule | Een tiebreak van het toernooi zelf, opgebouwd uit gegevens zoals verloren forfaits: zie [Eigen tiebreakformule](#custom-tie-break-formula). Geen FIDE-tiebreak. |
+
 **Buchholz**
 
 | Code | Naam | Betekenis |
@@ -303,6 +309,65 @@ dan een kolom waarin je per speler de buiten het programma berekende waarde invu
 getal, met komma of punt als decimaalteken; leeg wist de waarde). Een hogere waarde
 staat hoger. EXT is geen tiebreak van C.07 en wordt niet in de TRF geschreven. De
 waarden kunnen worden ingevuld tot het toernooi wordt gearchiveerd.
+
+## Eigen tiebreakformule {#custom-tie-break-formula}
+
+Wil het reglement een tiebreak die FIDE niet heeft - "verloren forfaits, hoe
+meer hoe erger" is de gebruikelijke - bouw hem dan als formule. Kies in de
+bouwer **CUSTOM - Custom formula (not FIDE)** onder *Eigen*. De bouwer toont
+dan:
+
+- een waarschuwing: *Geen FIDE-tiebreak - gebruik hem alleen als je
+  toernooireglement hem noemt, met deze formule*;
+- drie vertrekpunten, elk met zijn uitleg:
+  - **Verloren forfaits (minder is beter)**, de standaard: −1 × verloren
+    forfaits, hoger is beter. Van twee spelers die op alles erboven gelijk
+    staan, gaat wie minder vaak niet kwam opdagen voor. Byes en partijen
+    verloren aan het bord tellen niet.
+  - **Gewonnen forfaits tellen voor je**: +1 × gewonnen forfaits, hoger is
+    beter. Andersom, voor reglementen die een gewonnen forfait willen
+    belonen.
+  - **Je eigen formule**: een lege, die je zelf invult.
+- de formule als rijen: een teken (**+** telt mee, **−** telt tegen), een
+  gewicht (0 tot 1000, decimalen mogen) en een gegeven. **Gegeven toevoegen**
+  voegt een rij toe (tot acht); **✕** haalt er een weg.
+- **Welk totaal eerst komt**: *Hoger is beter* of *Lager is beter*. Met een
+  teken per rij en een richting voor het geheel kan hetzelfde gegeven beide
+  kanten op tellen.
+
+De gegevens worden uit de resultaten geteld: winst-, remise- en
+verliespartijen aan het bord, partijen gespeeld aan het bord, gewonnen
+forfaits, verloren forfaits, byes van een vol punt, een half punt en nul
+punten (de door de paring toegekende bye is een gegeven apart), ontvangen
+byes toegekend door de paring, partijen gespeeld en gewonnen met zwart,
+niet-gespeelde rondes, punten, Buchholz en Sonneborn-Berger. De formule
+vermenigvuldigt en telt op, meer niet: niets wat je typt wordt als code
+uitgevoerd.
+
+**Tiebreak toevoegen** zet **CUSTOM** in de lijst; zet hem waar het reglement
+hem zet. Een toernooi heeft één eigen formule, die met de andere
+tiebreakinstellingen wordt opgeslagen. Staat hij boven een FIDE-tiebreak, dan
+waarschuwt de lijst dat hij gelijke standen beslist vóór elke FIDE-tiebreak
+eronder.
+
+Op de pagina Stand heet de kolom **CUSTOM**, een regel boven de tabel geeft
+de formule, en wie de waarde van een speler aanwijst, ziet de berekening per
+term (bijvoorbeeld *−1 × Verloren forfaits (2) = −2*). Afdrukken hebben de
+kolom en de formule onder de tabel. Op de resultatensite heet de kolom
+CUSTOM, en zijn naam is de formule, gemarkeerd als *Eigen tiebreak, niet van
+FIDE*; daar is er geen berekening per ronde, omdat het geen som per ronde is.
+
+De formule reist mee met de export en import van het toernooi. Hij wordt
+niet in de TRF geschreven: net als **EXT** heeft hij daar geen code, dus de
+tiebreakregel noemt alleen de FIDE-tiebreaks en het bestand dat voor de
+rating wordt verstuurd is hetzelfde als zonder. Hij is er alleen voor de
+individuele stand; teamevenementen bieden hem niet aan.
+
+> [!FIDE]
+> C.07 laat de keuze van de tiebreaks aan het toernooireglement, vooraf
+> aangekondigd, dus een eigen formule haalt het toernooi niet uit de
+> FIDE-modus. Zodra ronde 1 is gepaard, is de formule samen met de lijst
+> vergrendeld, net als de andere tiebreaks.
 
 ## Prijsplaatsen {#prize-places}
 

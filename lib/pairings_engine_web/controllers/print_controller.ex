@@ -1474,7 +1474,8 @@ defmodule PairingsEngineWeb.PrintController do
     main_table =
       "<table><thead><tr>#{standings_head_cells(tournament)}#{rounds_played_header(rds?)}" <>
         "<th class=\"num\">Pts</th>#{extra_points_headers(tournament)}#{tb_headers}#{cat_header}</tr></thead><tbody>#{rows}</tbody></table>" <>
-        uncounted_footnote(entries)
+        uncounted_footnote(entries) <>
+        custom_tiebreak_footnote(tournament)
 
     if has_categories do
       main_table <> category_standings_tables(entries, tournament, rds?)
@@ -1568,6 +1569,19 @@ defmodule PairingsEngineWeb.PrintController do
     if Map.get(e, :c05_uncounted),
       do: " <span class=\"pending\">(#{esc(gettext("withdrawn, not counted"))})</span>",
       else: ""
+  end
+
+  # Under a table with a CUSTOM column, what that column is: the
+  # tournament's own formula, and not FIDE's. A printed list on the wall is
+  # where a player asks "what is CUSTOM", and the arbiter is not always near.
+  defp custom_tiebreak_footnote(tournament) do
+    if "CUSTOM" in (tournament.tiebreaks || []) do
+      "<p id=\"custom-tiebreak-note\" style=\"font-size: 11px; margin-top: 8px;\">" <>
+        "<strong>CUSTOM</strong>: " <>
+        esc(PairingsEngine.Tiebreaks.Custom.label(tournament.custom_tiebreak)) <> "</p>"
+    else
+      ""
+    end
   end
 
   # Under the table that lists such a player, the rule in one sentence.
@@ -2152,7 +2166,8 @@ defmodule PairingsEngineWeb.PrintController do
         "<div class=\"crosstable-wrap\"><table class=\"crosstable\"><thead><tr>" <>
         "<th class=\"num\">#{gettext("Rank")}</th>" <>
         "<th>#{gettext("Name")}</th><th class=\"num\">#{rating_header(tournament)}</th>#{round_headers}<th class=\"num\">Pts</th>#{extra_points_headers(tournament)}#{tb_headers}" <>
-        "</tr></thead><tbody>#{rows}</tbody></table></div>"
+        "</tr></thead><tbody>#{rows}</tbody></table></div>" <>
+        custom_tiebreak_footnote(tournament)
 
     print_page(
       conn,
