@@ -469,7 +469,7 @@ defmodule PairingsEngine.MixProject do
       # `v0.4.0` here against a v0.10.0 upstream is visible at a glance, in
       # a diff and in review. mix.lock still records the resolved commit, so
       # this is no less exact than a SHA was; it is only easier to read.
-      {:ainalrami, github: "teapot-chess/Ainalrami", tag: "v0.46.0"}
+      {:ainalrami, github: "teapot-chess/Ainalrami", tag: "v0.47.0"}
     ] ++ plugin_deps()
   end
 
