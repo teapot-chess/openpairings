@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Performance] **Pairing the rounds that need the whole field is about a fifth faster.** Ainalrami 0.47.0 builds the graph over every pair of the field in under half the time; the slowest known position, 600 players in round 9, drops from 0.91 to 0.73 s. Same pairings to the board: the two builds were run side by side on 39,753 rounds and agreed on every one, which is the only kind of speed-up worth having.
+
 ## [0.110.0] - 2026-10-27
 
 - [Feature] **Right-click a player for their Players Card, on Pairings and on Standings.** On the Pairings page it is the third item of the seat menu (and in the menu of the *Not playing* list); on the Standings page a player's name now opens a small menu of its own, with the same keyboard keys and tap as the Pairings seats, and a way to the Players list. It is the card the Players page already had, now one shared piece rather than a copy per page. A team standings table has no card to open, so it keeps no menu; the individual ranking of a team tournament does.
