@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+## [0.111.0] - 2026-10-30
+
 - [Security] **Two dependency advisories closed.** Phoenix HTML 4.4.0 (advisory EEF-CVE-2026-117645) and Bandit, the web server, in its patched release (EEF-CVE-2026-116078, memory amplification from HTTP/2 bodies sent one byte at a time). Nothing to do on your side.
 
 - [Verified] **Ainalrami 0.48.0, which changes nothing you will see.** The engine learned to write a proof file for each round it pairs, checkable by a separate verifier that owes it nothing. OpenPairings does not ask for one, so the pairings, the speed and the screens are exactly what they were; the proofs are for people who want to audit the engine from the command line.
