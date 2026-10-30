@@ -17,6 +17,10 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Security] **Two dependency advisories closed.** Phoenix HTML 4.4.0 (advisory EEF-CVE-2026-117645) and Bandit, the web server, in its patched release (EEF-CVE-2026-116078, memory amplification from HTTP/2 bodies sent one byte at a time). Nothing to do on your side.
+
+- [Verified] **Ainalrami 0.48.0, which changes nothing you will see.** The engine learned to write a proof file for each round it pairs, checkable by a separate verifier that owes it nothing. OpenPairings does not ask for one, so the pairings, the speed and the screens are exactly what they were; the proofs are for people who want to audit the engine from the command line.
+
 - [Performance] **Pairing the rounds that need the whole field is about a fifth faster.** Ainalrami 0.47.0 builds the graph over every pair of the field in under half the time; the slowest known position, 600 players in round 9, drops from 0.91 to 0.73 s. Same pairings to the board: the two builds were run side by side on 39,753 rounds and agreed on every one, which is the only kind of speed-up worth having.
 
 ## [0.110.0] - 2026-10-27
