@@ -405,7 +405,11 @@ what stays parked here is the acceptance cycle and the dropped items.
 
 ### Ainalrami (the engine)
 
-- **Gacrux breaks Article 5.2.5 - confirmed 2026-09-08.** It was a
+- ~~**Gacrux breaks Article 5.2.5 - confirmed 2026-09-08.**~~ **Retracted
+  2026-10-25: an artefact of our harness, not a Gacrux fault.** The harness
+  never passed Gacrux `-n`, so Gacrux re-paired the last forfeit-only round;
+  the 5.2.4 and 5.2.5 findings both came from that. Nothing is owed to
+  anyone on it. The history below stays as it was written. It was a
   candidate for ten days: the corrected consistency checker fired 17 times
   over ~1,065,000 rounds on the 2026-08-29 corpus, **all seventeen on
   Gacrux, all in round 2**, with bbpPairings and Ainalrami silent - rounds
@@ -497,8 +501,8 @@ On the path:            184 met, 0 gaps, 1 still to check
 - **Q37 / Q39: report other engines' faults and our reading differences to
   TEC.** Q37 is marked "check", Q39 "check" (a NO on Q39 costs 50%). The
   bbpPairings [C2] fault went to TEC in the 2026-09-08 letter and upstream;
-  not on record as sent: the confirmed Gacrux 5.2.5 finding and the
-  TieBreakServer findings A-D, nor the tie-break reading differences (the
+  not on record as sent: the TieBreakServer findings A-D (the Gacrux 5.2.5
+  finding was retracted 2026-10-25 and is not owed), nor the tie-break reading differences (the
   letter predates them). **Letter drafted, not sent.** The draft lives outside
   the repository, waiting for the maintainer.
 - ~~**Unknown result `?` (the one commitment in the feedback letter, C.2).**~~
