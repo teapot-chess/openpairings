@@ -32,13 +32,10 @@ defmodule PairingsEngine.Accounts.UserNotifier do
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
-    # Use the SMTP_USERNAME if available, otherwise use the placeholder address.
-    from_address = System.get_env("SMTP_USERNAME") || "contact@example.com"
-
     email =
       new()
       |> to(recipient)
-      |> from({"OpenPairings", from_address})
+      |> from(Mailer.from())
       |> subject(subject)
       |> text_body(body)
 

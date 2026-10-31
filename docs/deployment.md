@@ -740,6 +740,7 @@ server.
 | `PHX_SERVER` | yes (`true`) | actually serve HTTP - a release doesn't by default |
 | `PORT` | no (default 4000) | internal HTTP port - **the unit sets 4001**, see "Ports on this host" |
 | `SMTP_USERNAME` / `SMTP_PASSWORD` | yes | magic-link login sends real e-mail in prod - **the app refuses to boot without both**, since there is no local mailbox fallback outside dev |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_FROM_NAME` | no (defaults `smtp.gmail.com`, `587`, `OpenPairings`) | use another mail server (STARTTLS on the given port) and set the sender's display name; the from address stays `SMTP_USERNAME`. A bad `SMTP_PORT` refuses to boot |
 | `POOL_SIZE` | no (default 5) | Ecto connection pool size |
 | `OPENPAIRINGS_LISTEN_IP` | no (default `127.0.0.1`) | which address to bind. The default is loopback, because the only client here is the cloudflared process on the same host; set `0.0.0.0` (every IPv4 address) or `::` (every address) only for a deployment that is genuinely reached directly. An unparseable value refuses to boot rather than falling back to a wide bind |
 | `TRUSTED_PROXY_HOPS` | no (default 0) | how many proxies sit in front of the app, i.e. how many entries to trust from the right of `x-forwarded-for` &mdash; **the unit sets 1**, for the single cloudflared hop. Left at 0 the app trusts no forwarded address at all and every visitor shares one rate-limit bucket, which makes the login throttle effectively global |
