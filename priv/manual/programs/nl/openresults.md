@@ -10,9 +10,8 @@ ronde die niet gepubliceerd is, staat er gewoon niet.
 **Wanneer je het nodig hebt.** Telkens als iemand anders dan de arbiter het
 toernooi moet kunnen zien. Om te publiceren hoef je niets te installeren:
 je verbindt OpenPairings één keer met een uitslagensite en kiest per toernooi
-hoe openbaar het is. Een federatie of een club mag ook een eigen exemplaar
-draaien voor haar eigen toernooien; de licentie, onderaan deze pagina, zegt
-dat met zoveel woorden.
+hoe openbaar het is. OpenResults is een gehoste dienst op openresults.cloud; de broncode is niet
+gepubliceerd.
 
 **Waar het past.** [Publiceren](14-publishing.md) stuurt een toernooi
 erheen; [OpenResults: de publieke uitslagensite](15-openresults.md) toont wat
