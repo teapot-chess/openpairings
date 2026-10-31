@@ -17,6 +17,14 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Feature] **`/healthz`, for whatever is watching.** One small JSON answer: the status, the version, whether the database replied, and how the off-site backup is doing. 200 when the database answers, 503 when it does not. The backup is reported, never decisive: a monitor that restarts the app because a bucket was unreachable would fix nothing and annoy everyone. No session, no log line per poll, and nothing in the body a stranger could not have guessed.
+
+- [Feature] **Off-site backups, encrypted with a key the server does not have.** The deployment guide's off-site strategy used to be somebody downloading a backup "now and then", which is a strategy in the sense that hoping is one. When the `OFFSITE_BACKUP_*` settings are present, the newest backup is encrypted to one or more age public keys and sent to an S3-compatible bucket within the hour. The server can lock and cannot unlock, so whoever takes the box gets ciphertext. `mix ops.age` makes the key and opens a copy; the ordinary `age` tool does too. Off unless configured, and half a configuration refuses to boot rather than quietly backing up nothing.
+
+- [Feature] **Admin → System: health, the off-site copy, and what crashed.** Crashes are recorded here instead of being mailed to a dashboard in another jurisdiction: one row per kind, with a count and first and last seen, stack traces without arguments and messages cut short, so no player data comes along. *Send the newest backup now* skips the wait. Optionally, `OPS_ALERT_EMAIL` gets one mail when a crash is new, and no more than one per quarter of an hour, because nobody needs ten copies of the same bad news.
+
+- [Feature] **LiveDashboard in production, for administrators.** It was development-only, which is exactly when you need it least. It now lives at `/admin/dashboard`, behind the same role as the Admin page, checked on the request and again on the socket.
+
 - [Change] **Standings: the row menu's second item now edits the player.** "Open the Players list" took you to the Players list and promptly forgot whom you had clicked. It is now **Edit player**, and the Players page opens with that player's edit form already waiting.
 
 - [Change] **New tournament: Format now sits above Rate of play.** The rate list follows the format, and the format was hiding underneath it, so a blitz event met a dropdown of classical time controls and nothing to suggest otherwise. Standard, Rapid and Blitz now come first, where you would look for them.

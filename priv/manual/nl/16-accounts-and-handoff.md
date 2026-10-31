@@ -113,3 +113,13 @@ Wat niet meereist: de herstelpunten, de telefoons die voor het invoeren van resu
 
 **Verbindingen** is voor de persoon die de installatie beheert (op een desktopkopie bent dat jij).
 Ze toont de FIDE-database en de nationale lijst met hun update-knoppen, de versie, de back-ups, de updatecontrole (aan of uit) en de verbinding met de uitslagensite ([Spelers en ratinglijsten](04-players-and-ratings.md), [Publiceren](14-publishing.md)). Op een server kan de pagina door een ondersteuningsrol gelezen worden, maar wijzigingen worden alleen door een beheerder gedaan.
+
+## Systeem (de pagina van de serverbeheerder) {#system-the-operator-s-page}
+
+**Beheer → Systeem** beantwoordt de drie vragen die een serverbeheerder eerst stelt: is de server gezond, heeft de nieuwste back-up de machine verlaten, en wat is er gecrasht?
+De pagina is alleen voor beheerders.
+
+- **Gezondheid** is hetzelfde antwoord dat het adres `/healthz` van de server aan een monitoringprogramma geeft: de database, de versie en de toestand van de externe back-up.
+- **Externe back-up** stuurt, als de server daarvoor is ingesteld, de nieuwste back-up naar opslag elders, versleuteld met een sleutel die de server zelf niet heeft. De pagina toont de laatste pogingen met hun resultaat, en **Nieuwste back-up nu versturen** wacht niet op de controle van elk uur. *Verouderd* betekent dat er al een tijd niets met succes is verstuurd; *Mislukt* betekent dat de laatste poging fout ging, en die poging zegt waarom.
+- **Fouten** toont wat er op deze server gecrasht is, één rij per soort crash, met hoe vaak en wanneer. De meldingen blijven op de server en bevatten geen spelersgegevens: meldingen worden ingekort en niets van wat een pagina vasthield wordt bewaard. **Vergeten** haalt er één weg zodra ze opgelost is.
+- **LiveDashboard openen** toont de processen, het geheugen en de reactietijden van de server, voor wie een trage namiddag onderzoekt.

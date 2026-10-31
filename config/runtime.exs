@@ -473,6 +473,32 @@ if config_env() == :prod do
     end
   end
 
+  # Off-site backups - `PairingsEngine.Ops.OffsiteBackup`, docs/deployment.md
+  # "Off-site backups". Off unless every required variable is set; half a
+  # configuration refuses to boot rather than quietly sending nothing:
+  #
+  #   OFFSITE_BACKUP_RECIPIENTS            age public keys (age1...), comma-separated
+  #   OFFSITE_BACKUP_S3_ENDPOINT           https://<s3-compatible endpoint>
+  #   OFFSITE_BACKUP_S3_BUCKET             bucket name (path-style requests)
+  #   OFFSITE_BACKUP_S3_ACCESS_KEY_ID      write-only key for that bucket, ideally
+  #   OFFSITE_BACKUP_S3_SECRET_ACCESS_KEY
+  #   OFFSITE_BACKUP_S3_REGION             optional, default us-east-1
+  #   OFFSITE_BACKUP_S3_PREFIX             optional, default openpairings
+  #   OFFSITE_BACKUP_STALE_HOURS           optional, default 36
+  case PairingsEngine.Ops.OffsiteBackup.from_env() do
+    {:ok, offsite} -> config :pairings_engine, :offsite_backup, offsite
+    :disabled -> :ok
+    {:error, message} -> raise message
+  end
+
+  # OPS_ALERT_EMAIL: where a NEW kind of crash is reported, at most once per
+  # fifteen minutes (`PairingsEngine.Ops.ErrorReports.Recorder`). Needs SMTP.
+  if alert = System.get_env("OPS_ALERT_EMAIL") do
+    if String.trim(alert) != "" and smtp_configured? do
+      config :pairings_engine, :ops_alert_email, String.trim(alert)
+    end
+  end
+
   # PAIRINGS_REGISTRATION_RETENTION_DAYS: how many days after a tournament's
   # end_date the entrants' emails are kept in pulled registrations - see
   # `PairingsEngine.Registrations.Retention`. Same rule as BACKUP_RETENTION.

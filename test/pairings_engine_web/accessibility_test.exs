@@ -113,6 +113,9 @@ defmodule PairingsEngineWeb.AccessibilityTest do
       "/admin/rating-inbox" ->
         ["/admin/rating-inbox"]
 
+      "/admin/system" ->
+        ["/admin/system"]
+
       "/t/:id/pairings/:round/explain" ->
         ["/t/#{t}/pairings/2/explain", "/t/#{t}/pairings/1/explain"]
 
@@ -200,6 +203,10 @@ defmodule PairingsEngineWeb.AccessibilityTest do
   defp live_routes do
     for %{verb: :get, path: path, metadata: %{phoenix_live_view: _}} <-
           PairingsEngineWeb.Router.__routes__(),
+        # LiveDashboard's pages are Phoenix's markup, not ours, and an
+        # administrator's diagnostic tool rather than a page anybody uses
+        # to run a tournament.
+        not String.starts_with?(path, "/admin/dashboard"),
         do: path
   end
 

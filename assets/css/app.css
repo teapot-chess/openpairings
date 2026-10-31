@@ -2035,6 +2035,18 @@ label.field > span {
 .admin-link-card span { display: block; font-size: 13px; line-height: 1.45; color: var(--text-soft); }
 @media (prefers-reduced-motion: reduce) { .admin-link-card { transition: none; } }
 
+/* Admin > System (SystemLive). */
+.system-facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 12px 0; }
+.system-facts dt { color: var(--text-soft); font-size: 13px; }
+.system-facts dd { margin: 0; }
+.badge.system-bad { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.system-error { border-top: 1px solid var(--border); padding: 12px 0; }
+.system-error:first-of-type { border-top: 0; }
+.system-error-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.system-error-head .pe-btn { margin-left: auto; }
+.system-error-message { margin: 6px 0 2px; overflow-wrap: anywhere; }
+.system-error-stack { font-size: 12px; line-height: 1.5; overflow-x: auto; max-height: 320px; padding: 10px; background: var(--surface-hover); border-radius: 8px; }
+
 /* A reassurance is not a control surface. Tinted and ruled rather than
    raised, so it reads as an aside and does not compete with the cards that
    actually carry switches. */
