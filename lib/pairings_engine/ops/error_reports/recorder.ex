@@ -80,7 +80,6 @@ defmodule PairingsEngine.Ops.ErrorReports.Recorder do
   end
 
   defp send_mail(to, row) do
-
     email =
       new()
       |> to(to)
