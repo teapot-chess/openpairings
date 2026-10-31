@@ -141,6 +141,34 @@ defmodule PairingsEngineWeb.TournamentsLiveTest do
       assert tournament.type == "swiss"
     end
 
+    test "Format comes before Rate of play, and Blitz switches the list to blitz rates", %{
+      conn: conn
+    } do
+      {:ok, lv, _html} = live(conn, ~p"/")
+      html = lv |> element("button", "New tournament") |> render_click()
+
+      doc = LazyHTML.from_fragment(html)
+      names = doc |> LazyHTML.query("#new-tournament-form [name]") |> LazyHTML.attribute("name")
+
+      format_at = Enum.find_index(names, &(&1 == "tournament[standard]"))
+      rate_at = Enum.find_index(names, &(&1 == "tournament[rate_of_play]"))
+      assert format_at < rate_at
+
+      refute has_element?(
+               lv,
+               ~s|select[name="tournament[rate_of_play]"] option[value="5min/end"]|
+             )
+
+      lv
+      |> form("#new-tournament-form", tournament: %{name: "Blitz T", standard: "blitz"})
+      |> render_change()
+
+      assert has_element?(
+               lv,
+               ~s|select[name="tournament[rate_of_play]"] option[value="5min/end"]|
+             )
+    end
+
     test "keizer + no team -> type swiss (keizer is Swiss-classified for FIDE reporting)", %{
       conn: conn
     } do
