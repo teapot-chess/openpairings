@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **Settings: Options now comes before Group.** You set up the tournament itself before deciding which other tournaments it hangs around with, so the list finally agrees.
+
 ## [0.111.0] - 2026-10-30
 
 - [Security] **Two dependency advisories closed.** Phoenix HTML 4.4.0 (advisory EEF-CVE-2026-117645) and Bandit, the web server, in its patched release (EEF-CVE-2026-116078, memory amplification from HTTP/2 bodies sent one byte at a time). Nothing to do on your side.
