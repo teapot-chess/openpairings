@@ -965,10 +965,67 @@ defmodule PairingsEngine.Publishing do
 
       # Remembered only here, only for this exact document, and only once
       # the server has said yes to it.
-      with {:ok, _body} <- result, do: Accepted.record(tournament.id, payload, binding)
+      with {:ok, body} <- result do
+        Accepted.record(tournament.id, payload, binding)
+        upload_proofs(tournament, payload, body)
+      end
 
       result
     end
+  end
+
+  # Round proofs. The snapshot names each round's proof by digest; the
+  # server's answer lists the ones it does not hold yet (`proofs_wanted`),
+  # and each goes up once, on its own request. An older server never asks,
+  # so nothing is sent to it. A proof that does not get there is not a
+  # failed publish: the page is right without it, and the next publish asks
+  # again. See `PairingsEngine.PairingProofs`.
+  defp upload_proofs(%Tournament{} = tournament, payload, %{"proofs_wanted" => [_ | _] = wanted}) do
+    slug = get_in(payload, ["tournament", "slug"])
+
+    for %{"round" => number, "sha256" => sha} when is_integer(number) <- wanted,
+        gzip = round_proof(tournament.id, number, sha),
+        is_binary(gzip) do
+      request =
+        request(
+          "/api/tournaments/#{URI.encode(slug, &URI.char_unreserved?/1)}/proofs",
+          json: %{round: number, sha256: sha, gzip_base64: Base.encode64(gzip)},
+          headers: [{@key_header, tournament.openresults_key}]
+        )
+
+      case Req.post(request) do
+        {:ok, %Req.Response{status: status}} when status in 200..299 ->
+          :ok
+
+        {:ok, %Req.Response{status: status}} ->
+          Logger.warning(
+            "OpenResults: the proof of round #{number} of tournament #{tournament.id} " <>
+              "was refused (#{status})"
+          )
+
+        {:error, _transport} ->
+          Logger.warning(
+            "OpenResults: the proof of round #{number} of tournament #{tournament.id} " <>
+              "could not be sent"
+          )
+      end
+    end
+
+    :ok
+  end
+
+  defp upload_proofs(_tournament, _payload, _body), do: :ok
+
+  # The stored proof of round `number`, only if it is still the one the
+  # server asked for by digest.
+  defp round_proof(tournament_id, number, sha) do
+    Repo.one(
+      from r in Round,
+        where:
+          r.tournament_id == ^tournament_id and r.number == ^number and
+            r.proof_sha256 == ^sha,
+        select: r.proof
+    )
   end
 
   defp send_snapshot(%Tournament{} = tournament, unchanged) do

@@ -159,6 +159,8 @@ defmodule PairingsEngine.ItdxNotes do
       "OP round #{r.number}: status #{r.status}" <>
         if(r.date not in [nil, ""], do: ", date #{r.date}", else: "") <>
         if(r.paired_at, do: ", paired #{stamp(r.paired_at)}", else: "") <>
+        if(r.engine, do: ", engine #{r.engine} #{r.engine_version || "unknown"}", else: "") <>
+        if(r.proof_sha256, do: ", proof sha256 #{r.proof_sha256}", else: "") <>
         if(r.mpa_pibe, do: ", hand-edited (see the MPA line)", else: "")
     end
   end

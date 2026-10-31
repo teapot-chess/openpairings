@@ -87,6 +87,10 @@ config :pairings_engine, PairingsEngine.Mailer, adapter: Swoosh.Adapters.Test
 # no task outlives the test's sandbox. Its own tests switch it to `:async`.
 config :pairings_engine, :explanation_jobs, :inline
 
+# Every pairing in the suite would otherwise be paid for a second time on
+# the engine's reference path. The proof tests switch it back on.
+config :pairings_engine, :pairing_proofs, false
+
 # The engine trace of an individual Swiss round (`PairingsEngine.EngineTrace`)
 # is the engine's command line run twice more on the round's field: about
 # a sixth on top of every pairing test, for commentary none of them reads.

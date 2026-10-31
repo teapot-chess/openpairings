@@ -376,6 +376,35 @@ Als een regel van de organisator de ronde heeft veranderd (een byevoorkeur, een
 paarwens), meldt de pagina welk bord is verplaatst en wat de FIDE-regels alleen
 zouden hebben gegeven.
 
+### De engine en haar bewijs {#the-engine-and-its-proof}
+
+Elke Zwitserse ronde die de engine gepaard heeft, onthoudt welke engine dat
+deed en welke versie (*ainalrami 0.48.0* bijvoorbeeld). Dat wordt per ronde
+bewaard, omdat een update tussen twee rondes de engine halverwege een
+evenement kan veranderen, en wat bewaard wordt moet zeggen wat ronde 5 gepaard
+heeft, niet wat er vandaag geïnstalleerd is. Een ronde die je met de hand
+paarde, uit een rondetoernooitabel, met Keizer, of voordat het programma dit
+bijhield, heeft er geen.
+
+Nadat de ronde bewaard is, maakt het programma ook het **paringsbewijs** van
+de engine: een bestand waarin de engine aantoont dat elke keuze die ze bij het
+paren van de ronde maakte de beste was die de regels toelaten, en dat de
+borden de borden zijn waar ze op uitkwam. Het wordt op de achtergrond gemaakt,
+nooit terwijl je op *Ronde paren* wacht, door de ronde een tweede keer te
+paren langs de tragere referentieweg van de engine; het wordt alleen bewaard
+als die tweede paring precies de borden van de ronde oplevert. Iedereen kan
+het nakijken met de eigen verifier van de engine, die geen code met de engine
+deelt. Een veld van meer dan 300 spelers krijgt geen bewijs (het kost daar te
+veel geheugen), net als teamrondes, rondetoernooien en Keizer, die zo'n keuze
+niet hebben.
+
+Het bewijs gaat met de ronde naar de uitslagensite
+([Publiceren](14-publishing.md#the-proof-of-a-round)), zit in de volledige
+back-up ([Importeren en exporteren](12-import-export.md#backup-and-copy)), en
+de rondelijnen van het ITDX-bestand noemen de engine en de SHA-256 van het
+bewijs.
+
+
 ## Voorvertoning van de volgende ronde {#preview-of-the-next-round}
 
 Terwijl de laatste partijen van een Zwitserse ronde nog worden gespeeld, berekent

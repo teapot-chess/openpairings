@@ -348,6 +348,7 @@ defmodule PairingsEngine.Snapshot do
     |> put_group(t)
     |> put_series(t)
     |> put_live_boards(t)
+    |> put_swiss_variant(t)
   end
 
   # Added 2026-10-31. `series_id` when this tournament is an edition of a
@@ -462,6 +463,15 @@ defmodule PairingsEngine.Snapshot do
 
   # The contract's three systems are `pairing_system`'s three, not `type`'s
   # four: `type` is the FIDE report classification and has no Keizer at all.
+  # Added 2026-10-31: which Swiss system, beside `system: swiss`. Only the
+  # Dutch system is paired today; a team Swiss (C.04.6) is none of the
+  # individual systems and says nothing.
+  defp put_swiss_variant(row, %Tournament{} = t) do
+    if system(t) == "swiss" and not Tournament.team?(t),
+      do: Map.put(row, "swiss_variant", "dutch"),
+      else: row
+  end
+
   defp system(%Tournament{pairing_system: "round_robin"}), do: "roundrobin"
   defp system(%Tournament{pairing_system: "keizer"}), do: "keizer"
   defp system(%Tournament{}), do: "swiss"
@@ -651,17 +661,19 @@ defmodule PairingsEngine.Snapshot do
        ) do
     visible = Enum.reject(round.pairings, & &1.hidden)
 
-    row = %{
-      "number" => round.number,
-      "date" => round_date(round, t),
-      # Added 2026-09-13 with the "Results round N" switch. `false` means the
-      # boards below carry no results because the arbiter has not published
-      # them, not because none were entered. Absent means true: an older
-      # publisher sent every result it had.
-      "results_public" => results_public?,
-      "boards" => boards(visible, nos, results_public?, t, {round.number, pending_ids}),
-      "byes" => byes(round, visible, t, nos, results_public?)
-    }
+    row =
+      %{
+        "number" => round.number,
+        "date" => round_date(round, t),
+        # Added 2026-09-13 with the "Results round N" switch. `false` means the
+        # boards below carry no results because the arbiter has not published
+        # them, not because none were entered. Absent means true: an older
+        # publisher sent every result it had.
+        "results_public" => results_public?,
+        "boards" => boards(visible, nos, results_public?, t, {round.number, pending_ids}),
+        "byes" => byes(round, visible, t, nos, results_public?)
+      }
+      |> put_engine(round)
 
     if paired_as_teams?(t) do
       Map.put(row, "matches", Enum.map(matches, &match_row(&1, team_nos, results_public?)))
@@ -669,6 +681,23 @@ defmodule PairingsEngine.Snapshot do
       row
     end
   end
+
+  # Added 2026-10-31: the program that paired this round, and its pairing
+  # proof by digest (`PairingsEngine.PairingProofs`). Per round, absent when
+  # unknown. The proof file itself is uploaded after the publish, when the
+  # server asks for it (`Publishing`, "Round proofs").
+  defp put_engine(row, %Round{engine: name} = round) when is_binary(name) do
+    row
+    |> Map.put("engine", %{"name" => name, "version" => round.engine_version})
+    |> then(fn row ->
+      case PairingsEngine.PairingProofs.announcement(round) do
+        nil -> row
+        proof -> Map.put(row, "proof", proof)
+      end
+    end)
+  end
+
+  defp put_engine(row, _round), do: row
 
   ## ---------- team events ----------
 

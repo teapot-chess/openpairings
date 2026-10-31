@@ -124,6 +124,26 @@ defmodule PairingsEngine.Tournaments.Round do
     # `PairingsEngine.ManualPairing`; not cast.
     field :mpa_pibe, :string
 
+    # The program that paired this round and its version, e.g. "ainalrami"
+    # / "0.48.0" - per round, because a desktop update can change the engine
+    # between round 4 and round 5 of one event. Written by the pairing paths
+    # that run Ainalrami (`engine_fields/0`); nil for a round paired by hand,
+    # by a round-robin table, by Keizer, imported, or paired before the
+    # column existed. Exported; cast only by `changeset/2` for the import.
+    field :engine, :string
+    field :engine_version, :string
+
+    # The engine's pairing proof for this round (`PairingsEngine.PairingProofs`):
+    # the gzip file of Ainalrami's JSON Lines proof, one section per pairing
+    # group, and the SHA-256 and size of exactly those bytes. Worked out
+    # after the round is saved, never inside the click. nil when nobody
+    # proved it: proofs switched off, a field too large to prove, a team or
+    # non-Swiss round, or a round paired before the column existed. Large,
+    # so NOT loaded by default. Not cast.
+    field :proof, :binary, load_in_query: false, redact: true
+    field :proof_sha256, :string
+    field :proof_bytes, :integer
+
     belongs_to :tournament, PairingsEngine.Tournaments.Tournament
     has_many :pairings, PairingsEngine.Tournaments.Pairing
     # A team round's matches (`PairingsEngine.TeamRoundRobin`); none for an
@@ -149,12 +169,35 @@ defmodule PairingsEngine.Tournaments.Round do
     Ecto.Query.select(query, [r], struct(r, ^fields))
   end
 
+  @doc """
+  The `engine` / `engine_version` a round paired by Ainalrami right now is
+  stored with: the engine this running build was compiled against.
+  """
+  def engine_fields do
+    version =
+      case Application.spec(:ainalrami, :vsn) do
+        nil -> nil
+        vsn -> to_string(vsn)
+      end
+
+    %{engine: "ainalrami", engine_version: version}
+  end
+
   @doc "The instant to store in `paired_at` for a round paired now."
   def paired_now, do: DateTime.utc_now() |> DateTime.truncate(:second)
 
   def changeset(round, attrs) do
     round
-    |> cast(attrs, [:number, :date, :status, :published_at, :paired_at, :explanation])
+    |> cast(attrs, [
+      :number,
+      :date,
+      :status,
+      :published_at,
+      :paired_at,
+      :explanation,
+      :engine,
+      :engine_version
+    ])
     |> validate_required([:number])
     |> validate_inclusion(:status, ~w(pairing playing finished))
   end

@@ -926,6 +926,22 @@ defmodule PairingsEngine.TournamentImport do
 
   defp mpa_pibe(_round), do: nil
 
+  # A round's pairing proof, when the file carries one
+  # (`TournamentExport`, `include_proofs: true`): kept only if it is gzip and
+  # its digest is the one written beside it, so a file edited by hand cannot
+  # smuggle in a "proof" the engine never wrote. Anything else: no proof.
+  defp proof_fields(%{"proof" => %{"sha256" => sha, "gzip_base64" => data}})
+       when is_binary(sha) and is_binary(data) do
+    with {:ok, <<0x1F, 0x8B, _::binary>> = gzip} <- Base.decode64(data),
+         ^sha <- PairingsEngine.PairingProofs.digest(gzip) do
+      [proof: gzip, proof_sha256: sha, proof_bytes: byte_size(gzip)]
+    else
+      _ -> []
+    end
+  end
+
+  defp proof_fields(_round), do: []
+
   defp import_rounds!(tournament, rounds, player_map, team_map) do
     Enum.each(Enum.with_index(rounds, 1), fn {r, n} ->
       new_round =
@@ -938,6 +954,7 @@ defmodule PairingsEngine.TournamentImport do
         # Baku's, the same way; nil (an older file) is worked out as before.
         |> Ecto.Changeset.change(baku_points: remap_virtual_points(r, player_map, "baku_points"))
         |> Ecto.Changeset.change(mpa_pibe: mpa_pibe(r))
+        |> Ecto.Changeset.change(proof_fields(r))
         |> insert!("round entry #{n}")
 
       pairings = records!(r, "pairings")

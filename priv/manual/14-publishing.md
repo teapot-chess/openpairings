@@ -126,6 +126,18 @@ public, under **Other editions**. A series is not a *group*, which is several
 sections of one event. **Duplicate** keeps the series, so the copy you make for
 next year is already in it.
 
+### The proof of a round {#the-proof-of-a-round}
+
+A round with a pairing proof ([Pairing](06-pairing.md#the-engine-and-its-proof))
+sends it to the results site, which shows a small **Proof** button beside the
+round's heading: it opens to say which engine and version paired the round,
+offers the proof file for download and gives its SHA-256. The snapshot itself
+carries only the digest; the site asks for each proof it does not hold yet and
+it is sent once, on its own. A proof that does not arrive is no failed
+publish, the next one sends it. Older rounds, and rounds without a proof, show
+no button.
+
+
 ### The hall display
 
 A full-screen page for a television or projector in the playing hall, at an

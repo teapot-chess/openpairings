@@ -212,8 +212,10 @@ defmodule PairingsEngine.TeamSwiss do
           round =
             round
             |> Ecto.Changeset.change(
-              explanation: explanation,
-              engine_trace: PairingsEngine.EngineTrace.team(result, engine_teams, opts)
+              Map.merge(Round.engine_fields(), %{
+                explanation: explanation,
+                engine_trace: PairingsEngine.EngineTrace.team(result, engine_teams, opts)
+              })
             )
             |> Repo.update!()
 

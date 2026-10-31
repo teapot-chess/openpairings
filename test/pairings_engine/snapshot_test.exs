@@ -778,6 +778,7 @@ defmodule PairingsEngine.SnapshotTest do
                "end_date" => "2026-03-05",
                "rounds_count" => 5,
                "system" => "swiss",
+               "swiss_variant" => "dutch",
                "arbiter" => "Jorian Burssens",
                "deputy" => nil,
                "time_control" => nil,
