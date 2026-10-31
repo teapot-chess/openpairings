@@ -1217,6 +1217,30 @@ defmodule PairingsEngine.BoardLink do
     end
   end
 
+  @doc """
+  The result the arbiter may take from the board for `pairing`, as
+  `{:ok, result}`, or `:error`.
+
+  Only when the board's word can be trusted as it stands: the pairing is a
+  real game with no result entered, and the report is a finished game with a
+  result the board saw, whose moves are all ones the board actually watched -
+  none worked out afterwards (`reconstructed`), none guessed (`guessed`),
+  none rewritten when the board's history was corrected (`rewritten`).
+
+  The box does not say whether a game's link to its pairing is in doubt, so
+  nothing here can check it; the arbiter's click is the check.
+  """
+  def takeable(%{result: current, black_player_id: black}, %{} = report)
+      when current in [nil, ""] and not is_nil(black) do
+    if report.status == "finished" and report.result in Game.results() and
+         Map.get(report, :reconstructed, 0) == 0 and Map.get(report, :guessed, 0) == 0 and
+         Map.get(report, :rewritten, 0) == 0,
+       do: {:ok, report.result},
+       else: :error
+  end
+
+  def takeable(_pairing, _report), do: :error
+
   defp plies(%{plies: plies}), do: plies
   defp plies(%{moves: moves}), do: length(moves)
 

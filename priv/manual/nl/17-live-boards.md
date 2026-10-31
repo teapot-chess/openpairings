@@ -276,7 +276,9 @@ geplakt wordt, staat in [Relaissleutels](#relay-keys).
 live borden een kolom **Bord zag**. Een toernooi zonder kastje heeft de kolom
 niet.
 
-**Een bord voert nooit een resultaat in.** Je voert de resultaten in zoals voorheen.
+**Een bord voert nooit zelf een resultaat in.** Je voert de resultaten in zoals
+voorheen, of je neemt dat van het bord over, zoals [hieronder](#taking-board-results)
+staat.
 De kolom toont wat het bord meldde, naast wat je invoerde:
 
 | De kolom toont | Het betekent |
@@ -297,6 +299,27 @@ Een forfait dat je invoerde, wordt vergeleken op wie het punt kreeg: een bord da
 Op een telefoon staat de melding van het bord op een eigen regel onder de
 resultaatknoppen. De kolom wordt niet afgedrukt en staat niet in de paringslijst
 voor aan de muur: ze is de controle van de arbiter, geen deel van de paring.
+
+### Het resultaat van het bord overnemen {#taking-board-results}
+
+Waar het bord een resultaat zag en jij er nog geen invoerde, staat naast de
+melding een knop **Neem over**. Eén klik voert precies dat resultaat in, langs
+dezelfde weg als wanneer je het zelf typt: dezelfde sloten, dezelfde regels voor
+gepubliceerde rondes en teamwedstrijden, en dezelfde publicatie naar
+OpenResults. In het auditlogboek staat het als *overgenomen van wat het bord
+zag*, zodat het van een getypt resultaat te onderscheiden is.
+
+Boven de tabel staat **Alles overnemen wat klopt (n)**. Na bevestiging, met het
+aantal erbij, voert die het resultaat in van elke partij die er nog geen heeft en
+waarvan het bord een eenduidig resultaat zag. Een bestaand resultaat wordt nooit
+overschreven, ook niet als het afwijkt (rood): dat verbeter je zelf.
+
+Alleen een resultaat dat het bord heel zag, wordt aangeboden: de partij is
+afgelopen met een resultaat, en geen enkele zet is achteraf uitgerekend, geraden
+of herschreven. Een partij met zulke zetten krijgt geen knop; typ het resultaat
+dan zelf in. Het kastje meldt niet of de koppeling van een partij aan een paring
+twijfelachtig is, dus dat kan OpenPairings niet nagaan: jouw klik is die controle.
+Niets wordt ooit ingevoerd zonder klik.
 
 ## Partijen en PGN {#games-and-pgn}
 

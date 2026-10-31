@@ -73,6 +73,10 @@ Schakelaars (geavanceerd) bepalen welke details een gepubliceerde pagina mag ton
 > [!WARNING]
 > Namen, bordnummers, resultaten en plaatsen worden altijd getoond: een toernooi dat ze niet mag tonen, moet niet gepubliceerd worden.
 
+### Reeks: andere edities {#series}
+
+Een kaart **Reeks** op dezelfde instellingenpagina koppelt edities van hetzelfde evenement in verschillende jaren (Open Brugge 2025, 2026, ...). Kies *Een nieuwe reeks beginnen*, of *Zelfde reeks als ...* om je aan te sluiten bij de reeks van een ander toernooi dat je mag bewerken (dat krijgt er dan een als het er geen had), of *Geen deel van een reeks* om eruit te stappen. De resultatensite toont dan de andere edities die ze van dezelfde uitgever heeft en die openbaar zijn, onder **Andere edities**. Een reeks is geen *groep*, dat zijn meerdere onderdelen van één evenement. **Dupliceren** behoudt de reeks, dus de kopie voor volgend jaar zit er meteen in.
+
 ### Het zaalscherm {#the-hall-display}
 
 Een schermvullende pagina voor een televisie of beamer in de speelzaal, op een adres dat op de instellingenpagina getoond wordt zodra het toernooi gepubliceerd is. De kaart **Zaalscherm** (geavanceerd) kiest wat er wordt doorlopen (paringen, de lijst *Zoek je bord* op naam, resultaten, standen), seconden per pagina, hoeveel plaatsen van de stand getoond worden, of de paringen vastgehouden worden tot het eerste resultaat van een nieuwe ronde binnen is, en een **Mededeling** (gewone tekst, tot 500 tekens) die op het scherm getoond wordt. Bewaren verstuurt die meteen.

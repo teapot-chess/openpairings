@@ -1307,6 +1307,10 @@ defmodule PairingsEngineWeb.TournamentsLive do
       # it goes to SWAR.
       |> put_in(["tournaments", Access.at(0), "tournament", "swar_guid"], nil)
 
+    # The series id, on the other hand, stays (it is exported with the
+    # rest): a duplicate is the usual way to make next year's edition of the
+    # same event, and that is exactly what a series is.
+
     case TournamentImport.import(envelope, socket.assigns.current_scope) do
       {:ok, [new_tournament]} ->
         Audit.log(new_tournament.id, socket.assigns.current_scope, "tournament.duplicated", %{

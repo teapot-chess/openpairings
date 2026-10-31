@@ -39,7 +39,7 @@ defmodule PairingsEngine.ManubriumTest do
       [stored] = Repo.all(ConnectCode)
       assert stored.secret_hash == Manubrium.hash(secret)
       refute stored.secret_hash == secret
-      assert DateTime.diff(expires_at, DateTime.utc_now()) in 500..600
+      assert DateTime.diff(expires_at, DateTime.utc_now()) in 840..900
     end
 
     test "need an address, and run out per account", %{scope: scope} do

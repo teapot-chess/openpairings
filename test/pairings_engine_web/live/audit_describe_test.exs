@@ -729,6 +729,10 @@ defmodule PairingsEngineWeb.AuditDescribeTest do
       %{"from" => nil, "name" => "Paasopen Brugge", "ambiguous_players" => ["Jan Peeters"]}
     ],
     "tournament.duplicated" => [%{"from_name" => "Paasopen Brugge"}],
+    "tournament.series_changed" => [
+      %{"from" => nil, "to" => "5d2e8b0c4a9f1e3d7b"},
+      %{"from" => "5d2e8b0c4a9f1e3d7b", "to" => nil}
+    ],
     "tournament.left" => [%{"name" => "Paasopen Brugge"}],
     "snapshot.restored" => [
       %{"restored_to" => "Voor de prijsuitreiking"},

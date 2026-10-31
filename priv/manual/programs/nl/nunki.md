@@ -15,7 +15,9 @@ ruimtes leest een omroeper alleen de borden van zijn eigen ruimte voor.
 
 **Waar het past.** In OpenPairings: de instellingen van het toernooi, *Hall
 announcer*, *Add an announcer*; de link die verschijnt is één keer goed, voor
-vijftien minuten. Ruimtes stel je in bij
+vijftien minuten. Plak hem in Nunki op de zaal-pc, of scan de QR-code met
+[Manubrium](/help/manubrium-app) op je telefoon, dat de link doorgeeft
+(kopiëren of delen) aan de pc. Ruimtes stel je in bij
 [Een toernooi aanmaken en de instellingen](03-tournament-setup.md#rooms-page).
 Zijn tegenhanger in de zaal is [Polis](/help/other/polis), dat dezelfde
 rondes afdrukt.

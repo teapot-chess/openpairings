@@ -464,6 +464,13 @@ guid would upload to the federation's results site as the same event.
 Moving to a new machine, or receiving a hand-off, finds no such tournament
 and keeps it.
 
+`series_id` (the series of editions of the same event in other years,
+`PairingsEngine.TournamentSeries`) travels too, and "Duplicate" keeps it on
+purpose: a duplicate is the usual way to make next year's edition. It is not
+cast, so the importer carries it by hand and drops a value that is not a
+well-formed id; a restore point from before series existed leaves the live
+value alone.
+
 `openresults_key` is the one exception worth naming: it is not in the
 tournament map but it does leave, in the entry's own `"openresults"` block
 above, so a takeover can be offered deliberately rather than by accident.

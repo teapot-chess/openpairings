@@ -299,6 +299,7 @@ defmodule PairingsEngine.TournamentImport do
         public_display: public_display_or_nil(Map.get(t_attrs, "public_display")),
         public_hall: public_display_or_nil(Map.get(t_attrs, "public_hall")),
         public_live_boards: truthy(Map.get(t_attrs, "public_live_boards")),
+        series_id: series_id_or_nil(t_attrs, tournament.series_id),
         public_hidden_tiebreaks: hidden_tiebreaks(Map.get(t_attrs, "public_hidden_tiebreaks"))
       )
       |> Ecto.Changeset.change(
@@ -587,6 +588,7 @@ defmodule PairingsEngine.TournamentImport do
         public_display: public_display_or_nil(Map.get(t_attrs, "public_display")),
         public_hall: public_display_or_nil(Map.get(t_attrs, "public_hall")),
         public_live_boards: truthy(Map.get(t_attrs, "public_live_boards")),
+        series_id: series_id_or_nil(t_attrs, nil),
         public_hidden_tiebreaks: hidden_tiebreaks(Map.get(t_attrs, "public_hidden_tiebreaks"))
       )
       |> Ecto.Changeset.change(pairing_state(t_attrs, nil, records!(t_data, "teams") != []))
@@ -1153,6 +1155,24 @@ defmodule PairingsEngine.TournamentImport do
   # value of the wrong type or out of range, so only a non-map needs catching.
   defp public_display_or_nil(value) when is_map(value), do: value
   defp public_display_or_nil(_), do: nil
+
+  # `series_id` is not cast (`Tournament`), so it is carried by hand. A value
+  # that is not a well-formed id (the contract's pattern) is dropped rather
+  # than published. A file with no such key leaves `fallback` alone: a restore
+  # point from before series existed must not take a tournament out of its
+  # series, and a fresh import has no live value (nil).
+  defp series_id_or_nil(t_attrs, fallback) do
+    case Map.fetch(t_attrs, "series_id") do
+      {:ok, id} when is_binary(id) ->
+        if Regex.match?(~r/\A[A-Za-z0-9_-]{6,64}\z/, id), do: id, else: nil
+
+      {:ok, _other} ->
+        nil
+
+      :error ->
+        fallback
+    end
+  end
 
   # `public_hidden_tiebreaks` - only strings survive, the same
   # hand-edited-file defence `agreed_date_log/1` below uses; anything else,

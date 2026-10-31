@@ -162,7 +162,8 @@ defmodule PairingsEngineWeb.AuditLive do
      ~w(tournament.created tournament.deleted tournament.restored tournament.archived
         tournament.unarchived tournament.duplicated tournament.left tournament.handoff_forced
         handoff.handed_off handoff.received handoff.returned handoff.released
-        group.created group.joined group.left group.renamed group.label_set group.reordered)}
+        group.created group.joined group.left group.renamed group.label_set group.reordered
+        tournament.series_changed)}
   ]
 
   @impl true
@@ -660,7 +661,7 @@ defmodule PairingsEngineWeb.AuditLive do
   def describe("pairing.round_paired", d), do: describe_round_paired(d)
 
   def describe("pairing.result_entered", d),
-    do: sentences([result_sentence(:entered, d), phone_sentence(d)])
+    do: sentences([result_sentence(:entered, d), phone_sentence(d), board_sentence(d)])
 
   # The arbiter's word on a result a Manubrium Lite phone entered
   # (`PairingsEngine.Mobile.PhoneResults`): confirmed as seen, or rejected,
@@ -1982,6 +1983,14 @@ defmodule PairingsEngineWeb.AuditLive do
   def describe("tournament.duplicated", d),
     do: gettext("Duplicated tournament %{name} into a new copy.", name: name(d, "from_name"))
 
+  # Tournament series (`PairingsEngine.TournamentSeries`): `to` is the series
+  # id the tournament is in now, nil when it left.
+  def describe("tournament.series_changed", %{"to" => nil}),
+    do: gettext("Took this tournament out of its series.")
+
+  def describe("tournament.series_changed", _d),
+    do: gettext("Put this tournament in a series of editions of the same event.")
+
   def describe("tournament.left", d),
     do: gettext("Left tournament %{name} (gave up collaborator access).", name: name(d, "name"))
 
@@ -2709,6 +2718,12 @@ defmodule PairingsEngineWeb.AuditLive do
   end
 
   defp phone_sentence(_d), do: nil
+
+  # A result taken from what a live board saw, on the arbiter's click.
+  defp board_sentence(%{"source" => "board"}),
+    do: gettext("Taken from what the board saw, not typed.")
+
+  defp board_sentence(_d), do: nil
 
   # A result the arbiter had to confirm before it was written: a postponed
   # game given a result that is not a draw (VCL4THP Q163), and a result

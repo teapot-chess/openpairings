@@ -115,6 +115,17 @@ FIDE itself, or with a code that names no country, gets no picture.
 > Names, board numbers, results and places are always shown: a tournament that
 > must not show them should not be published.
 
+### Series: other editions {#series}
+
+A **Series** card on the same settings page links editions of the same event
+in different years (Open Brugge 2025, 2026, ...). Choose *Start a new series*,
+or *Same series as ...* to join the series of another tournament you may edit
+(it gets one if it had none), or *Not part of a series* to leave. The results
+site then shows the other editions it holds, from the same publisher and
+public, under **Other editions**. A series is not a *group*, which is several
+sections of one event. **Duplicate** keeps the series, so the copy you make for
+next year is already in it.
+
 ### The hall display
 
 A full-screen page for a television or projector in the playing hall, at an

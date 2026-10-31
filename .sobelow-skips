@@ -61,6 +61,7 @@ Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_we
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/pairings_live.ex:2413,3346FAD
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/pairings_live.ex:2625,6627A52
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/pairings_live.ex:2655,5A81CB7
+Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/pairings_live.ex:2779,6E458AA
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/settings_tournament_live.ex:348,C49B3A
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/settings_tournament_live.ex:356,6FE4E90
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/settings_tournament_live.ex:364,1A8F14A
@@ -71,7 +72,7 @@ Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_we
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/tournaments_live.ex:2618,7D904E8
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/tournaments_live.ex:2622,97A8CD
 Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/tournaments_live.ex:2705,4CE7F77
-Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/tournaments_live.ex:2775,1B620D6
+Traversal.FileModule: Directory Traversal in `File.read!`,lib/pairings_engine_web/live/tournaments_live.ex:2779,1BEA47C
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/backup.ex:167,592C3DF
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/backup.ex:663,33444C3
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/engine_trace.ex:155,64F2B9
@@ -149,6 +150,7 @@ XSS.Raw: XSS,lib/pairings_engine_web/live/pairings_live.ex:6777,4F4D46B
 XSS.Raw: XSS,lib/pairings_engine_web/live/pairings_live.ex:6875,2451F6F
 XSS.Raw: XSS,lib/pairings_engine_web/live/pairings_live.ex:7217,7677BC8
 XSS.Raw: XSS,lib/pairings_engine_web/live/pairings_live.ex:7272,69A937D
+XSS.Raw: XSS,lib/pairings_engine_web/live/pairings_live.ex:7396,30FA3F4
 XSS.Raw: XSS,lib/pairings_engine_web/live/settings_boards_live.ex:916,111B9F9
 XSS.Raw: XSS,lib/pairings_engine_web/live/settings_boards_live.ex:928,7D98D70
 XSS.Raw: XSS,lib/pairings_engine_web/live/settings_boards_live.ex:929,539CCD1
