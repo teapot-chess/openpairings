@@ -3253,6 +3253,25 @@ defmodule PairingsEngineWeb.TournamentsLive do
           )}
         </p>
 
+        <%!-- Its own row: a radio group is as wide as its options, and in a
+              grid cell it either overflows or wraps into a column of
+              one. Above "Rate of play" because it decides that list - below
+              it, arbiters met a dropdown of classical time controls and
+              never scrolled far enough to find out blitz was an option. --%>
+        <div class="field" id="new-tournament-format">
+          <span>{gettext("Format")}</span>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center">
+            <label :for={{val, label} <- standard_options()} class="opt-row">
+              <input
+                type="radio"
+                name="tournament[standard]"
+                value={val}
+                checked={val == @new_standard}
+              /> {label}
+            </label>
+          </div>
+        </div>
+
         <div class="form-grid">
           <label class="field">
             <span>{gettext("Place")}</span>
@@ -3289,23 +3308,6 @@ defmodule PairingsEngineWeb.TournamentsLive do
               </option>
             </select>
           </label>
-        </div>
-
-        <%!-- Its own row: a radio group is as wide as its options, and in a
-              grid cell it either overflows or wraps into a column of
-              one. --%>
-        <div class="field">
-          <span>{gettext("Format")}</span>
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center">
-            <label :for={{val, label} <- standard_options()} class="opt-row">
-              <input
-                type="radio"
-                name="tournament[standard]"
-                value={val}
-                checked={val == @new_standard}
-              /> {label}
-            </label>
-          </div>
         </div>
 
         <p :if={@error} class="error-note">{@error}</p>
