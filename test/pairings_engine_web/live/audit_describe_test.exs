@@ -868,6 +868,12 @@ defmodule PairingsEngineWeb.AuditDescribeTest do
       %{"host" => "openresults.cloud", "operator" => "ZeroTwo", "register_again" => true},
       %{"host" => "openresults.cloud", "operator" => nil, "register_again" => true}
     ],
+    "fide.list_url_changed" => [
+      %{
+        "changed_fields" => %{"list_url" => [nil, "https://mirror.example.org/players_list.zip"]}
+      },
+      %{}
+    ],
     "fide.sync_started" => [%{}]
   }
 

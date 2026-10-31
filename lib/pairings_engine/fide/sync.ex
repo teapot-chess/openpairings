@@ -29,28 +29,108 @@ defmodule PairingsEngine.Fide.Sync do
 
   use GenServer
   require Logger
-  alias PairingsEngine.{Repo, Fide, SafeError}
+  alias PairingsEngine.{Repo, Fide, Meta, SafeError}
   alias PairingsEngine.Fide.{AutoSync, FidePlayer}
 
   @default_list_url "https://ratings.fide.com/download/players_list.zip"
   @topic "fide_sync"
 
+  @list_url_key "fide_list_url"
+
   @doc """
-  Where the rating-list zip is fetched from - FIDE directly by default,
-  overridable with `FIDE_LIST_URL` (see `config/runtime.exs`).
+  Where the rating-list zip is fetched from: the address an administrator
+  saved on the Connections page, else `FIDE_LIST_URL` (see
+  `config/runtime.exs`), else FIDE itself.
 
   The override exists because ratings.fide.com blocks some hosting ranges
   outright, which strands a VPS deploy on a download that can never succeed
   no matter how often it retries. Pointing this at a mirror or a pass-through
-  proxy is the only fix available from this side.
+  proxy is the only fix available from this side. The stored value wins over
+  the environment because it is the later, deliberate decision, and it is read
+  on every call so it takes effect without a restart.
 
   Whatever it points at is trusted to the same degree FIDE is: the response
   is unpacked and loaded straight into `fide_players`. Only set it to
   something you control.
   """
-  def list_url do
-    Application.get_env(:pairings_engine, :fide, [])[:list_url] || @default_list_url
+  def list_url, do: stored_list_url() || env_list_url() || @default_list_url
+
+  @doc "The `FIDE_LIST_URL` environment value (read at boot), or nil."
+  def env_list_url do
+    case Application.get_env(:pairings_engine, :fide, [])[:list_url] do
+      url when is_binary(url) and url != "" -> url
+      _ -> nil
+    end
   end
+
+  @doc "The address saved on the Connections page, or nil."
+  def stored_list_url do
+    case Meta.get(@list_url_key) do
+      url when is_binary(url) and url != "" -> url
+      _ -> nil
+    end
+  rescue
+    # No database to ask (a process outside the sandbox in a test, a boot
+    # before migrations): the environment and the default still answer.
+    _ -> nil
+  end
+
+  @doc "The built-in address."
+  def default_list_url, do: @default_list_url
+
+  @doc "Where `list_url/0` comes from: `:ui`, `:env` or `:default`."
+  def list_url_source do
+    cond do
+      stored_list_url() -> :ui
+      env_list_url() -> :env
+      true -> :default
+    end
+  end
+
+  @doc """
+  Cleans what somebody typed or pasted into the address box and checks it:
+  whitespace and one pair of surrounding quotes are dropped, and what is left
+  must be an absolute https address (http too when `local_mode?` is true, for a
+  mirror on the same machine or network).
+
+  Returns `{:ok, url}`, `{:ok, nil}` for a blank box (meaning "use the
+  default"), or `{:error, :invalid | :https_only}`.
+  """
+  def validate_list_url(value, local_mode? \\ false)
+
+  def validate_list_url(value, local_mode?) when is_binary(value) do
+    cleaned =
+      value
+      |> String.trim()
+      |> String.replace(~r/\A(["'])(.*)\1\z/s, "\\2")
+      |> String.trim()
+
+    case cleaned do
+      "" ->
+        {:ok, nil}
+
+      _ ->
+        case URI.parse(cleaned) do
+          %URI{scheme: "https", host: host} when is_binary(host) and host != "" ->
+            {:ok, cleaned}
+
+          %URI{scheme: "http", host: host} when is_binary(host) and host != "" ->
+            if local_mode?, do: {:ok, cleaned}, else: {:error, :https_only}
+
+          _ ->
+            {:error, :invalid}
+        end
+    end
+  end
+
+  def validate_list_url(_other, _local_mode?), do: {:ok, nil}
+
+  @doc """
+  Saves (or, with nil, clears) the address. Callers validate first with
+  `validate_list_url/2`; the audit row is theirs to write.
+  """
+  def put_list_url(nil), do: Meta.delete(@list_url_key)
+  def put_list_url(url) when is_binary(url), do: Meta.put(@list_url_key, url)
 
   @doc """
   Host `list_url/0` points at, for the progress line - "FIDE" when it's the
@@ -58,7 +138,8 @@ defmodule PairingsEngine.Fide.Sync do
 
   Named rather than left as a constant "Contacting FIDE…" because
   `FIDE_LIST_URL` is read once at boot, from a `.env` in the service's
-  working directory: an override that was mistyped, quoted, put in the wrong
+  working directory (the address saved on the Connections page is not, but
+  the same reasoning applies): an override that was mistyped, quoted, put in the wrong
   directory, or simply added without restarting is invisible from the UI, and
   looks identical to FIDE blocking the host - the same silent stall, for
   four different reasons. Showing the host it is actually dialling separates

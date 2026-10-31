@@ -88,6 +88,55 @@ defmodule PairingsEngine.Fide.Freshness do
     end
   end
 
+  @doc """
+  One `HEAD` request to `url` for the Connections page's Test button: what the
+  server answers, in terms a person can act on. A longer timeout than the
+  background freshness check, because somebody is waiting and watching.
+
+  `{:ok, %{status: integer, last_modified: String.t() | nil, size: integer | nil}}`
+  or `{:error, reason}` for a request that never got an answer.
+  """
+  def probe(url, timeout_ms \\ 10_000) when is_binary(url) do
+    opts =
+      [
+        method: :head,
+        url: url,
+        retry: false,
+        connect_options: [timeout: timeout_ms],
+        receive_timeout: timeout_ms
+      ]
+      |> Keyword.merge(Application.get_env(:pairings_engine, :fide_req_options, []))
+
+    case Req.request(opts) do
+      {:ok, resp} ->
+        {:ok,
+         %{
+           status: resp.status,
+           last_modified: first_header(resp, "last-modified"),
+           size: resp |> first_header("content-length") |> parse_int()
+         }}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp first_header(resp, name) do
+    case Req.Response.get_header(resp, name) do
+      [value | _] -> value
+      _ -> nil
+    end
+  end
+
+  defp parse_int(nil), do: nil
+
+  defp parse_int(value) do
+    case Integer.parse(value) do
+      {n, _} -> n
+      :error -> nil
+    end
+  end
+
   # `datetime('now')` in SQLite: "YYYY-MM-DD HH:MM:SS", UTC.
   defp parse_local(value) when is_binary(value) do
     case NaiveDateTime.from_iso8601(value) do
