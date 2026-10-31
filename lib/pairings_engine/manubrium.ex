@@ -10,7 +10,7 @@ defmodule PairingsEngine.Manubrium do
   ## The token model
 
     1. A signed-in account makes a **connect code** (`create_connect_code/2`):
-       a 256-bit one-time secret, good for ten minutes, shown as a QR code
+       a 256-bit one-time secret, good for fifteen minutes, shown as a QR code
        carrying the server's address and the secret (`connect_link/2`). Only
        its hash is stored.
     2. The app trades it, once, for a **device token** (`redeem/3`): another
@@ -48,7 +48,7 @@ defmodule PairingsEngine.Manubrium do
   alias PairingsEngine.Mobile.Enrollment
   alias PairingsEngine.Tournaments.Pairing
 
-  @connect_ttl_minutes 10
+  @connect_ttl_minutes 15
   # A device's phone code in one tournament. Renewed by `enrollment_for/2`
   # when it runs out, so this only bounds how long a forgotten one lingers
   # in the desk's list of phones.

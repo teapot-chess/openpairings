@@ -15,6 +15,8 @@ boards.
 
 **Where it fits.** In OpenPairings: the tournament's Settings, *Hall
 announcer*, *Add an announcer*; the link it shows is good once, for fifteen
-minutes. Rooms are set in
+minutes. Paste it into Nunki on the hall PC, or scan its QR code with
+[Manubrium](/help/manubrium-app) on your phone, which passes the link on
+(copy or share) to the PC. Rooms are set in
 [Creating a tournament and its settings](03-tournament-setup.md#rooms-page). Its sister
 in the hall is [Polis](/help/other/polis), which prints the same rounds.
