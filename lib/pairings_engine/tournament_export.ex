@@ -100,6 +100,7 @@ defmodule PairingsEngine.TournamentExport do
     fide_tournament_id fide_homologated norm_event_type fide_id_ranges officials
     pairing_system rr_cycles rr_match_format rr_reverse_last_two rr_round_map
     swiss_match_format
+    swiss_variant
     keizer_top_value pair_by_category
     team_boards team_match_points_win team_match_points_draw team_match_points_loss
     team_board_colours team_pab_match_points team_pab_game_points team_withdrawal_annul team_forfeit_board_points
@@ -311,7 +312,7 @@ defmodule PairingsEngine.TournamentExport do
   #
   #   id
   #     Fresh on the far side. `player_map/1` does merge it in outside the
-  #     field list, for the same reason `round_map/1` does - the import needs
+  #     field list, for the same reason `round_map/2` does - the import needs
   #     it to remap `pairings.white_player_id` / `black_player_id` - but the
   #     restored row gets a new one.
   #   tournament_id
@@ -323,7 +324,8 @@ defmodule PairingsEngine.TournamentExport do
 
   # `results_public` and `publish_cap` are not cast by `Round.changeset/2`;
   # the import carries them explicitly (`TournamentImport.import_rounds!/3`).
-  @round_fields ~w(number date status published_at paired_at results_public publish_cap chess960_position)a
+  @round_fields ~w(number date status published_at paired_at results_public publish_cap chess960_position
+                   engine engine_version)a
 
   # Schema fields NOT exported, each with the reason. Paired with a test
   # (`tournament_export_test.exs`) that asserts every field on the Round and
@@ -335,7 +337,7 @@ defmodule PairingsEngine.TournamentExport do
   # list, and a backup/restore lost both without a word. `hidden` is fixed
   # below; `explanation` is a deliberate drop, for the reason beside it.
   @round_excluded [
-    # Carried outside the field list: `round_map/1` merges `"id"` in
+    # Carried outside the field list: `round_map/2` merges `"id"` in
     # explicitly, because the import needs it to attach pairings, and
     # `tournament_id` is implied by the envelope's nesting - a round inside
     # a tournament's payload belongs to that tournament by construction, and
@@ -357,14 +359,14 @@ defmodule PairingsEngine.TournamentExport do
     # off saying it has neither than carrying the engine's words without
     # the account they go with.
     :engine_trace,
-    # Carried outside the field list, like `id`: `round_map/1` writes it
+    # Carried outside the field list, like `id`: `round_map/2` writes it
     # under `"virtual_points"`, and it is keyed by DB player id too - but
     # unlike `explanation` its shape is one flat map, so the import remaps
     # the keys through its player map (`TournamentImport.import_rounds!/4`)
     # rather than dropping it. It is pairing input, not a diagnostic: the
     # next round's `XXA` history is read from it (docs/extra-points.md).
     :virtual_points,
-    # Same as `virtual_points`, for Baku's (`round_map/1` writes it under
+    # Same as `virtual_points`, for Baku's (`round_map/2` writes it under
     # `"baku_points"`, the import remaps its keys): what each round was
     # paired with, which the next round's `XXA` history reads back.
     :baku_points,
@@ -389,12 +391,22 @@ defmodule PairingsEngine.TournamentExport do
     # middle of somebody else's edit. A backup taken mid-session restores
     # the boards as they were, with no session open.
     :mpa_session,
-    # Carried outside the field list, like `virtual_points`: `round_map/1`
+    # Carried outside the field list, like `virtual_points`: `round_map/2`
     # writes it under `"mpa_pibe"` only when the round has one, so a
     # tournament without a manual alteration exports exactly as before. It
     # is the round's PIBE record, in starting ranks rather than ids, so it
     # travels as it is.
-    :mpa_pibe
+    :mpa_pibe,
+    # Carried outside the field list: `round_map/2` writes the round's
+    # pairing proof under `"proof"` (the gzip file as base64, with its
+    # digest), and only when the caller asks with `include_proofs: true` -
+    # the downloaded backup, the account export and a hand-off. A restore
+    # point is taken before every destructive action, and nine rounds of
+    # proofs in each would grow every one of them by evidence nobody restores
+    # to read. The digest and size are re-derived from the file on import.
+    :proof,
+    :proof_sha256,
+    :proof_bytes
   ]
 
   @pairing_excluded [
@@ -609,6 +621,10 @@ defmodule PairingsEngine.TournamentExport do
   `include_handoff: true` adds the `"audit_log"` and `"collaborators"`
   blocks - see the moduledoc for why they are opt-in and which two callers
   must not get them.
+
+  `include_proofs: true` carries each round's pairing proof file
+  (`"proof"` in the round) - for the downloaded backups and a hand-off,
+  never for a restore point.
   """
   def export_tournament(%Tournament{} = tournament, opts \\ []),
     do: envelope([tournament], opts)
@@ -639,7 +655,11 @@ defmodule PairingsEngine.TournamentExport do
       "openresults" => openresults_block(t),
       "teams" => Enum.map(Tournaments.list_teams(t.id), &team_map/1),
       "players" => Enum.map(Tournaments.list_players(t.id), &player_map/1),
-      "rounds" => Enum.map(rounds_with_pairings(t.id), &round_map/1),
+      "rounds" =>
+        Enum.map(
+          rounds_with_pairings(t.id),
+          &round_map(&1, Keyword.get(opts, :include_proofs, false))
+        ),
       "byes" => byes(t.id),
       "forbidden_pairings" => forbidden_pairings(t.id),
       # The pairing rules (`PairingRule`): a group rule's members are player
@@ -750,7 +770,7 @@ defmodule PairingsEngine.TournamentExport do
 
   defp player_map(player), do: Map.put(struct_fields(player, @player_fields), "id", player.id)
 
-  defp round_map(round) do
+  defp round_map(round, include_proofs?) do
     round
     |> struct_fields(@round_fields)
     |> Map.merge(%{
@@ -763,7 +783,22 @@ defmodule PairingsEngine.TournamentExport do
     |> then(fn map ->
       if round.mpa_pibe, do: Map.put(map, "mpa_pibe", round.mpa_pibe), else: map
     end)
+    |> put_proof(round, include_proofs?)
   end
+
+  # The proof file itself is not loaded with the round (`Round`'s
+  # `load_in_query: false`), so it is read here, only when asked for.
+  defp put_proof(map, %Round{proof_sha256: sha} = round, true) when is_binary(sha) do
+    case PairingsEngine.PairingProofs.fetch(round.id) do
+      gzip when is_binary(gzip) ->
+        Map.put(map, "proof", %{"sha256" => sha, "gzip_base64" => Base.encode64(gzip)})
+
+      nil ->
+        map
+    end
+  end
+
+  defp put_proof(map, _round, _include?), do: map
 
   # A team match: which two teams, and its number in the round. `id` travels
   # so the round's pairings can name it (`"match_id"` below) and the import

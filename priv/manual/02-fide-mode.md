@@ -62,6 +62,8 @@ which takes the tournament out of FIDE mode. See
 The settings are:
 
 - the pairing system **Keizer** (it is not a FIDE system);
+- the **Dubov system** for a Swiss: it is a FIDE system, but this program is
+  endorsed by FIDE for the Dutch system only ([Pairing](06-pairing.md#the-dubov-system));
 - **Pair each category independently**, which pairs each category as a
   separate tournament;
 - the **Swiss match format** (each pairing played twice in a row with colours

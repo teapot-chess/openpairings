@@ -754,6 +754,14 @@ defmodule PairingsEngineWeb.Layouts do
       >
         <p class="fide-strip-full">
           <span>{gettext("Not in FIDE mode.")}</span>
+          <span
+            :if={PairingsEngine.Tournaments.Tournament.dubov?(@tournament)}
+            id="not-fide-mode-dubov"
+          >
+            {gettext(
+              "Paired by the Dubov system; this program is endorsed by FIDE for the Dutch system only."
+            )}
+          </span>
           <.link navigate={~p"/t/#{@tournament.id}/settings/fide"} class="pe-btn fide-strip-more">
             {gettext("What that means")}
             <.icon name="hero-arrow-right-mini" class="size-4" />

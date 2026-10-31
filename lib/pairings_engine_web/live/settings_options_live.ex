@@ -93,6 +93,7 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
       rr_reverse_last_two_locked?: :rr_reverse_last_two in locked,
       rr_match_format_locked?: :rr_match_format in locked,
       swiss_match_format_locked?: :swiss_match_format in locked,
+      swiss_variant_locked?: :swiss_variant in locked,
       initial_colour_locked?: :initial_colour in locked,
       rating_method_locked?: :rating_method in locked,
       initial_order_tiebreak_locked?: :initial_order_tiebreak in locked,
@@ -139,7 +140,7 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
   # send. `String.to_existing_atom/1` on an unguarded param is a crafted
   # event away from an `ArgumentError` that takes the sender's socket down
   # with it, and the atom table is not the caller's to grow either.
-  @locked_fields ~w(pairing_system rr_cycles rr_reverse_last_two rr_match_format swiss_match_format initial_colour rating_method initial_order_tiebreak)
+  @locked_fields ~w(pairing_system swiss_variant rr_cycles rr_reverse_last_two rr_match_format swiss_match_format initial_colour rating_method initial_order_tiebreak)
 
   def handle_event("locked_hint", %{"field" => field}, socket)
       when field in @locked_fields do
@@ -276,7 +277,8 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
             :initial_colour,
             :late_entry_numbering,
             :acceleration,
-            :swiss_match_format
+            :swiss_match_format,
+            :swiss_variant
           ]
 
         "round_robin" ->
@@ -313,6 +315,7 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
     |> maybe_drop_locked("rr_reverse_last_two", assigns.rr_reverse_last_two_locked?)
     |> maybe_drop_locked("rr_match_format", assigns.rr_match_format_locked?)
     |> maybe_drop_locked("swiss_match_format", assigns.swiss_match_format_locked?)
+    |> maybe_drop_locked("swiss_variant", assigns.swiss_variant_locked?)
     |> maybe_drop_locked("initial_colour", assigns.initial_colour_locked?)
     |> maybe_drop_locked("rating_method", assigns.rating_method_locked?)
     |> maybe_drop_locked("initial_order_tiebreak", assigns.initial_order_tiebreak_locked?)
@@ -432,6 +435,15 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
         "Match format pairs round N and N+1 as one immediate two-game rematch - round N+1 is a fixed, colour-reversed mirror of round N, not an independent pairing. Turning this on or off after rounds already exist changes what future rounds mean without changing what already happened, so a round already on the board can stop matching what the schedule now says it should have been."
       )
 
+  defp swiss_variant_label("dutch"), do: gettext("Dutch (C.04.3) - FIDE mode")
+  defp swiss_variant_label("dubov"), do: gettext("Dubov (C.04.4.1) - leaves FIDE mode")
+
+  defp swiss_variant_warning,
+    do:
+      gettext(
+        "The Swiss system decided every round already paired. Changing it now would pair the rest of the event by other rules than its first rounds."
+      )
+
   defp swiss_match_format_warning,
     do:
       gettext(
@@ -498,6 +510,51 @@ defmodule PairingsEngineWeb.SettingsOptionsLive do
                   warning={pairing_system_warning()}
                   fide_path={fide_path(@tournament, @fide_locked, :pairing_system)}
                 />
+              </.setting_field>
+
+              <.setting_field
+                :if={!Tournament.team?(@tournament)}
+                class="tset-adv tset-only-swiss"
+                label={gettext("Swiss system")}
+                hint={
+                  gettext(
+                    "Swiss only. The Dutch system (C.04.3) is the default and the one this program is endorsed by FIDE for. The Dubov system (C.04.4.1) is a FIDE system too, but choosing it takes the tournament out of FIDE mode, because the endorsement covers the Dutch system only. Dubov needs a FIDE rating for every player and does not take the match format, bye preferences or exclusions, or soft pairing rules. Frozen once round 1 is paired."
+                  )
+                }
+              >
+                <div class="locked-wrap">
+                  <select
+                    id="swiss-variant-select"
+                    name="tournament[swiss_variant]"
+                    disabled={@swiss_variant_locked?}
+                  >
+                    <option
+                      :for={value <- Tournament.swiss_variants()}
+                      value={value}
+                      selected={@tournament.swiss_variant == value}
+                    >
+                      {swiss_variant_label(value)}
+                    </option>
+                  </select>
+                  <.locked_overlay field={:swiss_variant} locked?={@swiss_variant_locked?} />
+                </div>
+
+                <.locked_hint_message
+                  field={:swiss_variant}
+                  locked_hint={@locked_hint}
+                  warning={swiss_variant_warning()}
+                  fide_path={fide_path(@tournament, @fide_locked, :swiss_variant)}
+                />
+
+                <p
+                  :if={Tournament.dubov?(@tournament)}
+                  id="swiss-variant-dubov-note"
+                  class="error-note"
+                >
+                  {gettext(
+                    "Not in FIDE mode: this tournament is paired by the Dubov system, and this program is endorsed by FIDE for the Dutch system only."
+                  )}
+                </p>
               </.setting_field>
 
               <.setting_field

@@ -271,6 +271,44 @@ defmodule PairingsEngine.OpenResultsPublishContractTest do
       refute Publishing.published?(Tournaments.get_tournament!(t.id))
     end
 
+    test "a proof the answer asks for goes up once, in the contract's shape" do
+      t = tournament()
+      gzip = Base.decode64!(ex("proof.request.json")["gzip_base64"])
+
+      Repo.update_all(from(r in Round, where: r.tournament_id == ^t.id and r.number == 1),
+        set: [
+          proof: gzip,
+          proof_sha256: PairingsEngine.PairingProofs.digest(gzip),
+          proof_bytes: byte_size(gzip)
+        ]
+      )
+
+      path = "/api/tournaments/#{t.public_slug}/proofs"
+
+      site(fn
+        "POST", "/api/snapshots" -> {200, ex("snapshot.response.proofs-wanted.json")}
+        "POST", ^path -> {200, ex("proof.response.json")}
+      end)
+
+      assert {:ok, _} = Publishing.publish(Tournaments.get_tournament!(t.id))
+      assert_valid!(@contract, "snapshot.request.schema.json", sent("POST", "/api/snapshots"))
+
+      body = assert_valid!(@contract, "proof.request.schema.json", sent("POST", path))
+      assert body["round"] == 1
+      assert Base.decode64!(body["gzip_base64"]) == gzip
+      refute_received {:sent, "POST", ^path, _}
+    end
+
+    test "a proof the answer asks for with another digest is not sent" do
+      t = tournament()
+      path = "/api/tournaments/#{t.public_slug}/proofs"
+
+      site(fn "POST", "/api/snapshots" -> {200, ex("snapshot.response.proofs-wanted.json")} end)
+
+      assert {:ok, _} = Publishing.publish(t)
+      refute_received {:sent, "POST", ^path, _}
+    end
+
     test "the entry queue example is pulled, entry by entry" do
       t = tournament() |> published()
       listing = ex("registrations.response.json")

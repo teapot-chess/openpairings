@@ -1225,7 +1225,8 @@ defmodule PairingsEngine.TrfImport do
   # edition; they are kept as played, the rounds paired here from now on
   # follow the current one, and the import says so (`:dutch_2017`).
   #
-  # A code this app has no system for (Dubov, Burstein, a CUSTOM_*) leaves
+  # `FIDE_DUBOV` imports as a Dubov Swiss (`swiss_variant`). A code this app
+  # has no system for (Burstein, a CUSTOM_*) leaves
   # the defaults alone rather than guessing; the settings the file could not
   # fill are the arbiter's to set, and `infer_type/1` has already read the
   # plain-language `092` line. A team Swiss code (`FIDE_TEAM*`) names its
@@ -1247,6 +1248,10 @@ defmodule PairingsEngine.TrfImport do
       cond do
         base in ~w(FIDE_DUTCH FIDE_DUTCH_2017 FIDE_DUTCH_2025 FIDE_DUTCH_2026) ->
           %{pairing_system: "swiss"}
+
+        # The Dubov system (C.04.4.1), paired here by `Ainalrami.Dubov`.
+        base == "FIDE_DUBOV" ->
+          %{pairing_system: "swiss", swiss_variant: "dubov"}
 
         # The first cycle's last two rounds played in reverse order (FIDE
         # C.05 Annex 1) - the schedule `RoundRobin.schedule/4` replays with

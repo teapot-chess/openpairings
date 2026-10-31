@@ -115,6 +115,10 @@ msgstr ""
 msgid "must be after the opening time"
 msgstr ""
 
+## From Tournament.changeset/2 - the Swiss system and the match format
+msgid "the Dubov system cannot be combined with the match format"
+msgstr ""
+
 msgid "must be a whole number of players, at least 1"
 msgstr ""
 

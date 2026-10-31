@@ -43,7 +43,7 @@ defmodule PairingsEngine.ItdxNotes do
                rate_of_play initial_colour initial_colour_drawn rating_method
                initial_order_tiebreak late_entry_numbering round_one_absentees_late soft_position
                extra_points_mode count_extra_points pair_by_category categories_enabled
-               rr_cycles rr_match_format rr_reverse_last_two keizer_top_value swiss_match_format
+               rr_cycles rr_match_format rr_reverse_last_two keizer_top_value swiss_match_format swiss_variant
                postponed_games postponed_requester_outcome postponed_opponent_outcome
                fide_compliance_lost_round baku_group_a_last
                team_boards team_match_points_win team_match_points_draw team_match_points_loss
@@ -159,6 +159,8 @@ defmodule PairingsEngine.ItdxNotes do
       "OP round #{r.number}: status #{r.status}" <>
         if(r.date not in [nil, ""], do: ", date #{r.date}", else: "") <>
         if(r.paired_at, do: ", paired #{stamp(r.paired_at)}", else: "") <>
+        if(r.engine, do: ", engine #{r.engine} #{r.engine_version || "unknown"}", else: "") <>
+        if(r.proof_sha256, do: ", proof sha256 #{r.proof_sha256}", else: "") <>
         if(r.mpa_pibe, do: ", hand-edited (see the MPA line)", else: "")
     end
   end

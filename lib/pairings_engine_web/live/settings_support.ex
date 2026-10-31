@@ -932,6 +932,7 @@ defmodule PairingsEngineWeb.SettingsSupport do
   def compliance_setting_label(:pairing_system), do: gettext("Pairing system")
   def compliance_setting_label(:pair_by_category), do: gettext("Pair by category")
   def compliance_setting_label(:swiss_match_format), do: gettext("Match format")
+  def compliance_setting_label(:swiss_variant), do: gettext("Swiss system")
 
   def compliance_setting_label(:late_entry_numbering),
     do: gettext("Late entrants' pairing numbers")
@@ -1017,6 +1018,12 @@ defmodule PairingsEngineWeb.SettingsSupport do
     do:
       gettext(
         "Round 1 is paired. How hard the wishes are tried is part of what was announced about them, and the FIDE rules (C.05 5.2) want restrictions announced before the first round."
+      )
+
+  def compliance_message(:swiss_system_not_endorsed),
+    do:
+      gettext(
+        "Paired by the Dubov system. It is a FIDE system (C.04.4.1), but this program is endorsed by FIDE for the Dutch system only, so a Dubov tournament is not in FIDE mode. Choosing the Dutch system before round 1 puts this back."
       )
 
   def compliance_message(:mirrored_second_leg),

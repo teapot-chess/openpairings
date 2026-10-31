@@ -151,6 +151,36 @@ A player with a **fixed table** ([Players and rating lists](04-players-and-ratin
 labelled with that table; it is a label for printing only and does not
 change who plays whom.
 
+### The Dubov system {#the-dubov-system}
+
+A Swiss is paired by the FIDE **Dutch system** (C.04.3) unless you choose
+otherwise. *Settings - Options - Swiss system* (advanced) also offers the
+**Dubov system** (C.04.4.1, the 2026 edition), paired by the same engine.
+
+> [!WARNING]
+> Choosing Dubov takes the tournament **out of FIDE mode**. Dubov is a FIDE
+> system, but this program is endorsed by FIDE for the Dutch system only, and
+> the endorsement does not stretch to cover it. The setting, the FIDE page and
+> the strip at the top of every page of the tournament say so.
+
+What is different with Dubov:
+
+- every player needs a FIDE rating: an unrated player stops the pairing, and
+  the message names them;
+- it has no topscorer exception, so it can find a round unpairable that the
+  Dutch system would pair, and then the round is yours to pair by hand;
+- the match format, bye preferences, bye exclusions and soft pairing rules do
+  not go with it: the program refuses the round and says which one is in the
+  way. Forbidden pairings, club and federation exclusions and Baku
+  acceleration do work;
+- the round has no pairing rationale, no engine trace and no pairing proof,
+  because those describe the Dutch system.
+
+The choice is frozen once round 1 is paired. The rating report writes
+`192 FIDE_DUBOV` (`FIDE_DUBOV_BAKU` with Baku), an import of such a file comes
+back as a Dubov tournament, and the results site is told the system.
+
+
 ## Round robin
 
 A round robin pairs the **whole tournament at once**: the button reads *Pair
@@ -349,6 +379,32 @@ page offers to do so and says that it did.
 
 If an organiser's rule changed the round (a bye preference, a pair wish), the
 page says which board it moved and what the FIDE rules alone would have given.
+
+### The engine and its proof {#the-engine-and-its-proof}
+
+Every Swiss round paired by the engine records which engine paired it and
+which version (*ainalrami 0.48.0*, say). It is kept per round because an
+update between two rounds can change the engine halfway through an event, and
+the record should say what paired round 5, not what is installed today. A
+round paired by hand, by a round-robin table, by Keizer, or before the program
+kept this has none.
+
+After the round is saved, the program also works out the engine's **pairing
+proof**: a file in which the engine shows that every choice it made while
+pairing the round was the best one the rules allow, and that the boards are
+the ones it arrived at. It is made in the background, never while you wait
+for *Pair round*, by pairing the round a second time on the engine's slower
+reference path; it is kept only if that second pairing gives exactly the
+boards the round holds. Anyone can check it with the engine's own verifier,
+which shares no code with the engine. A field of more than 300 players gets no
+proof (working one out costs too much memory there), and neither do team
+rounds, round robins and Keizer, which have no such choice to prove.
+
+The proof goes to the results site with the round
+([Publishing](14-publishing.md#the-proof-of-a-round)), into the full backup
+([Import and export](12-import-export.md#backup-and-copy)), and the ITDX
+file's round lines name the engine and the proof's SHA-256.
+
 
 ## Preview of the next round
 

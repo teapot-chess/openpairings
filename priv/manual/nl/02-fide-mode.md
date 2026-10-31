@@ -67,6 +67,9 @@ FIDE-modus. Zie [Uitgestelde partijen](07-results.md).
 De instellingen zijn:
 
 - het paringssysteem **Keizer** (het is geen FIDE-systeem);
+- het **Dubov-systeem** voor een Zwitsers toernooi: het is een FIDE-systeem, maar
+  dit programma is door de FIDE alleen erkend voor het Nederlandse systeem
+  ([Paren](06-pairing.md#the-dubov-system));
 - **Elke categorie apart paren**, waarbij elke categorie als afzonderlijk
   toernooi wordt gepaard;
 - het **Zwitserse matchformaat** (elke paring twee keer achter elkaar gespeeld,

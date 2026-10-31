@@ -1426,7 +1426,7 @@ defmodule PairingsEngine.Tournaments do
       # paired.
       cycle = RoundRobin.total_rounds(max(RoundRobin.frozen_schedule_size(tournament), 2), 1)
 
-      base = ~w(pairing_system rr_match_format swiss_match_format
+      base = ~w(pairing_system swiss_variant rr_match_format swiss_match_format
                 pair_by_category abs_value abs_jusque abs_nbfois)a
 
       # A team event's match size is how its boards are numbered and how
@@ -1494,7 +1494,7 @@ defmodule PairingsEngine.Tournaments do
                   team_match_points_win team_match_points_draw team_match_points_loss
                   bye_value presence_value presence_on_allocated_bye
                   team_pab_match_points team_pab_game_points team_forfeit_board_points
-                  team_board_order team_primary_score acceleration pairing_system tiebreaks
+                  team_board_order team_primary_score acceleration pairing_system swiss_variant tiebreaks
                   custom_tiebreak)a
 
   @doc """

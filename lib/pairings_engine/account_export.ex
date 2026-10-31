@@ -103,7 +103,9 @@ defmodule PairingsEngine.AccountExport do
   defp tournament_entries(folder, tournaments) do
     Enum.map(tournaments, fn tournament ->
       {"#{folder}/#{tournament.id}-#{slug(tournament.name)}.json",
-       Jason.encode_to_iodata!(TournamentExport.export_tournament(tournament))}
+       Jason.encode_to_iodata!(
+         TournamentExport.export_tournament(tournament, include_proofs: true)
+       )}
     end)
   end
 

@@ -855,7 +855,7 @@ defmodule PairingsEngine.Handoff do
 
   defp envelope(tournament, direction, token, origin) do
     tournament
-    |> TournamentExport.export_tournament(include_handoff: true)
+    |> TournamentExport.export_tournament(include_handoff: true, include_proofs: true)
     |> Map.put("handoff", %{
       "format" => @handoff_format,
       "version" => @handoff_version,

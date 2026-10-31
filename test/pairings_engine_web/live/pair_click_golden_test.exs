@@ -179,6 +179,18 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
   And for tournament series (results-series): every JSON export gains
   `tournament.series_id` (nil in the scenarios). With that key taken out the
   regenerated file is equal, term for term, to the one before.
+
+  And for the engine record (system-proof): every round in a JSON export and
+  in the written snapshot gains `engine` ("ainalrami") and `engine_version`,
+  each public round gains `engine`, and the public tournament gains
+  `swiss_variant` ("dutch"). The version is normalised to `:engine_version`,
+  so an engine bump does not show here. With those keys taken out the
+  regenerated file is equal, term for term, to the one before.
+
+  And for the Swiss system (dubov-wiring): every JSON export, and the
+  written snapshot, gains `tournament.swiss_variant` ("dutch"). With that
+  key taken out the regenerated file is equal, term for term, to the one
+  before.
   """
   use PairingsEngineWeb.ConnCase, async: false
 
@@ -390,6 +402,13 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
     key = to_string(key)
     key in @dropped or String.ends_with?(key, "_at") or key == "exported" or key == "user_id"
   end
+
+  # The engine version a round was paired with: an engine bump is not a
+  # change the click made, the name of the engine is.
+  defp normalize_value("engine_version", value, _names) when is_binary(value), do: :engine_version
+
+  defp normalize_value("engine", %{"version" => _} = engine, names),
+    do: engine |> Map.put("version", :engine_version) |> normalize(names)
 
   defp normalize_value(key, value, names) when is_integer(value) do
     cond do

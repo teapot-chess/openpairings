@@ -204,7 +204,7 @@ The file written is TRF26, the 2026 report format. It has the player rows in
 the TRF16 layout, and the tournament records: number of rounds (142), initial
 colour (152), the point system if it is not 1, ½, 0 (162), the program (182),
 the type of tournament (192, for example `FIDE_DUTCH_2025` for a Swiss,
-`_BAKU` with acceleration, `BERGER_ROUNDROBIN_Gn`, `FIDE_TEAM_TYPEA_MP_GP`, or
+`FIDE_DUBOV` for a Dubov Swiss, `_BAKU` with acceleration, `BERGER_ROUNDROBIN_Gn`, `FIDE_TEAM_TYPEA_MP_GP`, or
 `CUSTOM_SWISS` for Keizer), the tie-breaks (202) and the rate of play (222).
 It reports the games played and nothing that is only there to pair the next
 round: no virtual points (250), no prohibited pairings (260), no bye granted
