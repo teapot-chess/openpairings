@@ -262,12 +262,12 @@ defmodule PairingsEngineWeb.Layouts do
                 {gettext("Tournament")}
               </.link>
 
-              <.link navigate={~p"/t/#{@tournament.id}/settings/group"} class="topbar-menu-item">
-                {gettext("Group")}
-              </.link>
-
               <.link navigate={~p"/t/#{@tournament.id}/settings/options"} class="topbar-menu-item">
                 {gettext("Options")}
+              </.link>
+
+              <.link navigate={~p"/t/#{@tournament.id}/settings/group"} class="topbar-menu-item">
+                {gettext("Group")}
               </.link>
 
               <.link navigate={~p"/t/#{@tournament.id}/settings/scoring"} class="topbar-menu-item">

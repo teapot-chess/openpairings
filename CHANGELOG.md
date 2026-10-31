@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **Settings: Options now comes before Group.** You set up the tournament itself before deciding which other tournaments it hangs around with, so the list finally agrees.
+
 - [Feature] **Import players into a tournament that already exists.** The Players page has an **Import players** button that takes a TRF file (only its player records are read; TRF06, TRF16 and TRF26 all do) or a CSV file (a header row, only the name required). Before anything is written you get the list: who would be added, which rows could not be read and why, and who is skipped for already being there. Retyping forty names after a federation emailed you a spreadsheet was a choice, and now it is no longer the only one. The players go in together or not at all, and join exactly as if added by hand. The manual lists the columns.
 
 ## [0.111.0] - 2026-10-30

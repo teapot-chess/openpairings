@@ -55,7 +55,7 @@ het FIDE-toernooi-ID.
 
 Het menu **Instellingen** in de bovenbalk opent de pagina Toernooi. Naast elke
 instellingenpagina staat de lijst van pagina's (op een telefoon erboven), in drie
-groepen: **Opzet** (Toernooi, Groep, Opties, Puntentelling, Tiebreaks, Data, Ruimtes, Categorieën,
+groepen: **Opzet** (Toernooi, Opties, Groep, Puntentelling, Tiebreaks, Data, Ruimtes, Categorieën,
 Extra punten, Verboden paringen), **Publiceren** (OpenResults, Live borden) en
 **Rapporteren** (FIDE, Exporteren, Over).
 
@@ -95,8 +95,8 @@ Nog twee dingen houden de pagina's kort:
 | Pagina | Getoond | Met *Geavanceerde instellingen tonen* |
 | --- | --- | --- |
 | Toernooi | naam, speelzaal, stad, federatie, organisator; toernooiformaat; aantal rondes; Chess960 en het vinkje voor 30 dagen; delen | clubnummer van de organisator; logo |
-| Groep | dit toernooi bij de andere toernooien van zijn evenement in een groep zetten, of er weer uit halen | - |
 | Opties | paringssysteem, toernooirating, cycli (rondetoernooi), Keizer-topwaarde (Keizer), opstellingen (teams), type en speeltempo | engine, beginkleur, gelijke rating en titel, paringsnummers van laatkomers, afwezigen in ronde 1, acceleratie, de matchformaten, teamrating en rating van een ongerate speler (teams), ander speeltempo |
+| Groep | dit toernooi bij de andere toernooien van zijn evenement in een groep zetten, of er weer uit halen | - |
 | Puntentelling | punten, matchpunten, uitgestelde partijen | de hele kaart *Byes en afwezigheden* (punten voor een overgeslagen ronde en de grenzen ervan, vrijwillig niet-gespeelde rondes, afwezigheden van laatkomers, het byetype vragen); bye, forfait en terugtrekking van een team |
 | Data | één datum per ronde | - |
 | Ruimtes | de ruimtes van de zaal en hun borden | - |

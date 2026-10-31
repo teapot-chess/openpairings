@@ -52,7 +52,7 @@ tournament ID.
 
 The **Settings** menu in the top bar opens the Tournament page. Every
 Settings page has the list of pages beside it (above it on a phone), in three
-groups: **Set-up** (Tournament, Group, Options, Scoring, Tie-breaks, Dates, Rooms, Categories,
+groups: **Set-up** (Tournament, Options, Group, Scoring, Tie-breaks, Dates, Rooms, Categories,
 Extra points, Forbidden pairings), **Publishing** (OpenResults, Live boards) and
 **Reporting** (FIDE, Export, About).
 
@@ -91,8 +91,8 @@ Two more things keep the pages short:
 | Page | Shown | With *Show advanced settings* |
 | --- | --- | --- |
 | Tournament | name, venue, city, federation, organiser; tournament format; number of rounds; Chess960 and the 30-day tick; sharing | organiser's club number; logo |
-| Group | put this tournament in a group with the other tournaments of its event, or take it out | - |
 | Options | pairing system, tournament rating, cycles (round robin), Keizer top value (Keizer), line-ups (teams), type and rate of play | engine, initial colour, equal rating and title, late entrants' pairing numbers, round-1 absentees, acceleration, the match formats, team rating and unrated rating (teams), other rate of play |
+| Group | put this tournament in a group with the other tournaments of its event, or take it out | - |
 | Scoring | points, match points, postponed games | the whole *Byes and absences* card (points for a round sat out and its limits, voluntary unplayed rounds, late entrants' absences, asking the bye type); a team's bye, forfeit and withdrawal rules |
 | Tie-breaks | the tie-break list, with presets and the builder | how an unrated player is counted in the tie-breaks; players still level share a place |
 | Dates | one date per round | - |

@@ -348,9 +348,9 @@ defmodule PairingsEngineWeb.SettingsSupport do
       {gettext("Set-up"),
        [
          {:tournament, ~p"/t/#{id}/settings", "hero-trophy-micro", gettext("Tournament")},
-         {:group, ~p"/t/#{id}/settings/group", "hero-squares-2x2-micro", gettext("Group")},
          {:options, ~p"/t/#{id}/settings/options", "hero-adjustments-vertical-micro",
           gettext("Options")},
+         {:group, ~p"/t/#{id}/settings/group", "hero-squares-2x2-micro", gettext("Group")},
          {:scoring, ~p"/t/#{id}/settings/scoring", "hero-calculator-micro", gettext("Scoring")},
          {:tiebreaks, ~p"/t/#{id}/settings/tiebreaks", "hero-scale-micro", gettext("Tie-breaks")},
          {:dates, ~p"/t/#{id}/settings/dates", "hero-calendar-days-micro", gettext("Dates")},
