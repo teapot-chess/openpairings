@@ -5,6 +5,10 @@ defmodule PairingsEngineWeb.UserLive.LoginTest do
   import PairingsEngine.AccountsFixtures
 
   describe "login page" do
+    # An open server, so the sign-up links are there to find; the other
+    # modes have their own tests in signup_policy_live_test.exs.
+    setup do: PairingsEngine.Accounts.SignupPolicy.put("open", [])
+
     test "renders login page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
@@ -248,6 +252,8 @@ defmodule PairingsEngineWeb.UserLive.LoginTest do
   end
 
   describe "login navigation" do
+    setup do: PairingsEngine.Accounts.SignupPolicy.put("open", [])
+
     test "redirects to registration page when the Register button is clicked", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 

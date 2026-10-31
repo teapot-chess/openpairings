@@ -328,6 +328,50 @@ config :pairings_engine, :fide_photo_proxy,
 config :pairings_engine, :accounts,
   blocked_registration_domain: System.get_env("SSO_BLOCKED_REGISTRATION_DOMAIN")
 
+# Who may create an account by themselves - see
+# `PairingsEngine.Accounts.SignupPolicy`.
+#
+#   PAIRINGS_SIGNUP          closed | invite | open   (unset: invite)
+#   PAIRINGS_SIGNUP_DOMAINS  for open only: the email domains allowed,
+#                            comma-separated (unset: any domain)
+#
+# A value saved on Admin → System wins over both. Checked here and refused at
+# boot when wrong, because a typo in a setting that decides who can register
+# should not quietly become the default - in either direction.
+signup_mode =
+  case System.get_env("PAIRINGS_SIGNUP") do
+    nil ->
+      nil
+
+    value ->
+      case value |> String.trim() |> String.downcase() do
+        "" ->
+          nil
+
+        mode when mode in ~w(closed invite open) ->
+          mode
+
+        _ ->
+          raise "PAIRINGS_SIGNUP is one of closed, invite or open, got: #{inspect(value)}"
+      end
+  end
+
+signup_domains =
+  (System.get_env("PAIRINGS_SIGNUP_DOMAINS") || "")
+  |> String.split(",")
+  |> Enum.map(&(&1 |> String.trim() |> String.trim_leading("@") |> String.downcase()))
+  |> Enum.reject(&(&1 == ""))
+
+for domain <- signup_domains,
+    not Regex.match?(
+      ~r/\A[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\z/,
+      domain
+    ) do
+  raise "PAIRINGS_SIGNUP_DOMAINS has an entry that is not an email domain: #{inspect(domain)}"
+end
+
+config :pairings_engine, :signup, mode: signup_mode, domains: signup_domains
+
 # The public OpenResults address a desktop copy publishes to when none is
 # stored, and the placeholder the publishing form suggests. Unset: the value
 # compiled into `PairingsEngine.Publishing`. Hosted installs store their own

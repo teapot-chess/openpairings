@@ -19,10 +19,13 @@ defmodule PairingsEngine.AccountsFixtures do
   end
 
   def unconfirmed_user_fixture(attrs \\ %{}) do
+    # Straight in, not through `Accounts.register_user/2`: that one asks the
+    # sign-up policy first, and a test that needs an account is not a test
+    # of who may sign up. The policy has its own tests.
     {:ok, user} =
-      attrs
-      |> valid_user_attributes()
-      |> Accounts.register_user()
+      %PairingsEngine.Accounts.User{}
+      |> PairingsEngine.Accounts.User.email_changeset(valid_user_attributes(attrs))
+      |> PairingsEngine.Repo.insert()
 
     user
   end

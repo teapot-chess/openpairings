@@ -2,6 +2,7 @@ defmodule PairingsEngineWeb.UserLive.Login do
   use PairingsEngineWeb, :live_view
 
   alias PairingsEngine.{Accounts, RateLimit}
+  alias PairingsEngine.Accounts.SignupPolicy
   alias PairingsEngineWeb.ClientIp
 
   @impl true
@@ -119,9 +120,13 @@ defmodule PairingsEngineWeb.UserLive.Login do
               </li>
             </ul>
 
-            <div :if={!@current_scope} class="auth-hero-cta">
+            <div :if={!@current_scope and @signup_link == :open} class="auth-hero-cta">
               <span>{gettext("New to OpenPairings?")}</span>
-              <.link navigate={~p"/users/register"} class="auth-hero-cta-btn">
+              <.link
+                id="hero-register-link"
+                navigate={~p"/users/register"}
+                class="auth-hero-cta-btn"
+              >
                 {gettext("Create a free account")} <span aria-hidden="true">→</span>
               </.link>
             </div>
@@ -138,7 +143,22 @@ defmodule PairingsEngineWeb.UserLive.Login do
               <%= if @current_scope do %>
                 {gettext("Re-authenticate to perform sensitive actions on your account.")}
               <% else %>
-                {gettext("New here?")} <.link navigate={~p"/users/register"} class="auth-link">{gettext("Create an account")}</.link>.
+                <%= case @signup_link do %>
+                  <% :open -> %>
+                    {gettext("New here?")} <.link
+                      id="register-link"
+                      navigate={~p"/users/register"}
+                      class="auth-link"
+                    >{gettext("Create an account")}</.link>.
+                  <% :invited -> %>
+                    {gettext("Invited, and no account yet?")} <.link
+                      id="register-invited-link"
+                      navigate={~p"/users/register"}
+                      class="auth-link"
+                    >{gettext("Create your account")}</.link>.
+                  <% :none -> %>
+                    {gettext("Log in with your email address.")}
+                <% end %>
               <% end %>
             </p>
 
@@ -257,7 +277,7 @@ defmodule PairingsEngineWeb.UserLive.Login do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     email =
       Phoenix.Flash.get(socket.assigns.flash, :email) ||
         get_in(socket.assigns, [:current_scope, Access.key(:user), Access.key(:email)])
@@ -270,9 +290,27 @@ defmodule PairingsEngineWeb.UserLive.Login do
      assign(socket,
        form: form,
        trigger_submit: false,
-       client_ip: ClientIp.from_socket(socket)
+       client_ip: ClientIp.from_socket(socket),
+       signup_link: signup_link(session)
      )}
   end
+
+  # Which "create an account" line the page offers. Only an open server
+  # advertises sign-up to everyone. On an invite-only one, somebody arriving
+  # from an invitation link (the sign-in redirect left `/invites/...` as the
+  # place to come back to) is offered the way in, so the link in their mail
+  # still leads somewhere; everyone else is asked to log in. The rule itself
+  # is `Accounts.register_user/2`'s, not a matter of which link is shown.
+  defp signup_link(session) do
+    case SignupPolicy.mode() do
+      "open" -> :open
+      "invite" -> if invite_return?(session), do: :invited, else: :none
+      _closed -> :none
+    end
+  end
+
+  defp invite_return?(%{"user_return_to" => "/invites/" <> _}), do: true
+  defp invite_return?(_session), do: false
 
   @impl true
   def handle_event("submit_password", _params, socket) do

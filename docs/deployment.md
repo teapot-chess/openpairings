@@ -753,6 +753,52 @@ server.
 | `KEYCLOAK_REDIRECT_URI` | no | defaults to `https://$PHX_HOST/auth/keycloak/callback` |
 | `FIDE_LIST_URL` | no | where the monthly rating-list zip is fetched from. Defaults to `https://ratings.fide.com/download/players_list.zip`. **Set this on any host FIDE blocks** - see below |
 | `SSO_BLOCKED_REGISTRATION_DOMAIN` | no | the e-mail domain self-serve registration/email-change is blocked on (accounts there must come from SSO instead - see `PairingsEngine.Accounts.User.blocked_registration_domain/0`). Defaults to `zerotwo.cloud`. Only relevant if a second federated domain is ever added |
+| `PAIRINGS_SIGNUP` | no (default `invite`) | who may create an account by themselves: `closed`, `invite` or `open`. Anything else refuses to boot. **An install that wants public sign-up must set `open`** - see "Who can create an account" below |
+| `PAIRINGS_SIGNUP_DOMAINS` | no | with `open` only: the e-mail domains allowed, comma-separated (`club.be,federation.org`). Unset means any domain. An entry that is not a domain refuses to boot |
+
+### Who can create an account
+
+`PairingsEngine.Accounts.SignupPolicy` decides, and `Accounts.register_user/2`
+asks it before inserting anything, so the rule holds for a hand-made request as
+much as for the form. Three modes:
+
+| Mode | Who may register on `/users/register` |
+| --- | --- |
+| `closed` | nobody. An administrator creates accounts on **Admin → System** (email only; the person logs in by the e-mailed link) |
+| `invite` (default) | an address with a pending tournament invitation (collaborator or arbiter), or with a sign-up invitation from **Admin → System** |
+| `open` | anyone; with `PAIRINGS_SIGNUP_DOMAINS`, only those domains (and invited addresses) |
+
+In every mode: the addresses in `ADMIN_EMAILS` (the same list `DEPLOY_ADMIN_EMAILS`
+feeds into the unit and into `mix pairings.role --ensure`, see "Granting the first
+administrator") may always register, so a fresh closed server can still get its
+first administrator; an administrator's sign-up invitation works (one use, seven
+days, bound to the address, only its hash stored); and SSO sign-in creates
+accounts as before, because the directory already decided who that is. The
+SSO domain is still refused on the form whatever the mode.
+
+**Upgrading changes the default.** Before this setting existed, every hosted
+install was open. After the upgrade it is `invite` until somebody says
+otherwise. To keep it open, one line in the unit (or the deploy `.env`, see
+below):
+
+```bash
+PAIRINGS_SIGNUP=open
+```
+
+Precedence, like `FIDE_LIST_URL`: **a value saved on Admin → System >
+`PAIRINGS_SIGNUP`/`PAIRINGS_SIGNUP_DOMAINS` > the default**. The page saves the
+mode and its domains as a pair and names which of the three is live; "Use
+PAIRINGS_SIGNUP" (or "Use the default") clears the saved pair. Changes are
+written to the audit log as `accounts.signup_policy_changed`; invitations,
+withdrawn invitations and accounts an administrator made as
+`accounts.signup_invited`, `accounts.signup_invitation_revoked` and
+`accounts.user_created`.
+
+The deploy script passes `DEPLOY_PAIRINGS_SIGNUP` / `DEPLOY_PAIRINGS_SIGNUP_DOMAINS` (or the plain
+`PAIRINGS_SIGNUP` / `PAIRINGS_SIGNUP_DOMAINS`) from its `.env` into the unit, and
+with `DEPLOY_EXPECT_SIGNUP=open` its post-deploy check reports a PROBLEM if the
+live sign-up page says the server is closed or invite-only. The desktop edition
+has no sign-up page at all and ignores all of this.
 
 ### `FIDE_LIST_URL` - working around FIDE's hosting-range blocks
 

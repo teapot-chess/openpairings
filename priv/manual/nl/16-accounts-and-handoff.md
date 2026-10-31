@@ -2,9 +2,9 @@
 
 ## Accounts (online) {#accounts-online}
 
-Op een server heeft iedereen een account. Je meldt zich aan met een e-maillink (een eenmalige
+Op een server heeft iedereen een account. Je meldt je aan met een e-maillink (een eenmalige
 link die naar je adres wordt gestuurd), een wachtwoord, of de single sign-on van de organisatie
-waar de installatie die gebruikt. De aanmeldpagina registreert ook een nieuw account. Elk toernooi
+waar de installatie die gebruikt. Of je zelf een account kunt aanmaken, hangt van de server af (hieronder). Elk toernooi
 hoort bij het account dat het heeft aangemaakt. De desktopversie heeft geen accounts: die meld je aan als de
 eigenaar van die computer.
 
@@ -13,6 +13,16 @@ eigenaar van die computer.
 - **Instellingen** (alleen online): de accountpagina.
 - **Functies**: de schakelaars van de nationale functies (hieronder).
 - **Afmelden** (alleen online).
+
+### Wie een account kan aanmaken {#who-can-create-an-account}
+
+Elke server beslist dat zelf, en de registratiepagina zegt wat er geldt:
+
+- **Open**: iedereen kan een account aanmaken, of alleen adressen bij de domeinen die de server opgeeft.
+- **Op uitnodiging**: alleen een adres dat uitgenodigd is. Een uitnodiging voor een toernooi (als medewerker of als arbiter) telt, net als een uitnodiging van de beheerder van de server. Gebruik het adres waarnaar de uitnodiging ging. De link in een toernooi-uitnodiging brengt je naar de aanmeldpagina, die dan *Maak je account aan* aanbiedt.
+- **Gesloten**: je kunt je niet zelf registreren. De beheerder maakt je account aan en je krijgt een aanmeldlink.
+
+Single sign-on werkt in elke modus. Een server die je zelf installeert, werkt op uitnodiging tot je dat verandert (zie [Systeem](#system-the-operator-s-page)). De desktopversie heeft helemaal geen registratie.
 
 ### De accountpagina {#the-account-page}
 
@@ -117,9 +127,14 @@ Ze toont de FIDE-database en de nationale lijst met hun update-knoppen, de versi
 ## Systeem (de pagina van de serverbeheerder) {#system-the-operator-s-page}
 
 **Beheer → Systeem** beantwoordt de drie vragen die een serverbeheerder eerst stelt: is de server gezond, heeft de nieuwste back-up de machine verlaten, en wat is er gecrasht?
-De pagina is alleen voor beheerders.
+Ze bepaalt ook wie een account mag aanmaken. De pagina is alleen voor beheerders.
 
 - **Gezondheid** is hetzelfde antwoord dat het adres `/healthz` van de server aan een monitoringprogramma geeft: de database, de versie en de toestand van de externe back-up.
+- **Registreren** bepaalt wie hier een account mag aanmaken: *Gesloten*, *Op uitnodiging* of *Open*, en bij *Open* eventueel een lijst e-maildomeinen (`club.be, federation.org`). Je ziet welke instelling geldt en waar ze vandaan komt: *op deze pagina ingesteld*, *uit PAIRINGS_SIGNUP* (de configuratie van de server) of *de standaard*, en dat is *Op uitnodiging*. **Bewaren** werkt meteen; de knop ernaast laat wat hier bewaard is vallen en gaat terug naar de configuratie van de server. Elke wijziging komt in het auditlogboek. Wat de instelling ook is: single sign-on werkt altijd, en de adressen die de configuratie van de server als beheerder opgeeft (`ADMIN_EMAILS`), mogen zich altijd registreren.
+  - **Een gebruiker uitnodigen** mailt een link om een account aan te maken. Die werkt één keer, alleen voor dat adres, zeven dagen lang, ook op een gesloten server. Uitnodigingen die nog wachten staan in een lijst, en **Intrekken** annuleert er één.
+  - **Een account aanmaken** maakt het account meteen aan, alleen met het adres, en mailt een aanmeldlink. Zo kom je binnen op een gesloten server.
+
+  Beheer je een eigen server die al registraties aannam voor deze instelling bestond: na de upgrade werkt hij op uitnodiging. Kies hier *Open*, of zet `PAIRINGS_SIGNUP=open` in de configuratie van de server, om hem weer open te zetten.
 - **Externe back-up** stuurt, als de server daarvoor is ingesteld, de nieuwste back-up naar opslag elders, versleuteld met een sleutel die de server zelf niet heeft. De pagina toont de laatste pogingen met hun resultaat, en **Nieuwste back-up nu versturen** wacht niet op de controle van elk uur. *Verouderd* betekent dat er al een tijd niets met succes is verstuurd; *Mislukt* betekent dat de laatste poging fout ging, en die poging zegt waarom.
 - **Fouten** toont wat er op deze server gecrasht is, één rij per soort crash, met hoe vaak en wanneer. De meldingen blijven op de server en bevatten geen spelersgegevens: meldingen worden ingekort en niets van wat een pagina vasthield wordt bewaard. **Vergeten** haalt er één weg zodra ze opgelost is.
 - **LiveDashboard openen** toont de processen, het geheugen en de reactietijden van de server, voor wie een trage namiddag onderzoekt.

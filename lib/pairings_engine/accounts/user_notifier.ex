@@ -147,6 +147,37 @@ defmodule PairingsEngine.Accounts.UserNotifier do
     )
   end
 
+  @doc """
+  Delivers an administrator's invitation to create an account on this
+  server (`PairingsEngine.Accounts.invite_user/3`). `url` is the sign-up
+  page with the one-time token in it; it works for `days` days, once, and
+  only for this address.
+  """
+  def deliver_signup_invitation(email, inviter, url, days) do
+    deliver(
+      email,
+      gettext("You're invited to OpenPairings"),
+      """
+
+      ==============================
+
+      #{gettext("Hi,")}
+
+      #{gettext("%{inviter} invited you to create an account on this OpenPairings server.", inviter: inviter)}
+
+      #{gettext("Open the link below and confirm your address to set it up:")}
+
+      #{url}
+
+      #{ngettext("The link works once, for this address only, for %{count} day.", "The link works once, for this address only, for %{count} days.", days)}
+
+      #{gettext("If you weren't expecting this, you can safely ignore this email.")}
+
+      ==============================
+      """
+    )
+  end
+
   defp invitation_line("arbiter", owner, tournament),
     do:
       gettext(

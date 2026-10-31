@@ -226,3 +226,15 @@ msgid "would need %{count} rounds, above the %{max}-round maximum"
 msgid_plural "would need %{count} rounds, above the %{max}-round maximum"
 msgstr[0] "zou %{count} ronde nodig hebben, boven het maximum van %{max} rondes"
 msgstr[1] "zou %{count} rondes nodig hebben, boven het maximum van %{max} rondes"
+
+msgid "sign-up here is limited to some email domains, and this is not one of them"
+msgstr "registreren kan hier alleen voor sommige e-maildomeinen, en dit is er geen van"
+
+msgid "this invitation has already been used"
+msgstr "deze uitnodiging is al gebruikt"
+
+msgid "this server does not take sign-ups; ask its administrator for an account"
+msgstr "op deze server kun je je niet zelf registreren; vraag de beheerder om een account"
+
+msgid "this server takes new accounts by invitation, and this address has none"
+msgstr "op deze server kom je alleen op uitnodiging binnen, en dit adres heeft er geen"

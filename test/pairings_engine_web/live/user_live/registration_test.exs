@@ -4,6 +4,10 @@ defmodule PairingsEngineWeb.UserLive.RegistrationTest do
   import Phoenix.LiveViewTest
   import PairingsEngine.AccountsFixtures
 
+  # An open server: these are tests of the form. The other modes are in
+  # signup_policy_live_test.exs.
+  setup do: PairingsEngine.Accounts.SignupPolicy.put("open", [])
+
   describe "Registration page" do
     test "renders registration page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")

@@ -2040,6 +2040,8 @@ label.field > span {
 .system-facts dt { color: var(--text-soft); font-size: 13px; }
 .system-facts dd { margin: 0; }
 .badge.system-bad { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.system-bad-text { color: var(--danger); }
+#system-signup h3 { font-size: 14px; font-weight: 650; margin: 18px 0 4px; }
 .system-error { border-top: 1px solid var(--border); padding: 12px 0; }
 .system-error:first-of-type { border-top: 0; }
 .system-error-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

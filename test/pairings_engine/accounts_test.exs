@@ -51,6 +51,10 @@ defmodule PairingsEngine.AccountsTest do
   end
 
   describe "register_user/1" do
+    # The rules of the form itself, on a server open to everyone. Who may
+    # sign up at all is test/pairings_engine/accounts/signup_policy_test.exs.
+    setup do: PairingsEngine.Accounts.SignupPolicy.put("open", [])
+
     test "requires email to be set" do
       {:error, changeset} = Accounts.register_user(%{})
 

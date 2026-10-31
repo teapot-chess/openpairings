@@ -244,3 +244,15 @@ msgid "would need %{count} rounds, above the %{max}-round maximum"
 msgid_plural "would need %{count} rounds, above the %{max}-round maximum"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "sign-up here is limited to some email domains, and this is not one of them"
+msgstr ""
+
+msgid "this invitation has already been used"
+msgstr ""
+
+msgid "this server does not take sign-ups; ask its administrator for an account"
+msgstr ""
+
+msgid "this server takes new accounts by invitation, and this address has none"
+msgstr ""

@@ -27,14 +27,15 @@ defmodule PairingsEngineWeb.AuditDescribeTest do
   # both languages spell the same (`is`, `in`, `was`, `per`, `extra`, `via`,
   # `gratis` - the Players page's own label for a free entry in both), chess
   # and software loanwords the catalogue keeps (`bye`, `rating`, `logo`,
-  # `link`, `token`, `computer`, `label`, and `team` - the Dutch glossary
+  # `link`, `token`, `computer`, `label`, `account`, and `team` - the Dutch glossary
   # prefers it to `ploeg`), identifiers (`FIDE`, `SWAR`, `guid`), and
   # labels whose Dutch msgstr is currently the English word: the `Support`
   # role and the phone access levels (see
   # docs/translations-audit-2026-09-12.md, finding 14).
   @shared ~w(is in was per extra via gratis bye byes rating ratings logo link token label
              computer guid swar trf json csv fide id elo keizer support deputy helper pibe
-             chess960 chess rnbqkbnr bbqnnrkr javafo ainalrami live incident team teams)
+             chess960 chess rnbqkbnr bbqnnrkr javafo ainalrami live incident team teams
+             account)
 
   # Representative details for every described action, in the shape they
   # come back from the JSON column: string keys. The first entry of each list
@@ -878,7 +879,16 @@ defmodule PairingsEngineWeb.AuditDescribeTest do
       },
       %{}
     ],
-    "fide.sync_started" => [%{}]
+    "fide.sync_started" => [%{}],
+    "accounts.signup_policy_changed" => [
+      %{"changed_fields" => %{"mode" => ["invite", "open"], "domains" => ["", "club.be"]}},
+      %{"changed_fields" => %{"mode" => ["open", "closed"]}},
+      %{"changed_fields" => %{"domains" => ["", "club.be"]}},
+      %{}
+    ],
+    "accounts.signup_invited" => [%{"email" => "new@example.com"}, %{}],
+    "accounts.signup_invitation_revoked" => [%{"email" => "new@example.com"}, %{}],
+    "accounts.user_created" => [%{"email" => "new@example.com"}, %{}]
   }
 
   # Every action code a `describe/2` clause matches on, read from the source

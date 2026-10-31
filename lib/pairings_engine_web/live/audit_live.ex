@@ -2561,6 +2561,35 @@ defmodule PairingsEngineWeb.AuditLive do
 
   def describe("fide.sync_started", _d), do: gettext("Started a FIDE rating list sync.")
 
+  def describe("accounts.signup_policy_changed", d) do
+    case d["changed_fields"] do
+      %{"mode" => [from, to]} = fields ->
+        gettext("Changed who may sign up from %{from} to %{to}%{domains}.",
+          from: shown(from),
+          to: shown(to),
+          domains: signup_domains_suffix(fields)
+        )
+
+      %{"domains" => [from, to]} ->
+        gettext("Changed the domains open for sign-up from %{from} to %{to}.",
+          from: shown(from),
+          to: shown(to)
+        )
+
+      _ ->
+        gettext("Changed who may sign up.")
+    end
+  end
+
+  def describe("accounts.signup_invited", d),
+    do: gettext("Invited %{email} to create an account.", email: value(d, "email"))
+
+  def describe("accounts.signup_invitation_revoked", d),
+    do: gettext("Withdrew the sign-up invitation for %{email}.", email: value(d, "email"))
+
+  def describe("accounts.user_created", d),
+    do: gettext("Created the account %{email}.", email: value(d, "email"))
+
   # Fallback for any code not explicitly handled: the code itself, which is
   # an identifier and reads the same in every language.
   def describe(action, _details), do: text(action)
@@ -2919,6 +2948,11 @@ defmodule PairingsEngineWeb.AuditLive do
   # its items; a map - the officials, the category rules - is shown whole, as
   # the JSON it was stored as, rather than crashing the page, which
   # `to_string/1` on it did.
+  defp signup_domains_suffix(%{"domains" => [_from, to]}) when is_binary(to) and to != "",
+    do: gettext(" (domains: %{domains})", domains: to)
+
+  defp signup_domains_suffix(_fields), do: ""
+
   defp shown(v) when v in [nil, "", [], %{}], do: "-"
   defp shown(true), do: gettext("On")
   defp shown(false), do: gettext("Off")

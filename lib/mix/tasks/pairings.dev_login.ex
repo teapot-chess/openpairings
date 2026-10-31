@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Pairings.DevLogin do
   use Mix.Task
 
   alias PairingsEngine.{Accounts, Repo}
-  alias PairingsEngine.Accounts.UserToken
+  alias PairingsEngine.Accounts.{User, UserToken}
 
   @impl true
   def run(args) do
@@ -39,7 +39,11 @@ defmodule Mix.Tasks.Pairings.DevLogin do
     user =
       case Accounts.get_user_by_email(email) do
         nil ->
-          {:ok, user} = Accounts.register_user(%{email: email})
+          # Not `Accounts.register_user/2`: that asks the sign-up policy, and
+          # a dev checkout's default (invite) would turn this task away.
+          {:ok, user} =
+            %User{} |> User.email_changeset(%{email: email}) |> Repo.insert()
+
           user
 
         user ->

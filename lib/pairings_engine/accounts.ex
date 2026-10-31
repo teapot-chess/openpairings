@@ -6,7 +6,14 @@ defmodule PairingsEngine.Accounts do
   import Ecto.Query, warn: false
   alias PairingsEngine.Repo
 
-  alias PairingsEngine.Accounts.{User, UserToken, UserNotifier}
+  alias PairingsEngine.Accounts.{
+    Scope,
+    SignupInvitation,
+    SignupPolicy,
+    User,
+    UserToken,
+    UserNotifier
+  }
 
   ## Database getters
 
@@ -82,22 +89,273 @@ defmodule PairingsEngine.Accounts do
   ## User registration
 
   @doc """
-  Registers a user.
+  Registers a user who asked for an account themselves - the sign-up form.
+
+  Whether they may is `PairingsEngine.Accounts.SignupPolicy`'s question, and
+  it is asked here rather than on the page, so a hand-made POST or LiveView
+  event meets the same answer as the form. A refusal comes back as a
+  changeset with an error on `:email`, which is what the form shows.
+
+  ## Options
+
+    * `:invite_token` - the token from an administrator's sign-up
+      invitation link. It only counts for the address it was sent to, and
+      it is spent by the registration it allows.
+
+  Accounts made any other way do not come through here: SSO
+  (`find_or_create_from_keycloak/1`), an administrator
+  (`create_user_by_admin/3`) and the desktop owner (`local_owner!/0`).
 
   ## Examples
 
-      iex> register_user(%{field: value})
+      iex> register_user(%{email: "invited@example.com"})
       {:ok, %User{}}
 
-      iex> register_user(%{field: bad_value})
+      iex> register_user(%{email: "stranger@example.com"})
       {:error, %Ecto.Changeset{}}
 
   """
-  def register_user(attrs) do
-    %User{}
-    |> User.email_changeset(attrs)
-    |> Repo.insert()
+  def register_user(attrs, opts \\ []) do
+    email = Map.get(attrs, :email) || Map.get(attrs, "email")
+    invitation = signup_invitation_for(opts[:invite_token], email)
+    changeset = User.email_changeset(%User{}, attrs)
+
+    case SignupPolicy.check(email, invitation: invitation) do
+      :ok ->
+        insert_registered(changeset, invitation)
+
+      {:error, reason} ->
+        {:error,
+         changeset
+         |> Ecto.Changeset.add_error(:email, refusal_message(reason), validation: :signup_policy)
+         |> Map.put(:action, :insert)}
+    end
   end
+
+  defp insert_registered(changeset, nil), do: Repo.insert(changeset)
+
+  # The account and the spent invitation in one transaction, and the
+  # invitation spent with a condition on it still being live: two tabs
+  # racing one link get one account, not two.
+  defp insert_registered(changeset, %SignupInvitation{id: id}) do
+    Repo.transact(fn ->
+      with {:ok, user} <- Repo.insert(changeset) do
+        {spent, _} =
+          Repo.update_all(
+            from(i in SignupInvitation.live_query(), where: i.id == ^id),
+            set: [used_at: DateTime.utc_now(:second)]
+          )
+
+        if spent == 1 do
+          {:ok, user}
+        else
+          {:error,
+           changeset
+           |> Ecto.Changeset.add_error(:email, refusal_message(:invitation_used))
+           |> Map.put(:action, :insert)}
+        end
+      end
+    end)
+  end
+
+  # Plain strings rather than gettext calls: a changeset's errors are
+  # translated where they are shown (`translate_error/1`, the "errors"
+  # domain), so these four are listed in priv/gettext/errors.pot by hand.
+  defp refusal_message(:closed),
+    do: "this server does not take sign-ups; ask its administrator for an account"
+
+  defp refusal_message(:invitation_required),
+    do: "this server takes new accounts by invitation, and this address has none"
+
+  defp refusal_message(:domain_not_allowed),
+    do: "sign-up here is limited to some email domains, and this is not one of them"
+
+  defp refusal_message(:invitation_used),
+    do: "this invitation has already been used"
+
+  @doc """
+  The live sign-up invitation behind a link's token, or nil - for the
+  sign-up page to say who it is for. Expired, spent and made-up tokens all
+  answer nil.
+  """
+  def get_live_signup_invitation(token) when is_binary(token) do
+    case SignupInvitation.live_by_token_query(token) do
+      {:ok, query} -> Repo.one(query)
+      :error -> nil
+    end
+  end
+
+  def get_live_signup_invitation(_), do: nil
+
+  defp signup_invitation_for(token, email) do
+    with %SignupInvitation{} = invitation <- get_live_signup_invitation(token),
+         true <- invitation.email == SignupInvitation.normalize(email) do
+      invitation
+    else
+      _ -> nil
+    end
+  end
+
+  ## Accounts an administrator makes
+
+  @doc """
+  Saves who may sign up (see `SignupPolicy`), or with `nil` for the mode
+  forgets the saved value so `PAIRINGS_SIGNUP` or the default answers again.
+  Administrators only, checked here against the account as it is now.
+
+  Writes `accounts.signup_policy_changed` when something actually changed.
+  Returns `:ok`, `{:error, :forbidden}`, `{:error, :mode}` or
+  `{:error, {:domain, entry}}`.
+  """
+  def update_signup_policy(%Scope{} = scope, mode, domains_text \\ "") do
+    with :ok <- require_admin(scope),
+         {:ok, new} <- validate_policy(mode, domains_text) do
+      old = {SignupPolicy.mode(), SignupPolicy.domains(), SignupPolicy.source()}
+
+      case new do
+        nil -> SignupPolicy.put(nil, [])
+        {mode, domains} -> SignupPolicy.put(mode, domains)
+      end
+
+      log_policy_change(scope, old)
+      :ok
+    end
+  end
+
+  defp validate_policy(nil, _domains_text), do: {:ok, nil}
+  defp validate_policy(mode, domains_text), do: SignupPolicy.validate(mode, domains_text)
+
+  defp log_policy_change(scope, {old_mode, old_domains, old_source}) do
+    new_mode = SignupPolicy.mode()
+    new_domains = SignupPolicy.domains()
+    new_source = SignupPolicy.source()
+
+    changed =
+      %{}
+      |> put_changed(:mode, old_mode, new_mode)
+      |> put_changed(:domains, Enum.join(old_domains, ", "), Enum.join(new_domains, ", "))
+      |> put_changed(:source, Atom.to_string(old_source), Atom.to_string(new_source))
+
+    if changed != %{} do
+      PairingsEngine.Audit.log_system(scope, "accounts.signup_policy_changed", %{
+        changed_fields: changed
+      })
+    end
+  end
+
+  defp put_changed(map, _key, same, same), do: map
+  defp put_changed(map, key, old, new), do: Map.put(map, key, [old, new])
+
+  @doc """
+  Sends `email` an invitation to create an account, good once and for
+  `SignupInvitation.validity_days/0` days. Administrators only. An earlier
+  invitation to the same address that is still live is withdrawn, so only
+  the newest link works.
+
+  Returns `{:ok, invitation, mail_status}` - the invitation exists even if
+  the mail could not be sent, and `mail_status` (`:sent` or `{:error, reason}`)
+  says which - or `{:error, :forbidden}` or `{:error, changeset}` (not an
+  address, or one that already has an account).
+  """
+  def invite_user(%Scope{} = scope, email, url_fun) when is_function(url_fun, 1) do
+    with :ok <- require_admin(scope),
+         {:ok, email} <- new_account_email(email) do
+      {token, invitation} = SignupInvitation.build(email, scope.user.id)
+
+      {:ok, invitation} =
+        Repo.transact(fn ->
+          Repo.delete_all(from(i in SignupInvitation.live_query(), where: i.email == ^email))
+          Repo.insert(invitation)
+        end)
+
+      mail_status =
+        case UserNotifier.deliver_signup_invitation(
+               email,
+               User.display_with_email(scope.user),
+               url_fun.(token),
+               SignupInvitation.validity_days()
+             ) do
+          {:ok, _} -> :sent
+          {:error, reason} -> {:error, reason}
+        end
+
+      PairingsEngine.Audit.log_system(scope, "accounts.signup_invited", %{email: email})
+      {:ok, invitation, mail_status}
+    end
+  end
+
+  @doc "The invitations still waiting to be used, newest first, with who sent them."
+  def list_signup_invitations do
+    from(i in SignupInvitation.live_query(), order_by: [desc: i.inserted_at, desc: i.id])
+    |> Repo.all()
+    |> Repo.preload(:invited_by)
+  end
+
+  @doc """
+  Withdraws a live invitation so its link stops working. Administrators only.
+  Returns `:ok`, `{:error, :forbidden}` or `{:error, :not_found}`.
+  """
+  def revoke_signup_invitation(%Scope{} = scope, id) do
+    with :ok <- require_admin(scope),
+         %SignupInvitation{} = invitation <-
+           Repo.one(from(i in SignupInvitation.live_query(), where: i.id == ^id)) do
+      Repo.delete!(invitation)
+
+      PairingsEngine.Audit.log_system(scope, "accounts.signup_invitation_revoked", %{
+        email: invitation.email
+      })
+
+      :ok
+    else
+      nil -> {:error, :not_found}
+      error -> error
+    end
+  end
+
+  @doc """
+  Creates the account for `email` on an administrator's say-so - the way in
+  on a server that takes no sign-ups. Email only: the person logs in by the
+  e-mailed link, which also confirms the address. Administrators only.
+
+  Returns `{:ok, user, mail_status}` (see `invite_user/3`),
+  `{:error, :forbidden}` or `{:error, changeset}`.
+  """
+  def create_user_by_admin(%Scope{} = scope, email, url_fun) when is_function(url_fun, 1) do
+    with :ok <- require_admin(scope),
+         {:ok, user} <- %User{} |> User.email_changeset(%{email: email}) |> Repo.insert() do
+      mail_status =
+        case deliver_login_instructions(user, url_fun) do
+          {:ok, _} -> :sent
+          {:error, reason} -> {:error, reason}
+        end
+
+      PairingsEngine.Audit.log_system(scope, "accounts.user_created", %{email: user.email})
+      {:ok, user, mail_status}
+    end
+  end
+
+  # The same checks a registration's changeset makes - an address, not the
+  # SSO domain, not taken - without inserting anything.
+  defp new_account_email(email) do
+    changeset =
+      %User{}
+      |> User.email_changeset(%{email: email})
+      |> Map.put(:action, :insert)
+
+    if changeset.valid?,
+      do: {:ok, changeset |> Ecto.Changeset.get_field(:email) |> SignupInvitation.normalize()},
+      else: {:error, changeset}
+  end
+
+  # Against the account as it is now, not as it was when the page mounted:
+  # a role taken away five minutes ago should not keep working in an open tab.
+  defp require_admin(%Scope{user: %User{id: id}}) do
+    if id |> get_user() |> PairingsEngine.Authz.may_administer?(),
+      do: :ok,
+      else: {:error, :forbidden}
+  end
+
+  defp require_admin(_scope), do: {:error, :forbidden}
 
   ## 02cloud SSO
 

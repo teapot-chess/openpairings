@@ -12,7 +12,7 @@ defmodule PairingsEngineWeb.SystemLive do
   use PairingsEngineWeb, :live_view
 
   alias PairingsEngine.Accounts
-  alias PairingsEngine.Accounts.User
+  alias PairingsEngine.Accounts.{SignupPolicy, User}
   alias PairingsEngine.Authz
   alias PairingsEngine.Ops.{ErrorReports, Health, OffsiteBackup}
 
@@ -24,12 +24,32 @@ defmodule PairingsEngineWeb.SystemLive do
   defp load(socket) do
     config = OffsiteBackup.config()
 
-    assign(socket,
+    socket
+    |> assign(
       health: Health.report(),
       offsite_enabled: OffsiteBackup.enabled?(config),
       offsite: offsite_summary(config),
       runs: OffsiteBackup.runs(10),
       errors: ErrorReports.list()
+    )
+    |> load_signup()
+  end
+
+  # Who may create an account - see `PairingsEngine.Accounts.SignupPolicy`.
+  defp load_signup(socket) do
+    mode = SignupPolicy.mode()
+    domains = Enum.join(SignupPolicy.domains(), ", ")
+
+    assign(socket,
+      signup_mode: mode,
+      signup_domains: domains,
+      signup_source: SignupPolicy.source(),
+      signup_env_mode: SignupPolicy.env_mode(),
+      signup_error: nil,
+      signup_form: to_form(%{"mode" => mode, "domains" => domains}, as: :signup),
+      invite_form: to_form(%{"email" => ""}, as: :invite),
+      account_form: to_form(%{"email" => ""}, as: :account),
+      invitations: Accounts.list_signup_invitations()
     )
   end
 
@@ -69,6 +89,112 @@ defmodule PairingsEngineWeb.SystemLive do
   defp event("forget", %{"id" => id}, socket) do
     with {id, ""} <- Integer.parse(id), do: ErrorReports.delete(id)
     {:noreply, load(socket)}
+  end
+
+  defp event("save-signup", %{"signup" => params}, socket) do
+    scope = socket.assigns.current_scope
+
+    case Accounts.update_signup_policy(scope, params["mode"], params["domains"] || "") do
+      :ok ->
+        {:noreply, socket |> load_signup() |> put_flash(:info, gettext("Sign-up setting saved."))}
+
+      {:error, reason} ->
+        {:noreply,
+         assign(socket,
+           signup_error: signup_error(reason),
+           signup_form: to_form(params, as: :signup)
+         )}
+    end
+  end
+
+  defp event("clear-signup", _params, socket) do
+    case Accounts.update_signup_policy(socket.assigns.current_scope, nil) do
+      :ok ->
+        {:noreply,
+         socket
+         |> load_signup()
+         |> put_flash(
+           :info,
+           gettext("The saved sign-up setting is gone; the server's own applies.")
+         )}
+
+      {:error, reason} ->
+        {:noreply, assign(socket, signup_error: signup_error(reason))}
+    end
+  end
+
+  defp event("invite-user", %{"invite" => %{"email" => email}}, socket) do
+    url_fun = &url(~p"/users/register?#{[invite: &1]}")
+
+    case Accounts.invite_user(socket.assigns.current_scope, email, url_fun) do
+      {:ok, invitation, :sent} ->
+        {:noreply,
+         socket
+         |> load_signup()
+         |> put_flash(:info, gettext("Invitation sent to %{email}.", email: invitation.email))}
+
+      {:ok, invitation, {:error, _reason}} ->
+        {:noreply,
+         socket
+         |> load_signup()
+         |> put_flash(
+           :error,
+           gettext(
+             "The invitation for %{email} exists, but the email could not be sent. Try again later.",
+             email: invitation.email
+           )
+         )}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, invite_form: to_form(changeset, as: :invite))}
+
+      {:error, :forbidden} ->
+        {:noreply, put_flash(socket, :error, gettext("This page is for administrators."))}
+    end
+  end
+
+  defp event("create-account", %{"account" => %{"email" => email}}, socket) do
+    url_fun = &url(~p"/users/log-in/#{&1}")
+
+    case Accounts.create_user_by_admin(socket.assigns.current_scope, email, url_fun) do
+      {:ok, user, :sent} ->
+        {:noreply,
+         socket
+         |> load_signup()
+         |> put_flash(
+           :info,
+           gettext("Account created for %{email}; a log-in link is on its way.",
+             email: user.email
+           )
+         )}
+
+      {:ok, user, {:error, _reason}} ->
+        {:noreply,
+         socket
+         |> load_signup()
+         |> put_flash(
+           :error,
+           gettext(
+             "Account created for %{email}, but the email could not be sent. They can ask for a log-in link on the log-in page.",
+             email: user.email
+           )
+         )}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         assign(socket, account_form: to_form(Map.put(changeset, :action, :insert), as: :account))}
+
+      {:error, :forbidden} ->
+        {:noreply, put_flash(socket, :error, gettext("This page is for administrators."))}
+    end
+  end
+
+  defp event("revoke-invitation", %{"id" => id}, socket) do
+    with {id, ""} <- Integer.parse(id) do
+      Accounts.revoke_signup_invitation(socket.assigns.current_scope, id)
+    end
+
+    {:noreply, socket |> load_signup() |> put_flash(:info, gettext("Invitation withdrawn."))}
   end
 
   defp event("forget-all", _params, socket) do
@@ -136,6 +262,128 @@ defmodule PairingsEngineWeb.SystemLive do
             {gettext("Open LiveDashboard")}
           </.link>
         </div>
+      </div>
+
+      <div class="set-card" id="system-signup">
+        <h2>{gettext("Sign-up")}</h2>
+        <p class="hint">
+          {gettext(
+            "Who may create an account here by themselves. SSO sign-in always works, and the addresses this deployment names as administrators may always register."
+          )}
+        </p>
+
+        <dl class="system-facts">
+          <dt>{gettext("Now")}</dt>
+          <dd>
+            <span id="signup-mode" class="badge">{mode_label(@signup_mode)}</span>
+            <span id="signup-source" class="hint">{source_label(@signup_source)}</span>
+          </dd>
+          <dt :if={@signup_mode == "open"}>{gettext("Domains")}</dt>
+          <dd :if={@signup_mode == "open"} id="signup-domain-list">
+            {if @signup_domains == "", do: gettext("any"), else: @signup_domains}
+          </dd>
+        </dl>
+
+        <p class="hint">
+          {gettext(
+            "Closed: only you create accounts, below. By invitation: an address invited to a tournament, or invited below. Open: anyone, or only the domains you list."
+          )}
+        </p>
+
+        <.form for={@signup_form} id="signup-form" phx-submit="save-signup">
+          <.input
+            field={@signup_form[:mode]}
+            type="select"
+            label={gettext("Who may sign up")}
+            options={[
+              {gettext("Closed"), "closed"},
+              {gettext("By invitation"), "invite"},
+              {pgettext("sign-up mode", "Open"), "open"}
+            ]}
+          />
+          <.input
+            field={@signup_form[:domains]}
+            type="text"
+            label={gettext("Only these email domains (open only, comma-separated, empty for any)")}
+            placeholder="club.be, federation.org"
+          />
+          <p :if={@signup_error} id="signup-error" class="hint system-bad-text">{@signup_error}</p>
+          <div class="actions">
+            <button id="signup-save" type="submit" class="pe-btn primary">{gettext("Save")}</button>
+            <button
+              id="signup-clear"
+              type="button"
+              class="pe-btn"
+              phx-click="clear-signup"
+              disabled={@signup_source != :ui}
+            >
+              {if @signup_env_mode,
+                do: gettext("Use PAIRINGS_SIGNUP (%{mode})", mode: mode_label(@signup_env_mode)),
+                else: gettext("Use the default (by invitation)")}
+            </button>
+          </div>
+        </.form>
+
+        <h3>{gettext("Invite a user")}</h3>
+        <p class="hint">
+          {gettext(
+            "Sends a link to create an account. It works once, only for that address, for seven days, whatever the setting above says."
+          )}
+        </p>
+        <.form for={@invite_form} id="invite-user-form" phx-submit="invite-user">
+          <.input field={@invite_form[:email]} type="email" label={gettext("Email")} required />
+          <div class="actions">
+            <button id="invite-user-send" type="submit" class="pe-btn">
+              {gettext("Send invitation")}
+            </button>
+          </div>
+        </.form>
+
+        <div :if={@invitations != []} class="card-table-wrap">
+          <table class="pe-table" id="signup-invitations">
+            <thead>
+              <tr>
+                <th>{gettext("Invited")}</th>
+                <th>{gettext("By")}</th>
+                <th>{gettext("Until")}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr :for={inv <- @invitations} id={"signup-invitation-#{inv.id}"}>
+                <td>{inv.email}</td>
+                <td>{inv.invited_by && inv.invited_by.email}</td>
+                <td>{format_time(inv.expires_at)}</td>
+                <td>
+                  <button
+                    type="button"
+                    class="pe-btn"
+                    phx-click="revoke-invitation"
+                    phx-value-id={inv.id}
+                    id={"signup-invitation-revoke-#{inv.id}"}
+                  >
+                    {gettext("Withdraw")}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>{gettext("Create an account")}</h3>
+        <p class="hint">
+          {gettext(
+            "Makes the account now, email only, and sends a log-in link. The person never picks a password unless they want one."
+          )}
+        </p>
+        <.form for={@account_form} id="create-account-form" phx-submit="create-account">
+          <.input field={@account_form[:email]} type="email" label={gettext("Email")} required />
+          <div class="actions">
+            <button id="create-account-submit" type="submit" class="pe-btn">
+              {gettext("Create account")}
+            </button>
+          </div>
+        </.form>
       </div>
 
       <div class="set-card" id="system-offsite">
@@ -259,6 +507,21 @@ defmodule PairingsEngineWeb.SystemLive do
     <span id={@id} class={["badge", state_class(@value)]}>{state_label(@value)}</span>
     """
   end
+
+  defp signup_error(:mode), do: gettext("Choose closed, invite or open.")
+
+  defp signup_error({:domain, entry}),
+    do: gettext("%{entry} is not an email domain, such as club.be.", entry: inspect(entry))
+
+  defp signup_error(:forbidden), do: gettext("This page is for administrators.")
+
+  defp mode_label("closed"), do: gettext("Closed")
+  defp mode_label("invite"), do: gettext("By invitation")
+  defp mode_label("open"), do: pgettext("sign-up mode", "Open")
+
+  defp source_label(:ui), do: gettext("set on this page")
+  defp source_label(:env), do: gettext("from PAIRINGS_SIGNUP")
+  defp source_label(:default), do: gettext("the default")
 
   defp state_class(value) when value in ["ok"], do: "done"
   defp state_class("disabled"), do: "muted"

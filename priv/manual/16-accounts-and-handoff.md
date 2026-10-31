@@ -4,8 +4,8 @@
 
 On a server, everyone has an account. You sign in with an e-mail link (a
 one-time link sent to your address), a password, or the organisation's single
-sign-on where the installation uses one. The log-in page also registers a new
-account. Every tournament belongs to the account that created it. The desktop
+sign-on where the installation uses one. Whether you can create an account
+yourself depends on the server (below). Every tournament belongs to the account that created it. The desktop
 build has no accounts: it signs you in as the owner of that computer.
 
 **Account menu** (your name or address, top right):
@@ -13,6 +13,24 @@ build has no accounts: it signs you in as the owner of that computer.
 - **Settings** (online only): the account page.
 - **Features**: the switches of the national features (below).
 - **Log out** (online only).
+
+### Who can create an account
+
+Each server decides for itself, and the sign-up page says which applies:
+
+- **Open**: anyone can create an account, or only addresses at the domains
+  the server lists.
+- **By invitation**: only an address that was invited. A tournament
+  invitation (as a collaborator or an arbiter) counts, and so does an
+  invitation from the server's administrator. Use the address the
+  invitation went to. The link in a tournament invitation takes you to the
+  log-in page, which then offers *Create your account*.
+- **Closed**: you cannot sign up yourself. The administrator creates your
+  account and you receive a log-in link.
+
+Single sign-on works in every mode. A server you installed yourself is
+invite-only until you change it (see [System](#system-the-operator-s-page)).
+The desktop build has no sign-up at all.
 
 ### The account page
 
@@ -192,10 +210,29 @@ role, but changes are made only by an administrator.
 
 **Admin → System** answers the three questions an operator asks first: is the
 server healthy, has the newest backup left the machine, and what has crashed.
-It is for administrators only.
+It also decides who may create an account. It is for administrators only.
 
 - **Health** is the same answer the server's `/healthz` address gives a
   monitoring tool: the database, the version, and the off-site backup's state.
+- **Sign-up** sets who may create an account here: *Closed*, *By invitation*
+  or *Open*, and for *Open* optionally a list of e-mail domains
+  (`club.be, federation.org`). It shows the setting in use and where it comes
+  from: *set on this page*, *from PAIRINGS_SIGNUP* (the server's
+  configuration), or *the default*, which is *By invitation*. **Save** takes
+  effect at once; the button beside it drops what was saved here and goes back
+  to the server's configuration. Every change goes in the audit log.
+  Whatever the setting, single sign-on works and the addresses the server's
+  configuration names as administrators (`ADMIN_EMAILS`) may always register.
+  - **Invite a user** e-mails a link to create an account. It works once, only
+    for that address, for seven days, even on a closed server. Waiting
+    invitations are listed, and **Withdraw** cancels one.
+  - **Create an account** makes the account straight away, with only the
+    address, and e-mails a log-in link. This is how people get in on a closed
+    server.
+
+  If you run your own server and it took sign-ups before this setting
+  existed: after the upgrade it is invite-only. Choose *Open* here, or put
+  `PAIRINGS_SIGNUP=open` in the server's configuration, to open it again.
 - **Off-site backup**, when the server is set up for it, sends the newest
   backup to storage elsewhere, encrypted with a key the server does not have.
   The page lists the last attempts, each with its result, and **Send the

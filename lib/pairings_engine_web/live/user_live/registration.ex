@@ -2,7 +2,7 @@ defmodule PairingsEngineWeb.UserLive.Registration do
   use PairingsEngineWeb, :live_view
 
   alias PairingsEngine.{Accounts, RateLimit}
-  alias PairingsEngine.Accounts.User
+  alias PairingsEngine.Accounts.{SignupPolicy, User}
   alias PairingsEngineWeb.ClientIp
 
   @impl true
@@ -117,41 +117,106 @@ defmodule PairingsEngineWeb.UserLive.Registration do
         </aside>
 
         <div class="auth-panel">
-          <div class="auth-card">
+          <%!-- data-signup-mode: what the deploy script's check reads. --%>
+          <div id="signup-card" class="auth-card" data-signup-mode={@mode}>
             <h2 class="auth-card-title">{gettext("Create an account")}</h2>
 
-            <p class="auth-card-sub">
+            <%!-- Who may sign up here, said before anybody types: see
+                 `PairingsEngine.Accounts.SignupPolicy`. The form below meets
+                 the same rule in `Accounts.register_user/2` either way. --%>
+            <%= cond do %>
+              <% @invitation -> %>
+                <div id="signup-invited" class="auth-notice">
+                  <.icon name="hero-envelope-open" class="size-5 shrink-0" />
+                  <span>
+                    {gettext(
+                      "You were invited to this server. Use the address the invitation went to: %{email}.",
+                      email: @invitation.email
+                    )}
+                  </span>
+                </div>
+              <% @mode == "closed" -> %>
+                <div id="signup-closed" class="auth-notice">
+                  <.icon name="hero-lock-closed" class="size-5 shrink-0" />
+                  <span>
+                    {gettext(
+                      "This server doesn't take sign-ups. Its administrator creates the accounts; if you were expecting one, ask them, or log in if you already have one."
+                    )}
+                  </span>
+                </div>
+              <% @mode == "invite" -> %>
+                <div id="signup-invite-only" class="auth-notice">
+                  <.icon name="hero-envelope" class="size-5 shrink-0" />
+                  <span>
+                    {gettext(
+                      "This server takes new accounts by invitation. You need an invitation to a tournament, or from the administrator, sent to the address you use below."
+                    )}
+                  </span>
+                </div>
+              <% @domains != [] -> %>
+                <div id="signup-domains" class="auth-notice">
+                  <.icon name="hero-information-circle" class="size-5 shrink-0" />
+                  <span>
+                    {gettext("Sign-up here is for addresses at %{domains}.",
+                      domains: Enum.map_join(@domains, ", ", &("@" <> &1))
+                    )}
+                  </span>
+                </div>
+              <% true -> %>
+            <% end %>
+
+            <p :if={@mode != "closed" or @invitation} class="auth-card-sub">
               {gettext("Enter your email and we'll send a magic link to confirm it.")}
             </p>
 
-            <.form
-              for={@form}
-              id="registration_form"
-              class="auth-form"
-              phx-submit="save"
-              phx-change="validate"
-            >
-              <.input
-                field={@form[:email]}
-                type="email"
-                label={gettext("Email")}
-                autocomplete="username"
-                spellcheck="false"
-                required
-                phx-mounted={JS.focus()}
-              />
-              <button
-                type="submit"
-                phx-disable-with={gettext("Creating account...")}
-                class="pe-btn primary auth-submit"
-              >
-                {gettext("Create a free account")} <span aria-hidden="true">→</span>
-              </button>
-            </.form>
+            <%= if @mode == "closed" and is_nil(@invitation) do %>
+              <details id="signup-admin" class="auth-form">
+                <summary class="auth-link">{gettext("Administrator of this server?")}</summary>
+                <p class="auth-card-sub">
+                  {gettext(
+                    "The addresses this server's deployment names as administrators can still register here."
+                  )}
+                </p>
+                <.registration_form form={@form} />
+              </details>
+            <% else %>
+              <.registration_form form={@form} />
+            <% end %>
           </div>
         </div>
       </div>
     </Layouts.app>
+    """
+  end
+
+  attr :form, Phoenix.HTML.Form, required: true
+
+  defp registration_form(assigns) do
+    ~H"""
+    <.form
+      for={@form}
+      id="registration_form"
+      class="auth-form"
+      phx-submit="save"
+      phx-change="validate"
+    >
+      <.input
+        field={@form[:email]}
+        type="email"
+        label={gettext("Email")}
+        autocomplete="username"
+        spellcheck="false"
+        required
+        phx-mounted={JS.focus()}
+      />
+      <button
+        type="submit"
+        phx-disable-with={gettext("Creating account...")}
+        class="pe-btn primary auth-submit"
+      >
+        {gettext("Create a free account")} <span aria-hidden="true">→</span>
+      </button>
+    </.form>
     """
   end
 
@@ -161,15 +226,28 @@ defmodule PairingsEngineWeb.UserLive.Registration do
     {:ok, redirect(socket, to: PairingsEngineWeb.UserAuth.signed_in_path(socket))}
   end
 
-  def mount(_params, _session, socket) do
-    changeset = Accounts.change_user_email(%User{}, %{}, validate_unique: false)
+  def mount(params, _session, socket) do
+    # The token from an administrator's invitation link, kept in the socket
+    # rather than in the form: it is not something the person types, and
+    # `Accounts.register_user/2` checks it against the address anyway.
+    token = if is_binary(params["invite"]), do: params["invite"]
+    invitation = Accounts.get_live_signup_invitation(token)
+
+    attrs = if invitation, do: %{"email" => invitation.email}, else: %{}
+    changeset = Accounts.change_user_email(%User{}, attrs, validate_unique: false)
 
     # Connect info is only readable while mounting; kept for the send limit in
     # `handle_event("save", ...)`. Registration will mail ANY address typed
     # here, so this endpoint needs the same throttle as the log-in form.
     {:ok,
      socket
-     |> assign(client_ip: ClientIp.from_socket(socket))
+     |> assign(
+       client_ip: ClientIp.from_socket(socket),
+       mode: SignupPolicy.mode(),
+       domains: SignupPolicy.domains(),
+       invitation: invitation,
+       invite_token: invitation && token
+     )
      |> assign_form(changeset), temporary_assigns: [form: nil]}
   end
 
@@ -196,7 +274,7 @@ defmodule PairingsEngineWeb.UserLive.Registration do
   end
 
   defp do_register(socket, user_params) do
-    case Accounts.register_user(user_params) do
+    case Accounts.register_user(user_params, invite_token: socket.assigns.invite_token) do
       {:ok, user} ->
         case Accounts.deliver_login_instructions(user, &url(~p"/users/log-in/#{&1}")) do
           {:ok, _} ->
