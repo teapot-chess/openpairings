@@ -35,6 +35,7 @@ defmodule PairingsEngineWeb.SettingsResultsLive do
     Publishing,
     Standings,
     Tiebreaks,
+    TournamentSeries,
     Tournaments
   }
 
@@ -79,7 +80,8 @@ defmodule PairingsEngineWeb.SettingsResultsLive do
      |> assign_public_state()
      |> assign_ranking_tiebreaks()
      |> assign_hall_form()
-     |> assign_registration_form()}
+     |> assign_registration_form()
+     |> assign_series()}
   end
 
   # The entry form's window, cap and entry-list switch - a real form rather
@@ -124,6 +126,7 @@ defmodule PairingsEngineWeb.SettingsResultsLive do
           |> assign_public_state()
           |> assign_ranking_tiebreaks()
           |> assign_registration_form()
+          |> assign_series()
 
         {:noreply, if(hall_changed?, do: assign_hall_form(socket), else: socket)}
     end
@@ -602,6 +605,41 @@ defmodule PairingsEngineWeb.SettingsResultsLive do
   end
 
   def handle_event("save_hall", _params, socket), do: {:noreply, socket}
+
+  ## ---------- the series ----------
+
+  # Which series this tournament is in, if any. Saved with the button: a
+  # series change can mint an id on ANOTHER tournament and queues a publish
+  # for each one touched, which is no reaction to a select being moved.
+  def handle_event("save_series", %{"series" => %{"choice" => choice}}, socket) do
+    scope = socket.assigns.current_scope
+    tournament = socket.assigns.tournament
+
+    result =
+      case choice do
+        "none" -> TournamentSeries.leave_series(scope, tournament)
+        "new" -> TournamentSeries.start_series(scope, tournament)
+        "join:" <> id -> join_series(scope, tournament, id)
+        _keep -> {:ok, tournament}
+      end
+
+    case result do
+      {:ok, tournament} ->
+        {:noreply,
+         socket
+         |> assign(tournament: tournament)
+         |> assign_series()
+         |> put_flash(:info, gettext("Series saved."))}
+
+      {:error, reason} when reason in [:archived, :handed_off] ->
+        {:noreply, put_flash(socket, :error, error_text(reason))}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, gettext("Could not change the series."))}
+    end
+  end
+
+  def handle_event("save_series", _params, socket), do: {:noreply, socket}
 
   ## ---------- the entry form ----------
 
@@ -1183,6 +1221,45 @@ defmodule PairingsEngineWeb.SettingsResultsLive do
     )
   end
 
+  defp join_series(scope, tournament, id) do
+    case Integer.parse(id) do
+      {other_id, ""} -> TournamentSeries.join_series(scope, tournament, other_id)
+      _ -> {:error, :not_authorized}
+    end
+  end
+
+  # The series card: the other editions the viewer may open, and what the
+  # select offers. The select's value is "none", "new", "join:<id>" or "keep"
+  # (this series, when none of its other editions is one this user may edit).
+  defp assign_series(socket) do
+    scope = socket.assigns.current_scope
+    tournament = socket.assigns.tournament
+    candidates = TournamentSeries.candidates(scope, tournament)
+    same = Enum.find(candidates, & &1.same_series?)
+
+    choice =
+      cond do
+        is_nil(tournament.series_id) -> "none"
+        same -> "join:#{same.id}"
+        true -> "keep"
+      end
+
+    options =
+      [{gettext("Not part of a series"), "none"}, {gettext("Start a new series"), "new"}] ++
+        if(choice == "keep", do: [{gettext("Keep this series"), "keep"}], else: []) ++
+        Enum.map(
+          candidates,
+          &{gettext("Same series as %{name} (%{year})", name: &1.name, year: &1.year),
+           "join:#{&1.id}"}
+        )
+
+    assign(socket,
+      series_editions: TournamentSeries.editions(scope, tournament),
+      series_options: options,
+      series_form: to_form(%{"choice" => choice}, as: :series)
+    )
+  end
+
   defp assign_hall_form(socket) do
     changeset = HallDisplay.changeset(socket.assigns.tournament.public_hall)
     assign(socket, hall_form: to_form(changeset, as: :hall))
@@ -1731,6 +1808,50 @@ defmodule PairingsEngineWeb.SettingsResultsLive do
               </button>
             </div>
           </.form>
+        </div>
+        <div class="card" id="series-card">
+          <h2>{gettext("Series")}</h2>
+
+          <p class="hint" style="margin-top: 0">
+            {gettext(
+              "Editions of the same event in other years. The results site links them under \"Other editions\"."
+            )}
+          </p>
+
+          <.form for={@series_form} id="series-form" phx-submit="save_series">
+            <.input
+              field={@series_form[:choice]}
+              id="series-choice"
+              type="select"
+              label={gettext("This tournament is")}
+              options={@series_options}
+              disabled={@tournament.archived_at != nil or @tournament.handed_off_at != nil}
+            />
+
+            <div class="actions">
+              <button
+                type="submit"
+                id="series-save"
+                class="pe-btn primary"
+                disabled={@tournament.archived_at != nil or @tournament.handed_off_at != nil}
+              >
+                {gettext("Save")}
+              </button>
+            </div>
+          </.form>
+
+          <div :if={@series_editions != []}>
+            <div class="display-group-head">
+              <strong>{gettext("Other editions")}</strong>
+            </div>
+            <ul id="series-editions">
+              <li :for={edition <- @series_editions} id={"series-edition-#{edition.id}"}>
+                <.link navigate={~p"/t/#{edition.id}/settings/results"}>
+                  {edition.name} ({edition.year})
+                </.link>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div class={["card", !@tournament.registration_open && "tset-adv"]} id="entry-form-card">

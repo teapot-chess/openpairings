@@ -116,6 +116,7 @@ defmodule PairingsEngine.TournamentExport do
     postponed_games postponed_requester_outcome postponed_opponent_outcome
     postponed_report_name postponed_fide_tournament_id
     swar_guid swar_settings swar_category_type swar_category_axis2
+    series_id
   )a
 
   # Deliberately NOT in the tournament map, with the reason for each -

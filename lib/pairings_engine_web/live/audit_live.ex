@@ -162,7 +162,8 @@ defmodule PairingsEngineWeb.AuditLive do
      ~w(tournament.created tournament.deleted tournament.restored tournament.archived
         tournament.unarchived tournament.duplicated tournament.left tournament.handoff_forced
         handoff.handed_off handoff.received handoff.returned handoff.released
-        group.created group.joined group.left group.renamed group.label_set group.reordered)}
+        group.created group.joined group.left group.renamed group.label_set group.reordered
+        tournament.series_changed)}
   ]
 
   @impl true
@@ -1981,6 +1982,14 @@ defmodule PairingsEngineWeb.AuditLive do
 
   def describe("tournament.duplicated", d),
     do: gettext("Duplicated tournament %{name} into a new copy.", name: name(d, "from_name"))
+
+  # Tournament series (`PairingsEngine.TournamentSeries`): `to` is the series
+  # id the tournament is in now, nil when it left.
+  def describe("tournament.series_changed", %{"to" => nil}),
+    do: gettext("Took this tournament out of its series.")
+
+  def describe("tournament.series_changed", _d),
+    do: gettext("Put this tournament in a series of editions of the same event.")
 
   def describe("tournament.left", d),
     do: gettext("Left tournament %{name} (gave up collaborator access).", name: name(d, "name"))

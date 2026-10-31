@@ -346,8 +346,20 @@ defmodule PairingsEngine.Snapshot do
     |> put_tournament_categories(t)
     |> put_team_event(t)
     |> put_group(t)
+    |> put_series(t)
     |> put_live_boards(t)
   end
+
+  # Added 2026-10-31. `series_id` when this tournament is an edition of a
+  # series (`PairingsEngine.TournamentSeries`): the same event in other
+  # years. Just the id - the results site finds the other editions itself,
+  # among the ones it holds from the same publisher, so a snapshot never
+  # names another tournament. Absent otherwise, which is also what every
+  # snapshot before this date looks like.
+  defp put_series(info, %Tournament{series_id: id}) when is_binary(id) and id != "",
+    do: Map.put(info, "series_id", id)
+
+  defp put_series(info, %Tournament{}), do: info
 
   # Added 2026-10-10. `live_boards: true` when the arbiter ticked "Live
   # boards"; no key at all otherwise. Absent and not `false`: the results

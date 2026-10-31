@@ -175,6 +175,10 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
   `tournament.team_tpn_until_round` (4) and `tournament.teams_drawn_at`
   (nil). With those keys taken out the regenerated file is equal, term for
   term, to the one before.
+
+  And for tournament series (results-series): every JSON export gains
+  `tournament.series_id` (nil in the scenarios). With that key taken out the
+  regenerated file is equal, term for term, to the one before.
   """
   use PairingsEngineWeb.ConnCase, async: false
 
