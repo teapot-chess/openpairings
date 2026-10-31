@@ -660,7 +660,7 @@ defmodule PairingsEngineWeb.AuditLive do
   def describe("pairing.round_paired", d), do: describe_round_paired(d)
 
   def describe("pairing.result_entered", d),
-    do: sentences([result_sentence(:entered, d), phone_sentence(d)])
+    do: sentences([result_sentence(:entered, d), phone_sentence(d), board_sentence(d)])
 
   # The arbiter's word on a result a Manubrium Lite phone entered
   # (`PairingsEngine.Mobile.PhoneResults`): confirmed as seen, or rejected,
@@ -2709,6 +2709,12 @@ defmodule PairingsEngineWeb.AuditLive do
   end
 
   defp phone_sentence(_d), do: nil
+
+  # A result taken from what a live board saw, on the arbiter's click.
+  defp board_sentence(%{"source" => "board"}),
+    do: gettext("Taken from what the board saw, not typed.")
+
+  defp board_sentence(_d), do: nil
 
   # A result the arbiter had to confirm before it was written: a postponed
   # game given a result that is not a draw (VCL4THP Q163), and a result

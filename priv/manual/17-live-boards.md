@@ -267,7 +267,8 @@ hand, is in [Relay keys](#relay-keys).
 live boards gets a column **Board saw**. A tournament without a box does not
 have the column.
 
-**A board never enters a result.** You enter results as before. The column
+**A board never enters a result by itself.** You enter results as before, or take
+the board's, as described [below](#taking-board-results). The column
 shows what the board reported, beside what you entered:
 
 | The column shows | It means |
@@ -287,6 +288,25 @@ got the point: a board that saw `1-0` agrees with `1-0FF`.
 On a phone the board's report is a line of its own under the result buttons.
 The column is not printed and is not in the pairing list for the wall: it is
 the arbiter's check, not part of the pairing.
+
+### Taking the board's result {#taking-board-results}
+
+Where the board saw a result and you have entered none, a **Take** button sits
+beside it. One click enters exactly that result, by the same route as typing it
+yourself: the same locks, the same rules for published rounds and team matches,
+and the same publishing to OpenResults. The audit log records it as *taken from
+what the board saw*, so it can be told apart from a typed one.
+
+Above the table, **Take all agreeing (n)** enters the board's result for every
+game that has none yet and whose board saw an unambiguous result. It asks first,
+with the count. An existing result is never overwritten, not even a red one:
+correcting that is yours to do.
+
+Only a result the board saw whole is offered: the game is finished with a
+result, and no move was worked out afterwards, guessed or rewritten. A game with
+such moves gets no button; type its result instead. The box does not report
+whether a game's link to its pairing is in doubt, so OpenPairings cannot check
+that; your click is that check. Nothing is ever entered without a click.
 
 ## Games and PGN {#games-and-pgn}
 
