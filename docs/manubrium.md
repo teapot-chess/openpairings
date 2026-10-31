@@ -600,6 +600,36 @@ box scans or types (`<address>/api/boards/v1#oplt_...`), shown this once.
 Eight at most (`409 too_many_codes`). `DELETE /board-links/:lid` withdraws
 one (`204`; `404 link_not_found`). The organiser and editors only.
 
+### The hall's printer and announcer
+
+A hall PC with Polis (print) or Nunki (announcer) joined to the tournament
+is not Manubrium's business to set up - that is the tournament's Settings,
+or a pairing link - but it is Manubrium's to use. The core knows neither
+program: the plugins compiled into the hosted edition answer through
+`PairingsEngine.Plugin`'s `hall_status/2` and `hall_command/3`, and send the
+devices the frames of the `hall-link-v1` contract (`print`, `standings`,
+`countdown`, `announce`). Without such a plugin the answers are an empty
+list and `409 hall_off`.
+
+`GET /tournaments/:id/hall` answers `{apps, devices, round, countdown}`:
+`apps` the hall apps switched on for the owner's account (`polis`,
+`nunki`), `devices` every station and announcer joined (`app`, `id`, `name`,
+`room`, `online` - a live line heard from in the last 90 seconds -,
+`last_seen_at`), `round` the latest published round or null, `countdown` the
+one still running (`round`, `seconds_left`) or null. The three commands go
+to the devices that are online and answer `{sent_to, round, countdown?}`;
+`sent_to` 0 is an answer, not an error. `POST /hall/print` takes `{what}`
+(`pairings`, `placecards`, `both`, `standings`, `playerlist`, `slips`) for the
+latest published round; the standings are built and sent just before the
+print, and refused (`409 hall_failed`) where the Standings page would not
+print them (a team event; the last round of a FIDE-mode event with a
+postponed game still open). `POST /hall/countdown` takes `{minutes}`
+(1, 2, 5, 10, 15, 20 or 30) or `{cancel: true}`. `POST /hall/announce` takes
+`{canned}` (`silence`, `phones`, `seats`, `results`, `arbiter`) or `{text}`
+(trimmed, 300 characters at most). Refusals: `400 bad_request`, `409
+hall_off` (no hall app at all), `409 hall_no_round`, `409 hall_failed`. The
+organiser and editors only.
+
 ### Incident photos
 
 A photo taken while logging travels inside the incident's sync entry
@@ -721,6 +751,10 @@ All under `/api/manubrium/v1`, JSON, errors as
 | `GET /tournaments/:id/board-links` | desk | | `{links: [{id, kind, label, hint, reach, created_at, last_seen_at}]}` |
 | `POST /tournaments/:id/board-links` | desk | `{link?: {label}, where?: "lan"}` | `201 {link, code}`; `409 too_many_codes`, `409 lan_unusable` |
 | `DELETE /tournaments/:id/board-links/:lid` | desk | | `204`; `404 link_not_found` |
+| `GET /tournaments/:id/hall` | desk | | `{apps, devices: [{app, id, name, room, online, last_seen_at}], round, countdown}` |
+| `POST /tournaments/:id/hall/print` | desk | `{what}` | `{sent_to, round}`; `400 bad_request`, `409 hall_off`, `409 hall_no_round`, `409 hall_failed` |
+| `POST /tournaments/:id/hall/countdown` | desk | `{minutes}` or `{cancel: true}` | `{sent_to, round, countdown}`; as above |
+| `POST /tournaments/:id/hall/announce` | desk | `{canned}` or `{text}` | `{sent_to, round}`; as above |
 
 A sync entry is Lite's entry without the `enrollment` field (the server
 fills in the device's own): `{cid, kind: "result", round, pairing, board,

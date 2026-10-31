@@ -2,7 +2,11 @@
 
 Nunki reads the pairings aloud in the hall as soon as they are published,
 and counts down to the start of the round ("Round 3 starts in five
-minutes"). It is a small program on a computer with speakers, and it speaks
+minutes"). It also says what you type or choose: five ready-made announcements
+(silence, phones off, take your seats, hand in your results, come to the
+arbiter) or a line of your own, from the tournament's Hall announcer page,
+from the Hall card in [Manubrium](/help/manubrium-app), or from Nunki's own
+screen, and shows it on the hall screen. It is a small program on a computer with speakers, and it speaks
 English or Dutch, whichever the tournament speaks. It uses the computer's
 own voices, so it keeps announcing with every page closed, and it has a hall
 screen for a projector.

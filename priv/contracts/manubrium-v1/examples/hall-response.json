@@ -1,0 +1,9 @@
+{
+  "apps": ["polis", "nunki"],
+  "devices": [
+    {"app": "polis", "id": 4, "name": "Printer desk", "room": "Hall A", "online": true, "last_seen_at": "2026-11-08T13:05:10Z"},
+    {"app": "nunki", "id": 2, "name": "Announcer PC", "room": "", "online": false, "last_seen_at": "2026-11-08T12:41:02Z"}
+  ],
+  "round": 3,
+  "countdown": {"round": 3, "seconds_left": 240}
+}

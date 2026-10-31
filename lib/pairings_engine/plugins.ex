@@ -343,6 +343,51 @@ defmodule PairingsEngine.Plugins do
     end
   end
 
+  ## ---------- the hall apps (Manubrium's second job) ----------
+
+  @doc """
+  The hall apps switched on for `tournament`, each as `hall_status/2` has
+  it, for Manubrium's Hall page. A plugin without the hook, or one that
+  says nil (not switched on), is not in the list.
+  """
+  def hall_status(scope, tournament) do
+    Enum.flat_map(all(), fn plugin ->
+      if exports?(plugin, :hall_status, 2) do
+        case safely(plugin, :hall_status, fn -> plugin.hall_status(scope, tournament) end, nil) do
+          %{app: _} = status -> [status]
+          _off -> []
+        end
+      else
+        []
+      end
+    end)
+  end
+
+  @doc """
+  A command for the hall apps, to every plugin that takes it:
+  `{:ok, sent_to}` with the devices it went to in all (0 when nobody was
+  online), `{:error, reason}` from the first plugin that refused it, or
+  `{:error, :no_hall}` when no plugin here does that job at all.
+  """
+  def hall_command(scope, tournament, command) do
+    results =
+      for plugin <- all(), exports?(plugin, :hall_command, 3) do
+        safely(
+          plugin,
+          :hall_command,
+          fn -> plugin.hall_command(scope, tournament, command) end,
+          {:error, :failed}
+        )
+      end
+      |> Enum.reject(&(&1 == :unsupported))
+
+    cond do
+      results == [] -> {:error, :no_hall}
+      error = Enum.find(results, &match?({:error, _}, &1)) -> error
+      true -> {:ok, results |> Enum.map(fn {:ok, n} -> n end) |> Enum.sum()}
+    end
+  end
+
   ## ---------- boot ----------
 
   @doc """

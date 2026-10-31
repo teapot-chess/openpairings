@@ -80,6 +80,7 @@ switch, the account page refuses to make a code and says why.
 | Start a new tournament | yes, as its owner | yes, as its owner |
 | Share the results-site link | yes | yes |
 | Codes for hall boxes (live boards) | yes | no |
+| The hall's printer and announcer: see them, reprint, countdown, announce | yes | no |
 
 Results entered without a signal wait on the phone and go when it can. If
 somebody else changed the same board in the meantime, the app does not
@@ -133,6 +134,35 @@ box never enters a result; you do. The organiser and editors can list the
 boxes' codes, make a new one - with a name of your choosing, which the list
 then shows; the full code is shown once, to scan or type into the box - and
 withdraw one, as on the **Boards** settings page.
+
+## The hall's printer and announcer {#hall}
+
+If the hall has a print station (Polis) or an announcer (Nunki) joined to the
+tournament, **More** has a **Hall (print stations and announcers)** card for
+the organiser and editors. It lists them with their room and whether
+they are online, and has three things to press:
+
+- **Reprint round**: the latest published round's pairings, place cards, both,
+  the standings, a player list in alphabetical order with board and room, or
+  result slips, one per board. Every print station that is online prints it.
+  The standings are sent just before they are printed, so they are the
+  standings of that moment, and a tournament that may not print them yet (the
+  last round of a FIDE-mode event with a postponed game still open) prints
+  nothing and says why.
+- **Countdown to the round**, to the start of the latest round, from 1 to 30 minutes, and
+  **Cancel countdown** for the one that runs. The announcers say it at ten, five and one
+  minute and at zero.
+- **Announce**: one of five ready-made announcements (silence, switch off
+  phones, take your seats, hand in your results, come to the arbiter) or a
+  line of your own, up to 300 characters. The announcer says it aloud and
+  shows it on the hall screen.
+
+The app says how many devices a command reached. If it reached none, nothing
+was online to receive it, and the app says so rather than pretending: check
+the device on the station's page. A station is added in OpenPairings, in the
+tournament's Settings, and an account without the print station or the
+announcer switched on has no Hall card to press. Needs a connection; nothing
+here waits on the phone.
 
 ## Changing the pairings by hand {#hand-edits}
 

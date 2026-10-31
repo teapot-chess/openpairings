@@ -1,7 +1,12 @@
 # De zaalomroeper
 
 Nunki leest de paringen in de zaal voor zodra ze gepubliceerd zijn, en telt
-af naar het begin van de ronde ("Ronde 3 begint over vijf minuten"). Het is
+af naar het begin van de ronde ("Ronde 3 begint over vijf minuten"). Het zegt
+ook wat je intikt of kiest: vijf kant-en-klare mededelingen (stilte, telefoons
+uit, ga zitten, lever je uitslag in, kom naar de arbiter) of een eigen zin,
+vanaf de pagina Zaalomroeper van het toernooi, vanaf de kaart Zaal in
+[Manubrium](/help/manubrium-app) of vanaf het scherm van Nunki zelf, en toont
+het op het zaalscherm. Het is
 een klein programma op een computer met luidsprekers, en het spreekt Engels
 of Nederlands, de taal van het toernooi. Het gebruikt de eigen stemmen van de
 computer, dus het blijft omroepen met elke pagina dicht, en het heeft een
