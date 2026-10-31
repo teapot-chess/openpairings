@@ -4,10 +4,13 @@ defmodule PairingsEngine.MixProject do
   # The edition being built, read once when this file is loaded. See
   # `PairingsEngine.Plugin` for what a plugin is.
   #
-  #   desktop (the default, and what CI, the desktop binaries and local
-  #            development build): no plugin. Nothing below adds a
-  #            dependency, a source path or a test path, so the build is
-  #            exactly what it would be without the plugin seam.
+  #   desktop (the default, and what CI and local development build): no
+  #            plugin. Nothing below adds a dependency, a source path or a
+  #            test path, so the build is exactly what it would be without
+  #            the plugin seam. The one exception is the desktop binaries,
+  #            which name the hall plug-ins (Polis, Nunki) in
+  #            PAIRINGS_PLUGINS so that the hall programs on the same PC
+  #            have something to connect to. Any other plugin is refused.
   #   hosted  the hosted server: each plugin checkout (see below) is added
   #            as a path dependency and its `lib/` compiled with ours.
   #
@@ -38,8 +41,17 @@ defmodule PairingsEngine.MixProject do
 
   plugins_dir = System.get_env("PAIRINGS_PLUGINS_DIR") || Path.expand("..", __DIR__)
 
+  names = System.get_env("PAIRINGS_PLUGINS", "") |> String.split(",", trim: true)
+
+  # The desktop edition builds no plugin unless PAIRINGS_PLUGINS names one
+  # (never "every checkout there": a desktop build must not pick up a
+  # private plugin because it sat in the next directory), and then only a
+  # hall plug-in - see `PairingsEngine.PluginManifest.desktop_allowed?/1`.
   plugin_dirs =
-    case System.get_env("PAIRINGS_PLUGINS", "") |> String.split(",", trim: true) do
+    case names do
+      [] when edition == "desktop" ->
+        []
+
       [] ->
         plugins_dir
         |> Path.join("*/openpairings_plugin.exs")
@@ -50,7 +62,7 @@ defmodule PairingsEngine.MixProject do
         Enum.map(names, &Path.join(plugins_dir, String.trim(&1)))
     end
 
-  @plugins (if edition == "hosted" do
+  @plugins (if plugin_dirs != [] do
               for dir <- plugin_dirs do
                 manifest = Path.join(dir, "openpairings_plugin.exs")
 
@@ -59,7 +71,9 @@ defmodule PairingsEngine.MixProject do
                 end
 
                 {opts, _binding} = Code.eval_file(manifest)
-                PairingsEngine.PluginManifest.parse(opts, dir)
+                plugin = PairingsEngine.PluginManifest.parse(opts, dir)
+                PairingsEngine.PluginManifest.check_edition!(plugin, edition)
+                plugin
               end
             else
               []
@@ -111,7 +125,7 @@ defmodule PairingsEngine.MixProject do
   defp releases do
     [
       pairings_engine: [
-        steps: [:assemble, &Burrito.wrap/1],
+        steps: [&__MODULE__.bundle_plugin_migrations/1, :assemble, &Burrito.wrap/1],
         burrito: [
           targets: [
             # No macOS: Burrito's own Erlang there needs macOS 15. The Mac
@@ -141,7 +155,12 @@ defmodule PairingsEngine.MixProject do
       # inside, so there is still nothing to install.
       pairings_engine_portable: [
         applications: [pairings_engine: :permanent],
-        steps: [:assemble, &__MODULE__.windows_launcher/1, &__MODULE__.windows_velopack_dll/1],
+        steps: [
+          &__MODULE__.bundle_plugin_migrations/1,
+          :assemble,
+          &__MODULE__.windows_launcher/1,
+          &__MODULE__.windows_velopack_dll/1
+        ],
         include_executables_for: [:unix, :windows],
         # `bin/pairings_engine_portable start` works, but says nothing about
         # local mode - which a plain release cannot detect, since `__BURRITO`
@@ -149,6 +168,30 @@ defmodule PairingsEngine.MixProject do
         overlays: ["rel/portable"]
       ]
     ]
+  end
+
+  @doc false
+  # A plugin names its migrations by the path of its checkout, which is
+  # right on the machine that compiled it (the hosted server) and nowhere
+  # else: a desktop binary built in CI runs on a PC with no such directory.
+  # So before the release is assembled each plugin's priv/migrations is
+  # copied into this application's priv/plugin_migrations/<plugin name>,
+  # which the release ships, and `PairingsEngine.Plugins.migrations_paths/0`
+  # falls back to it. No plugin, nothing copied.
+  def bundle_plugin_migrations(release) do
+    target = Path.join(__DIR__, "priv/plugin_migrations")
+    File.rm_rf!(target)
+
+    for plugin <- @plugins,
+        source = Path.join([plugin.path, "priv", "migrations"]),
+        File.dir?(source) do
+      File.cp_r!(source, Path.join(target, Atom.to_string(plugin.name)))
+    end
+
+    # Where _build holds a copy of priv rather than a symlink (Windows
+    # without developer mode), the copy above would otherwise be missed.
+    Mix.Project.build_structure()
+    release
   end
 
   @doc false

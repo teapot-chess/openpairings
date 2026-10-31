@@ -101,3 +101,7 @@ graphify-out/
 
 # Dialyzer PLTs (mix dialyzer), rebuilt on demand.
 /priv/plts/
+
+# Hall plug-ins fetched by CI, and the migrations bundled into a release.
+/hall-plugins/
+/priv/plugin_migrations/

@@ -13,6 +13,11 @@ microphone. What is announced and when is decided in OpenPairings; Nunki is
 where it is said out loud. With rooms, an announcer reads only its own room's
 boards.
 
+**Desktop or hosted.** It works with the desktop OpenPairings on the same PC
+as well as with the hosted server: the desktop build has the announcer built
+in. Install Nunki next to OpenPairings (Ascella does both) and paste the
+join link into it, the same as with a server.
+
 **Where it fits.** In OpenPairings: the tournament's Settings, *Hall
 announcer*, *Add an announcer*; the link it shows is good once, for fifteen
 minutes. Paste it into Nunki on the hall PC, or scan its QR code with

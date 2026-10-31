@@ -7,11 +7,12 @@ defmodule PairingsEngine.Plugin do
 
   ## How a plugin gets into a build
 
-  Only at compile time, and only in the hosted edition. `mix.exs` reads
-  `PAIRINGS_EDITION`: unset or `desktop` (CI, the desktop binaries, local
-  development) lists no plugin, so no plugin source is compiled, nothing
-  references one, and the application is exactly what it is without this
-  module. `PAIRINGS_EDITION=hosted` adds each plugin as a path dependency
+  Only at compile time. `mix.exs` reads `PAIRINGS_EDITION`: unset or
+  `desktop` (CI, local development) lists no plugin, so no plugin source is
+  compiled, nothing references one, and the application is exactly what it
+  is without this module. The desktop binaries are the one exception: they
+  name the hall plug-ins (Polis, Nunki) in `PAIRINGS_PLUGINS`, and the
+  desktop edition accepts those two and no other (`plugin_manifest.exs`). `PAIRINGS_EDITION=hosted` adds each plugin as a path dependency
   and compiles its `lib/` together with the core. A plugin is a checkout
   with an `openpairings_plugin.exs` manifest (`[name: ..., module: ...]`)
   in `PAIRINGS_PLUGINS_DIR` - by default the directory next to this

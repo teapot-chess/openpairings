@@ -362,8 +362,28 @@ defmodule PairingsEngine.Plugins do
   @doc "The plugins' own migration directories, run after the core's."
   def migrations_paths do
     for plugin <- all(), exports?(plugin, :migrations_path, 0) do
-      plugin.migrations_path()
+      bundled_or_own(plugin.migrations_path())
     end
+  end
+
+  # A plugin gives the path of its own checkout, which exists on the machine
+  # that compiled it. A release built elsewhere (the desktop binaries) has
+  # none, so the copy `mix.exs` bundled into priv/plugin_migrations/<name>
+  # is used, <name> being the plugin's directory (`<name>/priv/migrations`).
+  @doc false
+  def bundled_or_own(path) do
+    bundled = bundled_path(path)
+
+    cond do
+      File.dir?(path) -> path
+      File.dir?(bundled) -> bundled
+      true -> path
+    end
+  end
+
+  defp bundled_path(path) do
+    name = path |> Path.split() |> Enum.at(-3, "")
+    Application.app_dir(:pairings_engine, Path.join(["priv", "plugin_migrations", name]))
   end
 
   ## ---------- helpers ----------

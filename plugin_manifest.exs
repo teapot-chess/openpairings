@@ -38,6 +38,34 @@ defmodule PairingsEngine.PluginManifest do
             "got #{inspect(other)}"
   end
 
+  # The plugins a DESKTOP build may carry: the hall programs' (Polis, the
+  # print station; Nunki, the announcer), which run on the same PC as a
+  # desktop OpenPairings and have nothing to connect to without it. Every
+  # other plugin - the private, national and server-side ones - is the
+  # hosted edition's alone, and a desktop build asked to include one stops
+  # instead of shipping it to every arbiter's laptop.
+  @desktop_plugins [:openpairings_polis, :openpairings_nunki]
+
+  @doc "Whether the plugin called `name` may be built into the desktop edition."
+  def desktop_allowed?(name), do: name in @desktop_plugins
+
+  @doc """
+  Stops the build when `plugin` may not be part of `edition`: anything but a
+  hall plug-in in the desktop edition. The hosted edition takes every plugin.
+  """
+  def check_edition!(plugin, "hosted"), do: plugin
+
+  def check_edition!(plugin, "desktop") do
+    unless desktop_allowed?(plugin.name) do
+      raise ArgumentError,
+            "plugin #{inspect(plugin.name)} (#{plugin.path}) is for the hosted edition only; " <>
+              "the desktop edition builds in " <>
+              Enum.map_join(@desktop_plugins, " and ", &inspect/1) <> " and nothing else"
+    end
+
+    plugin
+  end
+
   defp fetch!(opts, key, manifest) do
     case Keyword.fetch(opts, key) do
       {:ok, value} -> value
