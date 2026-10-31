@@ -46,7 +46,8 @@ defmodule PairingsEngineWeb.ManubriumApi.HallController do
     command(conn, id, {:print, what})
   end
 
-  def print(conn, _params), do: bad_request(conn, gettext("Not something a print station prints."))
+  def print(conn, _params),
+    do: bad_request(conn, gettext("Not something a print station prints."))
 
   @doc "POST /tournaments/:id/hall/countdown - `{minutes}` or `{cancel: true}`."
   def countdown(conn, %{"id" => id, "minutes" => minutes}) when minutes in @minutes do
@@ -94,6 +95,14 @@ defmodule PairingsEngineWeb.ManubriumApi.HallController do
         {:error, :no_round} ->
           Reply.error(conn, 409, "hall_no_round", gettext("Publish a round first."))
 
+        {:error, :no_standings} ->
+          Reply.error(
+            conn,
+            409,
+            "hall_failed",
+            gettext("There are no standings to print yet, or this event may not print them.")
+          )
+
         {:error, _other} ->
           Reply.error(conn, 409, "hall_failed", gettext("The hall apps could not take that."))
       end
@@ -135,7 +144,9 @@ defmodule PairingsEngineWeb.ManubriumApi.HallController do
   end
 
   defp countdown_json(nil), do: nil
-  defp countdown_json(%{round: round, seconds_left: seconds}), do: %{round: round, seconds_left: seconds}
+
+  defp countdown_json(%{round: round, seconds_left: seconds}),
+    do: %{round: round, seconds_left: seconds}
 
   defp latest_round(t) do
     case Tournaments.latest_published_round_number(t) do

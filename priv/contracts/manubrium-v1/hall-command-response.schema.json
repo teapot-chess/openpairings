@@ -8,7 +8,7 @@
   "required": ["sent_to"],
   "properties": {
     "sent_to": {"type": "integer", "minimum": 0},
-    "round": {"type": "integer", "minimum": 1},
+    "round": {"type": ["integer", "null"], "minimum": 1, "description": "The latest published round the command was about."},
     "countdown": {
       "oneOf": [
         {"type": "null"},

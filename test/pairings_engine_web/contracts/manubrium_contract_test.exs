@@ -24,7 +24,8 @@ defmodule PairingsEngineWeb.ManubriumContractTest do
   @contract "manubrium-v1"
   @api "/api/manubrium/v1"
 
-  # Every request example, and so every one the tests below must send.
+  # Every request example, and so every one the tests must send. The hall ones
+  # are sent by `ManubriumHallTest`, which has a plugin to answer them.
   @request_examples ~w(
     board-link-create-request.json
     byes-request.json
@@ -33,6 +34,11 @@ defmodule PairingsEngineWeb.ManubriumContractTest do
     edit-request.json
     expected-request.json
     finish-edits-request.json
+    hall-announce-request.json
+    hall-announce-request.text.json
+    hall-countdown-request.cancel.json
+    hall-countdown-request.json
+    hall-reprint-request.json
     incident-update-request.json
     pair-request.json
     photo-request.json

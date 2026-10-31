@@ -28046,3 +28046,38 @@ msgstr[1] ""
 #, elixir-autogen, elixir-format
 msgid "Yes, enter them"
 msgstr ""
+
+#: lib/pairings_engine_web/controllers/manubrium_api/hall_controller.ex:60
+#, elixir-autogen, elixir-format
+msgid "A countdown is 1, 2, 5, 10, 15, 20 or 30 minutes."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/manubrium_api/hall_controller.ex:92
+#, elixir-autogen, elixir-format
+msgid "No hall app is switched on for this account."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/manubrium_api/hall_controller.ex:50
+#, elixir-autogen, elixir-format
+msgid "Not something a print station prints."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/manubrium_api/hall_controller.ex:96
+#, elixir-autogen, elixir-format
+msgid "Publish a round first."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/manubrium_api/hall_controller.ex:76
+#, elixir-autogen, elixir-format
+msgid "Say what to announce."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/manubrium_api/hall_controller.ex:107
+#, elixir-autogen, elixir-format
+msgid "The hall apps could not take that."
+msgstr ""
+
+#: lib/pairings_engine_web/controllers/manubrium_api/hall_controller.ex:103
+#, elixir-autogen, elixir-format
+msgid "There are no standings to print yet, or this event may not print them."
+msgstr ""

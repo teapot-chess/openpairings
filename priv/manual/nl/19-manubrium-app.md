@@ -83,6 +83,7 @@ schakelaar weigert de accountpagina een code te maken en zegt ze waarom.
 | Een nieuw toernooi starten | ja, als eigenaar | ja, als eigenaar |
 | De link naar de uitslagensite delen | ja | ja |
 | Codes voor zaalkastjes (live borden) | ja | nee |
+| De printer en de omroeper in de zaal: bekijken, opnieuw afdrukken, aftellen, omroepen | ja | nee |
 
 Uitslagen die je zonder bereik invoert, wachten op de telefoon en gaan weg
 zodra het kan. Heeft iemand anders intussen hetzelfde bord gewijzigd, dan
@@ -138,6 +139,35 @@ van de kastjes bekijken, een nieuwe maken - met een naam naar keuze, die de
 lijst dan toont; de volledige code wordt één keer getoond, om in het kastje te
 scannen of te typen - en er een intrekken, zoals
 op de instellingenpagina **Borden**.
+
+## De printer en de omroeper in de zaal {#hall}
+
+Is er een printstation ([Polis](/help/other/polis)) of een omroeper
+([Nunki](/help/other/nunki)) aan het toernooi gekoppeld, dan heeft **Meer** een
+kaart **Zaal (printstations en omroepers)** voor de organisator en bewerkers. Die toont ze met hun zaal en
+of ze online zijn, en heeft vier dingen om op te drukken:
+
+- **Ronde opnieuw printen**: de paringen van de laatst gepubliceerde ronde, de
+  tafelkaartjes, allebei, de stand, een spelerslijst op alfabet met bord en
+  zaal, of uitslagstrookjes, één per bord. Elk printstation dat online is
+  drukt het af. De stand wordt vlak voor het afdrukken doorgestuurd, het is dus
+  de stand van dat moment; een toernooi dat de stand nog niet mag afdrukken (de
+  laatste ronde van een toernooi in FIDE-modus met nog een uitgestelde partij
+  open) drukt niets af en zegt waarom.
+- **Aftellen naar de ronde**, naar het begin van de laatste ronde, van 1 tot 30 minuten, en
+  **Aftellen stoppen** voor het aftellen dat loopt. De omroepers zeggen het bij tien,
+  vijf en één minuut en bij nul.
+- **Omroepen**: een van vijf kant-en-klare mededelingen (stilte, telefoons
+  uit, ga op je plaats zitten, lever je uitslag in, kom naar de arbiter) of
+  een eigen zin van maximaal 300 tekens. De omroeper zegt het hardop en toont
+  het op het zaalscherm.
+
+De app zegt op hoeveel apparaten een opdracht aankwam. Waren dat er nul, dan
+was er niets online om het te ontvangen, en dat zegt de app ook, in plaats van
+te doen alsof: kijk op de pagina van het station naar het apparaat. Een station
+voeg je toe in OpenPairings, bij de Instellingen van het toernooi, en een
+account waarop het printstation of de omroeper niet aanstaat, heeft geen
+kaart Zaal. Heeft een verbinding nodig; er wacht hier niets op de telefoon.
 
 ## De paringen met de hand wijzigen {#hand-edits}
 

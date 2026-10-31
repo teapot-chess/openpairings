@@ -1,7 +1,12 @@
 # Het printstation
 
 Polis drukt de paringen en de tafelkaartjes van elke gepubliceerde ronde
-vanzelf af, op een printer in de zaal. Het is een klein programma op een
+vanzelf af, op een printer in de zaal. Op verzoek drukt het ook de stand af, een
+spelerslijst op alfabet met bord en zaal (het blad voor op de deur) en
+uitslagstrookjes, één per bord, vier op een blad. Je vraagt het vanaf het
+station, vanaf de pagina Print station van het toernooi of vanaf de kaart Zaal
+in [Manubrium](/help/manubrium-app); de spelerslijst en de strookjes kunnen ook
+aangezet worden om bij elke nieuwe ronde mee te komen. Het is een klein programma op een
 computer met een printer, dat met een koppelingslink aansluit bij een
 toernooi in OpenPairings en er een lijn mee openhoudt. Het drukt elke ronde
 één keer af, en opnieuw alleen als iemand erom vraagt. Het belt altijd zelf

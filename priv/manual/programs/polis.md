@@ -1,7 +1,12 @@
 # The print station
 
 Polis prints the pairings and the place cards of every published round, by
-itself, on a printer in the hall. It is a small program on a computer with a
+itself, on a printer in the hall. On request it also prints the standings, a
+player list in alphabetical order with board and room (the sheet for the
+door), and result slips, one per board, four to a page. You ask from the
+station, from the tournament's Print station page, or from the Hall card in
+[Manubrium](/help/manubrium-app); the player list and the slips can also be
+switched on to print with every new round. It is a small program on a computer with a
 printer that joins a tournament in OpenPairings with a join link and keeps a
 line open to it. It prints each round once, and again only when somebody
 asks. It always dials out, so nothing in the hall's network has to be

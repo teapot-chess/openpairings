@@ -83,6 +83,11 @@ defmodule PairingsEngine.Plugin do
       from its own data, offered on the Teams page.
     * `migrations_path/0` - the plugin's own migrations, run with the
       core's.
+    * `hall_status/2` and `hall_command/3` - the hall programs a plugin
+      speaks for (Polis, Nunki): who is joined and online, and the commands
+      Manubrium sends them (print again, countdown, announce). A plugin that
+      does not do that job leaves them out; one that does only part of it
+      answers `:unsupported` to the rest.
     * `boot/0` - called once, from the core's own application start, after
       its supervision tree (Repo, PubSub, the endpoint) is up. For work a
       plugin must do at boot rather than on the first page: configuring
