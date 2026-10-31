@@ -187,6 +187,9 @@ guards restore the triggers along with the rows.
   `Rebuilding the name index…`, so that phase is no longer silent.)
 - **Stuck on "Contacting FIDE…"** is usually the host being blocked by
   ratings.fide.com - see `FIDE_LIST_URL` in [`deployment.md`](deployment.md).
+  The address can also be set on the Connections page, which overrides the
+  variable (UI > `FIDE_LIST_URL` > default); its Test button shows at once
+  whether the host answers.
 - Memory is worth watching regardless: `:zip.extract/2` is called with
   `[:memory]` and materialises the whole ~297 MB list as one binary. On a small
   or shared VPS that alone can push the peak past 1 GB. Streaming it to disk

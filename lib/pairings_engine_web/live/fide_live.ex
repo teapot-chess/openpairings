@@ -11,6 +11,7 @@ defmodule PairingsEngineWeb.FideLive do
   alias PairingsEngine.Features
   alias PairingsEngine.Federations.BEL.Members
   alias PairingsEngine.Federations.BEL.Settings, as: BelSettings
+  alias PairingsEngine.Fide.Freshness
   alias PairingsEngine.Fide.Sync, as: FideSync
   alias PairingsEngine.Federations.BEL.Sync, as: KbsbSync
   alias PairingsEngine.Federations.BEL.SwarPublish
@@ -81,7 +82,8 @@ defmodule PairingsEngineWeb.FideLive do
        local_mode?: Authz.local_mode?(),
        updates_enabled?: Updates.enabled?()
      )
-     |> assign_publishing()}
+     |> assign_publishing()
+     |> assign_list_url()}
   end
 
   # The OpenResults settings are machine-wide, so they are read from storage
@@ -380,6 +382,76 @@ defmodule PairingsEngineWeb.FideLive do
     end
   end
 
+  # Where the rating list is downloaded from. Machine-wide and trusted as far
+  # as FIDE itself is (the response is loaded straight into the player table),
+  # so an administrator's, re-checked here and not only in the markup.
+  def handle_event("validate_list_url", params, socket) do
+    if socket.assigns.may_admin? do
+      {:noreply, assign(socket, list_url_input: list_url_param(params), list_url_error: nil)}
+    else
+      {:noreply, put_flash(socket, :error, source_restricted())}
+    end
+  end
+
+  def handle_event("save_list_url", params, socket) do
+    if socket.assigns.may_admin? do
+      typed = list_url_param(params)
+
+      case FideSync.validate_list_url(typed, socket.assigns.local_mode?) do
+        {:ok, url} ->
+          {:noreply, change_list_url(socket, url)}
+
+        {:error, reason} ->
+          {:noreply,
+           assign(socket,
+             list_url_input: typed,
+             list_url_error: list_url_error(reason, socket.assigns.local_mode?),
+             list_url_test: nil
+           )}
+      end
+    else
+      {:noreply, put_flash(socket, :error, source_restricted())}
+    end
+  end
+
+  def handle_event("clear_list_url", _params, socket) do
+    if socket.assigns.may_admin? do
+      {:noreply, change_list_url(socket, nil)}
+    else
+      {:noreply, put_flash(socket, :error, source_restricted())}
+    end
+  end
+
+  # One HEAD request, made here and now: somebody just pressed the button and
+  # is looking at it, like the Test button for the results site. A typed (not
+  # yet saved) address is what gets tested, so a typo is found before it is
+  # saved; a blank box tests whatever is in effect.
+  def handle_event("test_list_url", params, socket) do
+    if socket.assigns.may_admin? do
+      typed = list_url_param(params)
+
+      case FideSync.validate_list_url(typed, socket.assigns.local_mode?) do
+        {:error, reason} ->
+          {:noreply,
+           assign(socket,
+             list_url_input: typed,
+             list_url_error: list_url_error(reason, socket.assigns.local_mode?),
+             list_url_test: nil
+           )}
+
+        {:ok, url} ->
+          {:noreply,
+           assign(socket,
+             list_url_input: typed,
+             list_url_error: nil,
+             list_url_test: describe_list_probe(Freshness.probe(url || FideSync.list_url()))
+           )}
+      end
+    else
+      {:noreply, put_flash(socket, :error, source_restricted())}
+    end
+  end
+
   def handle_event("sync", _params, socket) do
     if socket.assigns.may_admin? do
       {:noreply, start_fide_sync(socket)}
@@ -623,6 +695,97 @@ defmodule PairingsEngineWeb.FideLive do
     end
   end
 
+  defp source_restricted,
+    do: gettext("Changing where the FIDE rating list is downloaded from needs an administrator.")
+
+  defp assign_list_url(socket) do
+    assign(socket,
+      list_url_effective: FideSync.list_url(),
+      list_url_source: FideSync.list_url_source(),
+      list_url_env: FideSync.env_list_url(),
+      list_url_input: FideSync.stored_list_url() || "",
+      list_url_error: nil,
+      list_url_test: nil
+    )
+  end
+
+  defp change_list_url(socket, new) do
+    old = FideSync.stored_list_url()
+    FideSync.put_list_url(new)
+
+    # Only when the stored address actually changed - pressing Save on the
+    # page as it was is not an act worth a row.
+    if new != old do
+      Audit.log_system(socket.assigns.current_scope, "fide.list_url_changed", %{
+        changed_fields: %{list_url: [old, new]}
+      })
+    end
+
+    socket
+    |> assign_list_url()
+    |> put_flash(
+      :info,
+      if(new,
+        do: gettext("Saved. The next download uses this address."),
+        else: gettext("Back to the default address.")
+      )
+    )
+  end
+
+  # The form posts `list_url[url]`; a bare `url` (the Test button's
+  # phx-value, or a hand-made event) is read too.
+  defp list_url_param(%{"list_url" => %{"url" => url}}) when is_binary(url), do: url
+  defp list_url_param(%{"url" => url}) when is_binary(url), do: url
+  defp list_url_param(_), do: ""
+
+  defp list_url_error(:https_only, _local?),
+    do: gettext("Use an https:// address. Plain http is only accepted on a desktop installation.")
+
+  defp list_url_error(:invalid, true),
+    do:
+      gettext("That is not a web address. Use a full address starting with https:// or http://.")
+
+  defp list_url_error(:invalid, false),
+    do: gettext("That is not a web address. Use a full address starting with https://.")
+
+  defp describe_list_probe({:ok, %{status: status} = info}) when status in 200..299 do
+    {:ok, gettext("The server answered %{status}.", status: status) <> probe_details(info)}
+  end
+
+  defp describe_list_probe({:ok, %{status: status} = info}) do
+    {:error,
+     gettext("The server answered %{status}, which is not a download.", status: status) <>
+       probe_details(info)}
+  end
+
+  defp describe_list_probe({:error, reason}), do: {:error, describe_transport(reason)}
+
+  defp probe_details(info) do
+    parts =
+      [
+        info.last_modified && gettext("Last modified: %{when}.", when: info.last_modified),
+        info.size && gettext("Size: %{size}.", size: format_bytes(info.size))
+      ]
+      |> Enum.reject(&(&1 in [nil, false]))
+
+    if parts == [], do: "", else: " " <> Enum.join(parts, " ")
+  end
+
+  defp format_bytes(n) when n >= 1_000_000, do: "#{Float.round(n / 1_000_000, 1)} MB"
+  defp format_bytes(n) when n >= 1_000, do: "#{Float.round(n / 1_000, 1)} kB"
+  defp format_bytes(n), do: "#{n} B"
+
+  defp describe_transport(%{reason: reason}), do: describe_transport(reason)
+  defp describe_transport(:timeout), do: gettext("No answer within 10 seconds.")
+  defp describe_transport(:econnrefused), do: gettext("The server refused the connection.")
+  defp describe_transport(:nxdomain), do: gettext("That host name does not exist.")
+
+  defp describe_transport({:tls_alert, _}),
+    do: gettext("The secure connection could not be set up (certificate or TLS problem).")
+
+  defp describe_transport(other),
+    do: gettext("The request failed: %{reason}.", reason: inspect(other))
+
   defp blank_to_nil(value) when is_binary(value) do
     case String.trim(value) do
       "" -> nil
@@ -785,6 +948,96 @@ defmodule PairingsEngineWeb.FideLive do
           <button :if={busy?(@status) and @may_admin?} class="pe-btn" phx-click="cancel">
             {gettext("Cancel")}
           </button>
+        </div>
+
+        <div :if={@may_admin?} id="fide-source" class="field" style="margin-top: 16px">
+          <h3 style="margin-bottom: 4px">{gettext("Download address")}</h3>
+
+          <p id="fide-source-current" class="hint">
+            {case @list_url_source do
+              :ui ->
+                gettext("Set here: %{url}", url: @list_url_effective)
+
+              :env ->
+                gettext("From the FIDE_LIST_URL environment variable: %{url}",
+                  url: @list_url_effective
+                )
+
+              :default ->
+                gettext("FIDE's own address: %{url}", url: @list_url_effective)
+            end}
+          </p>
+
+          <p :if={@list_url_source == :ui && @list_url_env} class="hint">
+            {gettext("After \"Use default\" the FIDE_LIST_URL environment variable (%{url}) applies.",
+              url: @list_url_env
+            )}
+          </p>
+
+          <form id="fide-source-form" phx-change="validate_list_url" phx-submit="save_list_url">
+            <label for="fide-source-url">{gettext("Rating list address")}</label>
+            <input
+              type="text"
+              id="fide-source-url"
+              name="list_url[url]"
+              value={@list_url_input}
+              placeholder={FideSync.default_list_url()}
+              autocomplete="off"
+              spellcheck="false"
+            />
+
+            <p :if={@list_url_error} id="fide-source-error" class="error-note" role="alert">
+              {@list_url_error}
+            </p>
+
+            <p class="hint">
+              {if @local_mode?,
+                do:
+                  gettext(
+                    "A full https:// address (http:// also works on this desktop installation). Spaces and quotes around it are removed."
+                  ),
+                else:
+                  gettext(
+                    "A full https:// address; plain http:// is not accepted on a server. Spaces and quotes around it are removed."
+                  )}
+              {gettext(
+                "Whatever this points at is loaded as the FIDE rating list, so only use a source you trust."
+              )}
+            </p>
+
+            <div class="actions">
+              <button id="fide-source-save" type="submit" class="pe-btn">
+                {gettext("Save")}
+              </button>
+              <button
+                id="fide-source-test"
+                type="button"
+                class="pe-btn"
+                phx-click="test_list_url"
+                phx-value-url={@list_url_input}
+              >
+                {gettext("Test")}
+              </button>
+              <button
+                id="fide-source-clear"
+                type="button"
+                class="pe-btn"
+                phx-click="clear_list_url"
+                disabled={@list_url_source != :ui}
+              >
+                {gettext("Use default")}
+              </button>
+            </div>
+          </form>
+
+          <p :if={@list_url_test} id="fide-source-test-result" class="hint" role="status">
+            <%= case @list_url_test do %>
+              <% {:ok, text} -> %>
+                <strong style="color: var(--success)">{text}</strong>
+              <% {:error, text} -> %>
+                <strong style="color: var(--danger)">{text}</strong>
+            <% end %>
+          </p>
         </div>
 
         <p class="hint" style="margin-bottom: 0">

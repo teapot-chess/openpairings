@@ -30,6 +30,24 @@ means "no FIDE ID or no rating", not a failure of the download.
 > Connections page says so and offers **Sync again**; a server that downloads
 > by itself starts that update on its own.
 
+**Where the list is downloaded from.** Normally from FIDE's own site. Some
+hosting providers are blocked by that site, and a server there can never
+download the list; the fix is to point the program at a mirror or a
+pass-through proxy you trust. An administrator (anybody, on a desktop
+installation) does that on Connections, section *FIDE database*, under
+*Download address*. The line above the box says which address is in use and
+why: FIDE's own, the `FIDE_LIST_URL` environment variable of the server, or
+the one set here. The one set here wins and takes effect at once, without a
+restart. **Save** stores it, **Use default** removes it again (the
+environment variable, or FIDE, applies after that), and **Test** asks the
+address for its headers without downloading anything and says what it
+answered: the status, when the list was last modified and how big it is, or
+what went wrong. Only `https://` addresses are accepted on a server (a
+desktop installation also takes `http://`); spaces and quotes around the
+address are removed. Whatever the address points at is loaded as the FIDE
+rating list, so only use a source you trust. Every change is recorded in the
+audit log.
+
 **The national rating list.** The Belgian list (KBSB/FRBE) is a built-in
 national list. It is part of the *Belgian pack* of features that is switched
 off for every account unless you turn it on: Account menu, **Features**. With

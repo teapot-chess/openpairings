@@ -695,6 +695,19 @@ dialling: `Contacting FIDE…` means the override didn't take (unset, mistyped,
 quoted - the `.env` loader does not strip quotes - or the service wasn't
 restarted), while `Contacting <your-host>…` means it did.
 
+**It can also be set in the app, and that wins.** An administrator (anybody,
+on a local/desktop installation) can type the address on the Connections page,
+under *FIDE database* → *Download address*. It is stored in the `meta` table
+(`fide_list_url`), so it survives restarts and deploys, and it is read on every
+use, so it takes effect without a restart. Precedence: **address set in the
+app > `FIDE_LIST_URL` > FIDE's default**. "Use default" there clears the stored
+value and falls back to the variable. The page names which of the three is
+live, and its **Test** button sends one `HEAD` request (10 s timeout) and
+reports the status, `Last-Modified` and size. Hosted installations accept
+`https://` only; changes are written to the audit log as
+`fide.list_url_changed` with the old and new value. The trust warning above
+applies unchanged.
+
 ## 02cloud SSO (Keycloak)
 
 Unlike SMTP, SSO is **optional and never blocks boot**: it's one login option

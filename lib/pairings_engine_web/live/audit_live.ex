@@ -2537,6 +2537,19 @@ defmodule PairingsEngineWeb.AuditLive do
   def describe("publishing.token_cleared", _d), do: gettext("Cleared the publishing token.")
   def describe("publishing.public_consent_given", d), do: consent_given(d)
 
+  def describe("fide.list_url_changed", d) do
+    case d["changed_fields"] do
+      %{"list_url" => [from, to]} ->
+        gettext("Changed the FIDE rating list address from %{from} to %{to}.",
+          from: shown(from),
+          to: shown(to)
+        )
+
+      _ ->
+        gettext("Changed the FIDE rating list address.")
+    end
+  end
+
   def describe("fide.sync_started", _d), do: gettext("Started a FIDE rating list sync.")
 
   # Fallback for any code not explicitly handled: the code itself, which is

@@ -33,6 +33,25 @@ FIDE-ID of geen rating", niet een mislukte download.
 > **Opnieuw synchroniseren** aan; een server die zelf downloadt start die update
 > uit zichzelf.
 
+**Waarvandaan de lijst wordt gedownload.** Normaal van de eigen site van
+FIDE. Sommige hostingproviders worden door die site geblokkeerd, en een server
+daar kan de lijst dan nooit downloaden; de oplossing is het programma te
+laten wijzen naar een mirror of doorgeefproxy die je vertrouwt. Een beheerder
+(op een desktopinstallatie iedereen) doet dat op Verbindingen, sectie
+*FIDE-databank*, onder *Downloadadres*. De regel boven het vak zegt welk adres
+gebruikt wordt en waarom: dat van FIDE zelf, de omgevingsvariabele
+`FIDE_LIST_URL` van de server, of het adres dat hier is ingesteld. Het adres
+dat hier staat wint en werkt meteen, zonder herstart. **Bewaren** slaat het
+op, **Standaardadres gebruiken** haalt het weer weg (daarna geldt de
+omgevingsvariabele, of FIDE), en **Testen** vraagt het adres om zijn headers
+zonder iets te downloaden en meldt wat het antwoordde: de status, wanneer de
+lijst voor het laatst gewijzigd is en hoe groot ze is, of wat er misging. Op
+een server worden alleen `https://`-adressen aanvaard (een desktopinstallatie
+neemt ook `http://`); spaties en aanhalingstekens rond het adres worden
+weggehaald. Wat het adres ook aanwijst, wordt als de FIDE-ratinglijst
+geladen, dus gebruik alleen een bron die je vertrouwt. Elke wijziging komt in
+het auditlogboek.
+
 **De nationale ratinglijst.** De Belgische lijst (KBSB/FRBE) is een ingebouwde
 nationale lijst. Ze hoort bij het *Belgische pakket* van functies, dat voor elk
 account uitstaat tenzij je het aanzet: accountmenu, **Functies**. Met *Synchronisatie
