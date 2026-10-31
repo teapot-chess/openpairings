@@ -210,8 +210,8 @@ Still open, and each needs a decision rather than typing:
   stays parse-only on purpose: there is no button for "don't know". State
   and limits: `docs/trf-import.md`, "The unknown result `?`". The matching
   Ainalrami change (a `?` with no X is worth a draw and counts as played)
-  sits unmerged on Ainalrami's `unknown-result` branch, waiting for the
-  maintainer, because it reverses the 0.26.1 design.
+  shipped in Ainalrami 0.44.0 (2026-10-18), which OpenPairings has pinned
+  since. Nothing left here.
 
 - **Q140 consistency checks are page-scoped** - they live in
   `pairing_explain_live.ex` and nothing extracts them for a layout-level
