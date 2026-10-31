@@ -275,6 +275,15 @@ defmodule PairingsEngineWeb.AdminLive do
             )}
           </span>
         </.link>
+
+        <.link id="admin-system-link" navigate={~p"/admin/system"} class="admin-link-card">
+          <strong>{gettext("System")}</strong>
+          <span>
+            {gettext(
+              "For the operator: health, the off-site backup, the errors this server has logged, and LiveDashboard."
+            )}
+          </span>
+        </.link>
       </nav>
 
       <div class="set-card">

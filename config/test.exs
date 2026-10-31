@@ -140,6 +140,14 @@ config :pairings_engine, :bel_http_req_plug, PairingsEngine.Federations.BEL.Http
 config :pairings_engine, :publishing_drain_interval, :disabled
 config :pairings_engine, :registration_poll_interval, :disabled
 config :pairings_engine, :backup_interval, :disabled
+config :pairings_engine, :offsite_backup_interval, :disabled
+# Crashes are half the point of some tests; they are not reports.
+config :pairings_engine, :error_reports, false
+# Every off-site PUT goes to a Req.Test stub, never to a network.
+config :pairings_engine, :offsite_backup_req_options,
+  plug: {Req.Test, PairingsEngine.Ops.OffsiteBackup},
+  retry: false
+
 config :pairings_engine, :registration_retention_interval, :disabled
 
 # No takedown journal (`PairingsEngine.Publishing.TakedownJournal`): beside
