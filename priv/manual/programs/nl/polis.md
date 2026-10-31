@@ -15,7 +15,10 @@ na het afdrukken veranderde, wordt nooit vanzelf opnieuw afgedrukt; het
 station meldt het en biedt aan ze opnieuw af te drukken.
 
 **Waar het past.** In OpenPairings voeg je het station toe in de
-instellingen van het toernooi, *Print station*, *Add a print station*.
+instellingen van het toernooi, *Print station*, *Add a print station*. De link die verschijnt is één keer
+goed, voor vijftien minuten: plak hem in Polis op de computer van het
+station, of scan de QR-code met [Manubrium](/help/manubrium-app) op je
+telefoon, dat de link doorgeeft (kopiëren of delen) aan die computer.
 Ruimtes stel je in bij
 [Een toernooi aanmaken en de instellingen](03-tournament-setup.md#rooms-page).
 Met de hand afdrukken staat in [Afdrukken](09-printing.md). Zijn tegenhanger

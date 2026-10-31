@@ -35,9 +35,16 @@ club, de desktopkopie op de laptop in de zaal - en ertussen wisselen.
 4. De telefoon verschijnt in de lijst op de accountpagina, met zijn naam en de
    laatste vier tekens van zijn token.
 
-De code werkt één keer, tien minuten lang, en wordt maar die ene keer getoond.
+De code werkt één keer, vijftien minuten lang, en wordt maar die ene keer getoond.
 Is hij verlopen, klik dan opnieuw op **Een telefoon verbinden**. Elke telefoon
 krijgt een eigen code: twee telefoons kunnen er geen delen.
+
+De app scant ook de koppelcodes van de zaalprogramma's, Nunki
+en Polis, die op een pc zonder camera draaien. Hij koppelt
+ze niet zelf: hij zegt voor welk programma de link is en biedt aan hem te
+kopiëren of te delen, zodat je hem op die pc krijgt en daar plakt. Elke
+koppelcode, die van de app zelf en die van de zaalprogramma's, werkt één keer,
+vijftien minuten lang.
 
 Een verbonden telefoon kan wat jouw account kan, in de toernooien waaraan je
 werkt, en niets meer. Haalt iemand je van een toernooi af, dan verliest de
