@@ -187,3 +187,24 @@ buttons, the version, the backups, the update check (on or off) and the
 connection to the results site ([Players and rating lists](04-players-and-ratings.md),
 [Publishing](14-publishing.md)). On a server the page can be read by a support
 role, but changes are made only by an administrator.
+
+## System (the operator's page)
+
+**Admin → System** answers the three questions an operator asks first: is the
+server healthy, has the newest backup left the machine, and what has crashed.
+It is for administrators only.
+
+- **Health** is the same answer the server's `/healthz` address gives a
+  monitoring tool: the database, the version, and the off-site backup's state.
+- **Off-site backup**, when the server is set up for it, sends the newest
+  backup to storage elsewhere, encrypted with a key the server does not have.
+  The page lists the last attempts, each with its result, and **Send the
+  newest backup now** does not wait for the hourly check. *Stale* means
+  nothing has been sent successfully for a while; *Failing* means the latest
+  attempt went wrong, and the attempt says why.
+- **Errors** lists what has crashed on this server, one row per kind of
+  crash, with how often and when. The reports stay on the server and carry no
+  player data: messages are cut short and nothing a page was holding is kept.
+  **Forget** removes one once it is fixed.
+- **Open LiveDashboard** shows the server's processes, memory and request
+  timings, for whoever is diagnosing a slow afternoon.
