@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **Standings: the row menu's second item now edits the player.** "Open the Players list" took you to the Players list and promptly forgot whom you had clicked. It is now **Edit player**, and the Players page opens with that player's edit form already waiting.
+
 - [Change] **New tournament: Format now sits above Rate of play.** The rate list follows the format, and the format was hiding underneath it, so a blitz event met a dropdown of classical time controls and nothing to suggest otherwise. Standard, Rapid and Blitz now come first, where you would look for them.
 
 - [Feature] **The FIDE list's download address can be set on the Connections page.** Hosting that FIDE blocks used to mean editing an environment variable on the server and restarting it, which is a poor use of an evening. Administrators (anybody, on a desktop install) now get a *Download address* box under *FIDE database*: it says which address is in use and where that came from (the default, `FIDE_LIST_URL`, or this box), **Save** and **Use default** take effect immediately, and **Test** asks the address for its headers and tells you the status, the date and the size, or what went wrong, in words. A server accepts only `https://`. Whatever you enter is loaded as the FIDE list, so the box asks you to trust it; the change goes in the audit log with the old and new address.

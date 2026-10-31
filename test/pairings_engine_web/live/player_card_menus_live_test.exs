@@ -100,7 +100,7 @@ defmodule PairingsEngineWeb.PlayerCardMenusLiveTest do
       })
 
       assert has_element?(lv, "#standings-player-menu #menu-players-card")
-      assert has_element?(lv, "#standings-player-menu #menu-open-players")
+      assert has_element?(lv, "#standings-player-menu #menu-edit-player")
 
       lv |> element("#menu-players-card") |> render_click()
 
@@ -125,7 +125,10 @@ defmodule PairingsEngineWeb.PlayerCardMenusLiveTest do
       refute has_element?(lv, "#player-card-dialog")
     end
 
-    test "the menu's second item goes to the Players list", %{conn: conn, scope: scope} do
+    test "Edit player goes to the Players page with that player's form", %{
+      conn: conn,
+      scope: scope
+    } do
       {t, [ann | _]} = tournament(scope)
       {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/standings")
 
@@ -136,8 +139,37 @@ defmodule PairingsEngineWeb.PlayerCardMenusLiveTest do
         "player-id" => to_string(ann.id)
       })
 
-      lv |> element("#menu-open-players") |> render_click()
-      assert_redirect(lv, ~p"/t/#{t.id}/players")
+      lv |> element("#menu-edit-player") |> render_click()
+      assert_redirect(lv, ~p"/t/#{t.id}/players?edit=#{ann.id}")
+    end
+
+    test "a garbage player id goes nowhere", %{conn: conn, scope: scope} do
+      {t, _players} = tournament(scope)
+      {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/standings")
+      render_click(lv, "edit_player", %{"player-id" => "x"})
+      render_click(lv, "edit_player", %{})
+      refute has_element?(lv, "#standings-player-menu")
+    end
+  end
+
+  describe "the Players page ?edit= link" do
+    test "opens that player's edit dialog", %{conn: conn, scope: scope} do
+      {t, [ann | _]} = tournament(scope)
+      {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/players?edit=#{ann.id}")
+
+      assert has_element?(lv, "#player-edit-form")
+    end
+
+    test "ignores a foreign or junk id", %{conn: conn, scope: scope} do
+      {t, _players} = tournament(scope)
+      {other, [stranger | _]} = tournament(scope)
+      assert other.id != t.id
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/players?edit=#{stranger.id}")
+      refute has_element?(lv, "#player-edit-form")
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{t.id}/players?edit=junk")
+      refute has_element?(lv, "#player-edit-form")
     end
   end
 end

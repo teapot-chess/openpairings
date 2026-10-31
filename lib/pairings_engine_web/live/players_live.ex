@@ -264,6 +264,31 @@ defmodule PairingsEngineWeb.PlayersLive do
      |> open_tpn_from_link(params)}
   end
 
+  # `?edit=ID`: the Standings row menu's "Edit player". Opens the same dialog
+  # the name click does, then patches the parameter away so a reload does not
+  # open it again. A junk or foreign id is ignored without a word.
+  @impl true
+  def handle_params(%{"edit" => id}, _uri, socket) do
+    if connected?(socket) do
+      socket =
+        case Tournaments.get_player(socket.assigns.tournament.id, id) do
+          nil ->
+            socket
+
+          _player ->
+            {:noreply, opened} = handle_event("edit_player", %{"id" => id}, socket)
+            opened
+        end
+
+      {:noreply,
+       push_patch(socket, to: ~p"/t/#{socket.assigns.tournament.id}/players", replace: true)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_params(_params, _uri, socket), do: {:noreply, socket}
+
   # `?tpn=1`: the Pairings page's out-of-order warning sends the arbiter
   # here with the pairing-number dialog already open, Regenerate in reach.
   defp open_tpn_from_link(socket, %{"tpn" => "1"}) do
