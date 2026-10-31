@@ -14,7 +14,10 @@ categories. A round changed after it was printed is never reprinted by
 itself; the station says so and offers Reprint.
 
 **Where it fits.** In OpenPairings, the station is added under the
-tournament's Settings, *Print station*, *Add a print station*. Rooms are set
+tournament's Settings, *Print station*, *Add a print station*. The link it shows is good once,
+for fifteen minutes: paste it into Polis on the station's computer, or scan
+its QR code with [Manubrium](/help/manubrium-app) on your phone, which passes
+the link on (copy or share) to that computer. Rooms are set
 in [Creating a tournament and its settings](03-tournament-setup.md#rooms-page). For
 printing by hand, see [Printing](09-printing.md). Its sister in the hall is
 [Nunki](/help/other/nunki), which reads the same rounds aloud.

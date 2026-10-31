@@ -129,7 +129,7 @@ defmodule PairingsEngineWeb.ContractHelpers do
   @doc "One example's data, by its file name under `examples/`."
   def example(name, file), do: name |> dir() |> Path.join("examples/" <> file) |> read_json!()
 
-  @doc "Every file of contract `name` but `index.json`, relative, sorted."
+  @doc "Every file of contract `name` but `index.json` and a `README.md`, relative, sorted."
   def files(name) do
     base = dir(name)
 
@@ -138,7 +138,7 @@ defmodule PairingsEngineWeb.ContractHelpers do
     |> Path.wildcard()
     |> Enum.filter(&File.regular?/1)
     |> Enum.map(&Path.relative_to(&1, base))
-    |> Enum.reject(&(&1 == "index.json"))
+    |> Enum.reject(&(&1 in ["index.json", "README.md"]))
     |> Enum.sort()
   end
 

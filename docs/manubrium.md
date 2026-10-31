@@ -634,7 +634,7 @@ announced on the incidents topic, so the desk's list recounts.
 
 1. A signed-in account makes a **connect code** on the account page
    (Account, Manubrium app, "Connect a phone"): a 256-bit one-time secret,
-   ten minutes, shown as a QR code of
+   fifteen minutes (the one pairing flow of every hall app, `priv/contracts/hall-link-v1/README.md`), shown as a QR code of
    `manubrium://connect?server=<base url>&secret=<secret>`. Only its SHA-256
    is stored (`manubrium_connect_codes`).
 2. The app trades it once (`POST /connect`) for a **device token**

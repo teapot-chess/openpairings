@@ -34,9 +34,15 @@ desktop copy on the hall's laptop - and switch between them.
 4. The phone appears in the list on the account page, with its name and the
    last four characters of its token.
 
-The code works once, for ten minutes, and is shown only that one time. If it
+The code works once, for fifteen minutes, and is shown only that one time. If it
 runs out, click **Connect a phone** again. Each phone gets a code of its
 own: two phones cannot share one.
+
+The app also scans the join codes of the hall programs, Nunki
+and Polis, which run on a PC without a camera. It does not
+join them itself: it says which program the link is for and offers to copy or
+share it, so you can get it to that PC and paste it there. Every pairing code,
+the app's own and the hall programs', works once, for fifteen minutes.
 
 A connected phone can do what your account can do, in the tournaments you
 work in, and nothing more. If someone takes you off a tournament, the phone

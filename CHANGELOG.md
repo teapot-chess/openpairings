@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **One way to pair a hall device, written down once.** The hall link between OpenPairings and its hall programs (Nunki, the announcer; Polis, the print station) was described twice, by hand, and the two descriptions had quietly started disagreeing about things as basic as how long a join code is. It is now one contract, `priv/contracts/hall-link-v1/`: JSON Schemas for every join request and answer and every frame either side sends, which Nunki, Polis and Manubrium vendor and test against, and check daily. Pairing is now the same everywhere: a 43-character one-time code inside a link, shown as text and as the same text in a QR code, good once for fifteen minutes. That makes Manubrium's connect code last fifteen minutes instead of ten. Manubrium can now also scan a Nunki or Polis join code, which until now was a QR code that nothing in the building could read; it says which program the link is for and offers to pass it on. Phones, announcers and print stations that are already connected are not affected.
+
 - [Change] **Standings: the row menu's second item now edits the player.** "Open the Players list" took you to the Players list and promptly forgot whom you had clicked. It is now **Edit player**, and the Players page opens with that player's edit form already waiting.
 
 - [Change] **New tournament: Format now sits above Rate of play.** The rate list follows the format, and the format was hiding underneath it, so a blitz event met a dropdown of classical time controls and nothing to suggest otherwise. Standard, Rapid and Blitz now come first, where you would look for them.
