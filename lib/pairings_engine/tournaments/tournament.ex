@@ -641,6 +641,14 @@ defmodule PairingsEngine.Tournaments.Tournament do
     # cast: a stray form field must not be able to flip it.
     field :public_live_boards, :boolean, default: false
 
+    # The series this tournament belongs to: editions of the same event in
+    # other years (Open Brugge 2025, 2026, ...). Random url-safe id, nil for a
+    # tournament in none. Not a tournament group (several sections of ONE
+    # event). Written by `PairingsEngine.TournamentSeries` and carried by
+    # export/import, never cast: a stray form field must not move a
+    # tournament into somebody else's series.
+    field :series_id, :string
+
     # The results site's relay key for this tournament (`orrk_...`), held so
     # the hall box receives it over the board link. Fetched from the results
     # site by `PairingsEngine.BoardLink.RelayKeys`; pasted by the arbiter

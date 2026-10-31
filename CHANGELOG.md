@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Feature] **Tournament series: link the editions of an event across years.** The *Results site* settings now have a **Series** card. Start a series, or say *Same series as* another tournament of yours (it gets an id of its own if it had none), and the results site lists the other editions under *Other editions*, as long as it holds them and they are public. Only an id is sent, never the name of another edition, so a tournament you did not publish stays a rumour. A series is not a group, which is several sections of one event, and **Duplicate** keeps the series, because next year's edition is usually this year's copy with the dates changed. Backups and restore points carry it.
+
 - [Change] **Standings: the row menu's second item now edits the player.** "Open the Players list" took you to the Players list and promptly forgot whom you had clicked. It is now **Edit player**, and the Players page opens with that player's edit form already waiting.
 
 - [Change] **New tournament: Format now sits above Rate of play.** The rate list follows the format, and the format was hiding underneath it, so a blitz event met a dropdown of classical time controls and nothing to suggest otherwise. Standard, Rapid and Blitz now come first, where you would look for them.
