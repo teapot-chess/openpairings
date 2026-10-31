@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Feature] **Import players into a tournament that already exists.** The Players page has an **Import players** button that takes a TRF file (only its player records are read; TRF06, TRF16 and TRF26 all do) or a CSV file (a header row, only the name required). Before anything is written you get the list: who would be added, which rows could not be read and why, and who is skipped for already being there. Retyping forty names after a federation emailed you a spreadsheet was a choice, and now it is no longer the only one. The players go in together or not at all, and join exactly as if added by hand. The manual lists the columns.
+
 ## [0.111.0] - 2026-10-30
 
 - [Security] **Two dependency advisories closed.** Phoenix HTML 4.4.0 (advisory EEF-CVE-2026-117645) and Bandit, the web server, in its patched release (EEF-CVE-2026-116078, memory amplification from HTTP/2 bodies sent one byte at a time). Nothing to do on your side.

@@ -219,6 +219,43 @@ first pairing of a round robin offers the same choices again
 ([Numbering the players of a round robin](06-pairing.md#numbering-the-players-of-a-round-robin)),
 and SWAR users find there which SWAR option corresponds to which.
 
+### Importing players
+
+**Import players** (Players page) adds the players of a file to the tournament
+you are in. The other import, on the Tournaments page, makes a whole new
+tournament from a TRF file; this one only adds people to an existing one.
+
+Choose a `.trf`, `.txt` or `.csv` file, or drop it on the box. It is read as
+soon as it has arrived, and nothing is written yet: the page lists the players
+that would be added, the rows that could not be read (with their line number
+and the reason), and the players that are skipped because they are already
+there. Press **Add N players** to add them, or **Cancel** to leave everything
+as it was. The players go in all together: if one of them is refused, none is
+added.
+
+**A TRF file** (TRF06, TRF16 and TRF26 all work). Only the player records are
+read: name, sex, title, rating, federation, FIDE ID and birth date or year.
+Rounds, results, teams and the rest of the file are ignored, and so are the
+starting numbers in it.
+
+**A CSV file.** The first row names the columns; the order does not matter and
+capitals do not either. The separator (comma, semicolon or tab) and the
+encoding (UTF-8 or Windows-1252) are recognised, and quotes protect a
+separator inside a field. Only the name is required, as `name`, or as
+`first_name` and `last_name` (these are joined as "Last, First"). The other
+columns are `rating` (or `elo`), `federation` (`fed`), `title`, `fide_id`,
+`birth_year` (`born`), `sex`, `club` and `national_id`. A name or rating that
+is not valid makes that row unreadable; it does not stop the other rows.
+
+**Already there.** A player is skipped when the tournament already has a player
+with the same FIDE ID, or, when the row has no FIDE ID, with the same name and
+birth year. The same goes for a player listed twice in the file.
+
+Players are added exactly as if you had typed them in: a player added after
+rounds have been paired joins in the next round and follows the rules in
+[Late entries](#late-entries). The audit trail records one entry for the
+whole import, and a restore point is made first.
+
 ### The grid
 
 The columns can be sorted by clicking the header. Abbreviated headers have a

@@ -71,6 +71,7 @@ Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/eng
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/federations/bel/swar_import.ex:645,4005D4C
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/federations/bel/swar_import.ex:804,C87ABE
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/launcher_details/cli.ex:265,350B34
+Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/player_import.ex:131,7C49F29
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/publishing/takedown_journal.ex:177,550E565
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/theme_packs.ex:264,2A7F1BB
 Traversal.FileModule: Directory Traversal in `File.read`,lib/pairings_engine/tournament_import.ex:152,D9CBA

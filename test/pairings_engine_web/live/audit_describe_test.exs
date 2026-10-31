@@ -121,6 +121,11 @@ defmodule PairingsEngineWeb.AuditDescribeTest do
       %{"absent" => true, "player_count" => 24},
       %{"absent" => false, "player_count" => 1}
     ],
+    "player.imported" => [
+      %{"count" => 24, "source" => "trf"},
+      %{"count" => 1, "source" => "csv"},
+      %{"count" => 24, "source" => "trf", "skipped_duplicates" => 2, "skipped_invalid" => 1}
+    ],
     "player.bulk_paid_set" => [
       %{"paid" => "paid", "player_count" => 24},
       %{"paid" => "nopaid", "player_count" => 1},
