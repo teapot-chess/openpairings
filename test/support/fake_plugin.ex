@@ -135,6 +135,25 @@ defmodule PairingsEngine.FakePlugin do
     if ours?(t), do: {:ok, "the fake list", opt(:candidates) || []}, else: :none
   end
 
+  # The hall apps (Manubrium's Hall page). Steered like the rest: `:hall_status`
+  # is what `hall_status/2` answers (a map, or nil for "not switched on"),
+  # `:hall_command` what `hall_command/3` answers (a fixed answer or a
+  # one-argument function of the command; `:unsupported` when unset) and
+  # `:hall_notify` a pid told `{:hall_command, command}`.
+  @impl true
+  def hall_status(_scope, _t), do: opt(:hall_status)
+
+  @impl true
+  def hall_command(_scope, _t, command) do
+    if pid = opt(:hall_notify), do: send(pid, {:hall_command, command})
+
+    case opt(:hall_command) do
+      nil -> :unsupported
+      fun when is_function(fun, 1) -> fun.(command)
+      answer -> answer
+    end
+  end
+
   @impl true
   def boot do
     if pid = opt(:boot_notify), do: send(pid, :fake_plugin_booted)
