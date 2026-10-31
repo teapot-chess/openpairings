@@ -38,6 +38,13 @@ defmodule PairingsEngine.ConsoleMailer do
 
   @impl Swoosh.Adapter
   def deliver(%Swoosh.Email{} = email, _config) do
+    # The Mailer hands over CRLF bodies (for SMTP); a terminal wants plain LF.
+    email = %{
+      email
+      | text_body: email.text_body && String.replace(email.text_body, "\r\n", "\n"),
+        html_body: email.html_body && String.replace(email.html_body, "\r\n", "\n")
+    }
+
     body = email.text_body || email.html_body || ""
 
     links =
