@@ -9,10 +9,8 @@ round that was not published is simply not there.
 
 **When you need it.** Whenever the tournament should be visible to anybody
 but the arbiter. You do not install it to publish: connect OpenPairings to a
-results site once and choose, per tournament, how public it is. A
-federation or a club may also run a copy of its own for its own
-tournaments; the licence, at the foot of this page, says so in as many
-words.
+results site once and choose, per tournament, how public it is. It
+is a hosted service at openresults.cloud; its source is not published.
 
 **Where it fits.** [Publishing](14-publishing.md) sends a tournament there;
 [OpenResults: the public results site](15-openresults.md) shows what the

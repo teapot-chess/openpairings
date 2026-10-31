@@ -17,6 +17,7 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Change] **OpenResults is closed source.** The repository went private, so the manual no longer says you may run a copy of your own or points at a licence that is no longer public. The site at openresults.cloud works as before; the code is merely no longer for browsing.
 - [Fix] **E-mails no longer arrive empty in Gmail on Android.** The bodies were written with bare line feeds, which the SMTP library dutifully encoded as `=0A`, turning the whole message into one very long line that Gmail on Android declined to display. A reasonable position, if an unhelpful one. Every outgoing mail now gets proper CRLF line endings in one place, right before delivery. The terminal mailer of a local run still prints plain lines.
 
 - [Feature] **Any SMTP server, not just Gmail's.** `SMTP_HOST` and `SMTP_PORT` (defaults `smtp.gmail.com` and `587`) point the mailer elsewhere, with the certificate checked against that host, and `SMTP_FROM_NAME` sets the sender's display name (default `OpenPairings`). A port that is not a port refuses to boot. The deployment guide has the table.
