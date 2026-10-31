@@ -62,6 +62,22 @@ defmodule PairingsEngine.RatingLists.Csv do
   """
   @spec parse(binary()) :: {:ok, [row()]} | {:error, [String.t()]}
   def parse(raw) when is_binary(raw) do
+    with {:ok, %{header: header_cells, rows: data}} <- read_table(raw),
+         {:ok, columns} <- columns(header_cells),
+         :ok <- check_size(data) do
+      build(data, columns)
+    end
+  end
+
+  @doc """
+  The reading half of `parse/1`, for other importers that take the same kind
+  of file: strips a BOM, decodes UTF-8 or Windows-1252, detects the separator
+  from the header row and splits every line (double quotes protect a
+  separator). `{:ok, %{header: [normalized name], rows: [{line_no, cells}],
+  sep: sep}}`; blank lines are dropped but keep their numbers.
+  """
+  @spec read_table(binary()) :: {:ok, map()} | {:error, [String.t()]}
+  def read_table(raw) when is_binary(raw) do
     text = raw |> strip_bom() |> decode()
 
     case numbered_lines(text) do
@@ -72,10 +88,12 @@ defmodule PairingsEngine.RatingLists.Csv do
         sep = separator(header)
         header_cells = header |> split_line(sep) |> Enum.map(&normalize_header/1)
 
-        with {:ok, columns} <- columns(header_cells),
-             :ok <- check_size(data) do
-          build(data, sep, columns)
-        end
+        {:ok,
+         %{
+           header: header_cells,
+           sep: sep,
+           rows: Enum.map(data, fn {line, n} -> {n, split_line(line, sep)} end)
+         }}
     end
   end
 
@@ -140,10 +158,10 @@ defmodule PairingsEngine.RatingLists.Csv do
     end
   end
 
-  defp build(data, sep, columns) do
+  defp build(data, columns) do
     {rows, errors, _seen} =
-      Enum.reduce(data, {[], [], MapSet.new()}, fn {line, line_no}, {rows, errors, seen} ->
-        case row(split_line(line, sep), columns) do
+      Enum.reduce(data, {[], [], MapSet.new()}, fn {line_no, cells}, {rows, errors, seen} ->
+        case row(cells, columns) do
           {:ok, row} ->
             key = String.downcase(row.ext_id)
 
@@ -205,9 +223,10 @@ defmodule PairingsEngine.RatingLists.Csv do
   defp required(value, _), do: {:ok, value}
 
   # A blank rating, or 0, is an unrated player.
-  defp rating(""), do: {:ok, nil}
+  @doc false
+  def rating(""), do: {:ok, nil}
 
-  defp rating(value) do
+  def rating(value) do
     case small_int(value) do
       {:ok, 0} -> {:ok, nil}
       {:ok, n} when n in 1..4000 -> {:ok, n}
@@ -215,9 +234,10 @@ defmodule PairingsEngine.RatingLists.Csv do
     end
   end
 
-  defp federation(""), do: {:ok, ""}
+  @doc false
+  def federation(""), do: {:ok, ""}
 
-  defp federation(value) do
+  def federation(value) do
     upper = String.upcase(value)
 
     if Regex.match?(~r/\A[A-Z]{3}\z/, upper),
@@ -225,9 +245,10 @@ defmodule PairingsEngine.RatingLists.Csv do
       else: {:error, "the federation #{inspect(value)} is not a three-letter code"}
   end
 
-  defp title(""), do: {:ok, ""}
+  @doc false
+  def title(""), do: {:ok, ""}
 
-  defp title(value) do
+  def title(value) do
     upper = String.upcase(value)
 
     if upper in @titles,
@@ -235,18 +256,20 @@ defmodule PairingsEngine.RatingLists.Csv do
       else: {:error, "the title #{inspect(value)} is not one of #{Enum.join(@titles, ", ")}"}
   end
 
-  defp birth_year(""), do: {:ok, nil}
+  @doc false
+  def birth_year(""), do: {:ok, nil}
 
-  defp birth_year(value) do
+  def birth_year(value) do
     case small_int(value) do
       {:ok, n} when n in 1880..2100 -> {:ok, n}
       _ -> {:error, "the birth year #{inspect(value)} is not a year"}
     end
   end
 
-  defp fide_id(""), do: {:ok, nil}
+  @doc false
+  def fide_id(""), do: {:ok, nil}
 
-  defp fide_id(value) do
+  def fide_id(value) do
     case small_int(value) do
       {:ok, n} when n >= 1 and n <= 2_000_000_000 -> {:ok, n}
       _ -> {:error, "the FIDE ID #{inspect(value)} is not a FIDE ID"}
@@ -254,14 +277,15 @@ defmodule PairingsEngine.RatingLists.Csv do
   end
 
   # Length-bounded before `Integer.parse/1`, as in `ResultsImport`.
-  defp small_int(value) when byte_size(value) <= 12 do
+  @doc false
+  def small_int(value) when byte_size(value) <= 12 do
     case Integer.parse(value) do
       {n, ""} -> {:ok, n}
       _ -> :error
     end
   end
 
-  defp small_int(_), do: :error
+  def small_int(_), do: :error
 
   defp split_line(line, sep), do: do_split(line, sep, "", [], false)
 

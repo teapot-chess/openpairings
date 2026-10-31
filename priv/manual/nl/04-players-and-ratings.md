@@ -230,6 +230,47 @@ opnieuw aan
 ([De spelers van een rondetoernooi nummeren](06-pairing.md#numbering-the-players-of-a-round-robin)),
 en SWAR-gebruikers vinden daar welke SWAR-optie waarmee overeenkomt.
 
+### Spelers importeren {#importing-players}
+
+Met **Spelers importeren** (pagina Spelers) voeg je de spelers uit een bestand
+toe aan het toernooi waar je in zit. De andere import, op de pagina Toernooien,
+maakt van een TRF-bestand een volledig nieuw toernooi; deze voegt alleen
+mensen toe aan een bestaand toernooi.
+
+Kies een `.trf`-, `.txt`- of `.csv`-bestand, of sleep het op het vak. Het wordt
+gelezen zodra het binnen is, en er wordt nog niets opgeslagen: de pagina toont
+de spelers die toegevoegd zouden worden, de rijen die niet gelezen konden worden
+(met regelnummer en reden) en de spelers die overgeslagen worden omdat ze er al
+zijn. Druk op **N spelers toevoegen** om ze toe te voegen, of op **Annuleren**
+om alles te laten zoals het was. De spelers worden allemaal samen toegevoegd:
+als er één geweigerd wordt, komt er geen enkele bij.
+
+**Een TRF-bestand** (TRF06, TRF16 en TRF26 werken allemaal). Alleen de
+spelerregels worden gelezen: naam, geslacht, titel, rating, federatie, FIDE-ID
+en geboortedatum of -jaar. Rondes, uitslagen, teams en de rest van het bestand
+worden genegeerd, net als de startnummers erin.
+
+**Een CSV-bestand.** De eerste rij geeft de kolommen een naam; de volgorde maakt
+niet uit en hoofdletters ook niet. Het scheidingsteken (komma, puntkomma of tab)
+en de codering (UTF-8 of Windows-1252) worden herkend, en aanhalingstekens
+beschermen een scheidingsteken in een veld. Alleen de naam is verplicht, als
+`name`, of als `first_name` en `last_name` (die worden samengevoegd tot
+"Achternaam, Voornaam"). De andere kolommen zijn `rating` (of `elo`),
+`federation` (`fed`), `title`, `fide_id`, `birth_year` (`born`), `sex`, `club`
+en `national_id`. Een ongeldige naam of rating maakt die rij onleesbaar; de
+andere rijen blijven gewoon doorgaan.
+
+**Staat er al.** Een speler wordt overgeslagen als het toernooi al een speler
+heeft met hetzelfde FIDE-ID, of, als de rij geen FIDE-ID heeft, met dezelfde
+naam en hetzelfde geboortejaar. Hetzelfde geldt voor een speler die twee keer in
+het bestand staat.
+
+De spelers komen erin alsof je ze zelf had ingetikt: een speler die wordt
+toegevoegd nadat er rondes zijn gekoppeld, doet mee vanaf de volgende ronde en
+volgt de regels van [Laat toegevoegde spelers](#late-entries). Het
+auditspoor bewaart één regel voor de hele import, en er wordt eerst een
+herstelpunt gemaakt.
+
 ### Het rooster {#the-grid}
 
 De kolommen kunnen worden gesorteerd door op de kop te klikken. Afgekorte koppen

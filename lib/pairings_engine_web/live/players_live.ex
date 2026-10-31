@@ -18,6 +18,8 @@ defmodule PairingsEngineWeb.PlayersLive do
   }
 
   alias PairingsEngine.Features
+  alias PairingsEngine.PlayerImport
+  alias PairingsEngineWeb.UploadGuard
   alias PairingsEngine.Federations.BEL.{Members, PlayerDataRefresh}
   alias PairingsEngine.ByeTypes
   alias PairingsEngine.LateEntry
@@ -221,6 +223,12 @@ defmodule PairingsEngineWeb.PlayersLive do
        # regeneration waiting for the arbiter's confirmation.
        tpn: nil,
        tpn_changes: nil,
+       # "Import players": the panel open, what was read from the file and
+       # set against the roster (nil until a file has arrived), and the
+       # reason a file was refused as a whole.
+       importing_players: false,
+       player_import: nil,
+       player_import_error: nil,
        bel_lookup?: Features.enabled?(socket.assigns.current_scope, @lookup_feature),
        bel_club_sync?: Features.enabled?(socket.assigns.current_scope, @club_feature),
        # One switch for both since 0.74.2; the old Belgian key still counts
@@ -238,6 +246,16 @@ defmodule PairingsEngineWeb.PlayersLive do
        club_filter: if(params["club"] == "none", do: :none),
        setup_complete: Tournament.setup_complete?(tournament),
        missing_setup: Tournament.missing_setup_fields(tournament)
+     )
+     # No registered MIME type for .trf, and a .txt or .csv can arrive under
+     # several, so the browser-side filter is off and the parser decides
+     # (see `PlayerImport.parse/2`). Read as soon as the file has arrived.
+     |> allow_upload(:player_import,
+       auto_upload: true,
+       accept: :any,
+       max_entries: 1,
+       max_file_size: PlayerImport.max_bytes(),
+       progress: &handle_import_progress/3
      )
      |> assign_postponed_open()
      |> assign_players()
@@ -885,6 +903,37 @@ defmodule PairingsEngineWeb.PlayersLive do
          :error,
          setup_missing_text(socket.assigns.missing_setup)
        )}
+    end
+  end
+
+  ## ---------- Import players (TRF or CSV into this tournament) ----------
+
+  def handle_event("import_players_open", _params, socket) do
+    if Tournament.setup_complete?(socket.assigns.tournament) do
+      {:noreply,
+       socket
+       |> discard_import_upload()
+       |> assign(importing_players: true, player_import: nil, player_import_error: nil)}
+    else
+      {:noreply, put_flash(socket, :error, setup_missing_text(socket.assigns.missing_setup))}
+    end
+  end
+
+  def handle_event("import_players_cancel", _params, socket) do
+    {:noreply,
+     socket
+     |> discard_import_upload()
+     |> assign(importing_players: false, player_import: nil, player_import_error: nil)}
+  end
+
+  def handle_event("validate_player_import", _params, socket), do: {:noreply, socket}
+
+  def handle_event("import_players_confirm", _params, socket) do
+    with %{parsed: parsed} <- socket.assigns.player_import,
+         true <- Tournament.setup_complete?(socket.assigns.tournament) do
+      confirm_player_import(socket, parsed)
+    else
+      _ -> {:noreply, socket}
     end
   end
 
@@ -2091,6 +2140,111 @@ defmodule PairingsEngineWeb.PlayersLive do
     end
   end
 
+  # An upload entry still sitting in the box (a refused file, or one chosen
+  # after a review) goes when the panel closes or opens afresh.
+  defp discard_import_upload(socket) do
+    Enum.reduce(socket.assigns.uploads.player_import.entries, socket, fn entry, acc ->
+      cancel_upload(acc, :player_import, entry.ref)
+    end)
+  end
+
+  # The `progress:` callback of the upload: the file is read the moment it
+  # has arrived, so there is no second button to press and nothing to wait
+  # for. Nothing is written here - only the review is made.
+  defp handle_import_progress(:player_import, %{done?: true} = entry, socket) do
+    tournament = socket.assigns.tournament
+
+    result =
+      consume_uploaded_entry(socket, entry, fn %{path: path} ->
+        {:ok, read_player_file(path, entry.client_name)}
+      end)
+
+    case result do
+      {:ok, parsed} ->
+        review = PlayerImport.review(parsed, PlayerImport.existing(tournament.id))
+
+        {:noreply,
+         assign(socket,
+           player_import: %{parsed: parsed, review: review},
+           player_import_error: nil
+         )}
+
+      {:error, message} ->
+        {:noreply, assign(socket, player_import: nil, player_import_error: message)}
+    end
+  end
+
+  defp handle_import_progress(_name, _entry, socket), do: {:noreply, socket}
+
+  defp read_player_file(path, name) do
+    case PlayerImport.parse_file(path, name) do
+      {:error, :unreadable} -> {:error, gettext("That file could not be read.")}
+      other -> other
+    end
+  rescue
+    exception ->
+      require Logger
+
+      Logger.error(
+        "Player import crashed: " <> Exception.format(:error, exception, __STACKTRACE__)
+      )
+
+      {:error, gettext("That file could not be read.")}
+  end
+
+  # The rows are set against the roster AGAIN here: somebody may have added
+  # a player since the review was drawn, and a repeated FIDE ID must not
+  # turn into a rolled-back import. Nothing is written unless every row is.
+  defp confirm_player_import(socket, parsed) do
+    tournament = socket.assigns.tournament
+    review = PlayerImport.review(parsed, PlayerImport.existing(tournament.id))
+    count = length(review.add)
+
+    if count == 0 do
+      {:noreply, socket}
+    else
+      capture_bulk(
+        socket,
+        "player.imported",
+        ngettext("Before importing %{count} player", "Before importing %{count} players", count)
+      )
+
+      case PlayerImport.add_all(tournament.id, review.add) do
+        {:ok, _players} ->
+          Audit.log(tournament.id, socket.assigns.current_scope, "player.imported", %{
+            count: count,
+            source: Atom.to_string(parsed.format),
+            skipped_duplicates: length(review.duplicates),
+            skipped_invalid: length(review.invalid) + review.invalid_more
+          })
+
+          {:noreply,
+           socket
+           |> assign(importing_players: false, player_import: nil, player_import_error: nil)
+           |> put_flash(
+             :info,
+             ngettext("Added %{count} player.", "Added %{count} players.", count)
+           )
+           |> assign_players()}
+
+        {:error, {line, reason}} ->
+          {:noreply,
+           assign(socket,
+             player_import_error:
+               gettext("Nothing was added. Line %{line}: %{reason}",
+                 line: line,
+                 reason: import_row_error(reason)
+               )
+           )}
+      end
+    end
+  end
+
+  defp import_row_error(:duplicate_fide_id),
+    do: gettext("A player with this FIDE ID is already registered")
+
+  defp import_row_error(reason), do: error_text(reason)
+
   defp blank?(nil), do: true
   defp blank?(""), do: true
   defp blank?(_), do: false
@@ -3233,6 +3387,21 @@ defmodule PairingsEngineWeb.PlayersLive do
             <.icon name="hero-printer-micro" class="pe-btn-icon" /> {gettext("Print player list")}
           </a>
 
+          <button
+            id="import-players-button"
+            type="button"
+            class="pe-btn"
+            phx-click="import_players_open"
+            disabled={!@setup_complete}
+            title={
+              if @setup_complete,
+                do: gettext("Add players from a TRF or CSV file"),
+                else: setup_missing_text(@missing_setup)
+            }
+          >
+            <.icon name="hero-arrow-up-tray-micro" class="pe-btn-icon" /> {gettext("Import players")}
+          </button>
+
           <details
             id="players-more-menu"
             class="pe-dropdown"
@@ -3478,6 +3647,13 @@ defmodule PairingsEngineWeb.PlayersLive do
           {gettext("Nothing is refused or changed; imports keep these values too.")}
         </p>
       </details>
+
+      <.player_import_panel
+        :if={@importing_players}
+        upload={@uploads.player_import}
+        import={@player_import}
+        error={@player_import_error}
+      />
 
       <form :if={@adding} id="add-player-form" class="card" phx-submit="save">
         <h2>{gettext("Add player")}</h2>
@@ -4585,6 +4761,173 @@ defmodule PairingsEngineWeb.PlayersLive do
     </div>
     """
   end
+
+  ## ---------- Import players panel ----------
+
+  attr :upload, :any, required: true
+  attr :import, :any, required: true
+  attr :error, :string, default: nil
+
+  defp player_import_panel(assigns) do
+    ~H"""
+    <form
+      id="player-import-form"
+      class="card"
+      phx-change="validate_player_import"
+      phx-submit="validate_player_import"
+    >
+      <h2>{gettext("Import players")}</h2>
+
+      <p class="hint" style="margin-top: 0">
+        {gettext(
+          "Add the players of a TRF file (only its player records are read) or a CSV file (a header row, then one player per row; only the name is required) to this tournament. You see what would be added before anything is written."
+        )}
+      </p>
+
+      <div class={["dropzone", @upload.entries != [] && "has-file"]} phx-drop-target={@upload.ref}>
+        <.live_file_input
+          upload={@upload}
+          class="dropzone-input"
+          aria-labelledby={"#{@upload.ref}-label"}
+        />
+        <div class="dropzone-label" id={"#{@upload.ref}-label"}>
+          <%= if @upload.entries == [] do %>
+            <strong>{gettext("Choose a .trf, .txt or .csv file")}</strong>
+            <span class="hint">{gettext("or drag and drop it here")}</span>
+          <% else %>
+            <span :for={entry <- @upload.entries} class="dropzone-file">
+              {entry.client_name}
+              <span :if={entry.valid? and not entry.done?} class="hint">{entry.progress}%</span>
+            </span>
+          <% end %>
+        </div>
+      </div>
+
+      <p :for={msg <- UploadGuard.error_messages(@upload)} class="error-note">{msg}</p>
+      <p :if={@error} id="player-import-error" class="error-note">{@error}</p>
+
+      <div :if={@import} id="player-import-review">
+        <% review = @import.review %>
+        <p id="player-import-summary" class="hint">
+          {ngettext(
+            "%{count} player to add.",
+            "%{count} players to add.",
+            length(review.add)
+          )}
+          <span :if={review.duplicates != []}>
+            {ngettext(
+              "%{count} already in the tournament or listed twice, skipped.",
+              "%{count} already in the tournament or listed twice, skipped.",
+              length(review.duplicates)
+            )}
+          </span>
+          <span :if={review.invalid != []}>
+            {ngettext(
+              "%{count} row could not be read.",
+              "%{count} rows could not be read.",
+              length(review.invalid) + review.invalid_more
+            )}
+          </span>
+        </p>
+
+        <div :if={review.add != []} class="card-table-wrap">
+          <table class="pe-table" id="player-import-add">
+            <thead>
+              <tr>
+                <th class="num">{gettext("Line")}</th>
+                <th>{gettext("Name")}</th>
+                <th>{gettext("Title")}</th>
+                <th class="num">{gettext("Rating")}</th>
+                <th>{gettext("Fed")}</th>
+                <th class="num">FIDE ID</th>
+                <th class="num">{gettext("Born")}</th>
+                <th>{gettext("Club")}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr :for={row <- review.add} id={"player-import-row-#{row.line}"}>
+                <td class="num">{row.line}</td>
+                <td>{row.attrs["name"]}</td>
+                <td>{row.attrs["title"]}</td>
+                <td class="num">{row.attrs["fide_rating"]}</td>
+                <td>{row.attrs["federation"]}</td>
+                <td class="num">{row.attrs["fide_id"]}</td>
+                <td class="num">{row.attrs["birth_year"]}</td>
+                <td>{row.attrs["club"]}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div :if={review.duplicates != []} id="player-import-duplicates">
+          <h3>{gettext("Skipped: already there")}</h3>
+          <ul>
+            <li :for={row <- review.duplicates} id={"player-import-duplicate-#{row.line}"}>
+              {gettext("Line %{line}: %{name}", line: row.line, name: row.attrs["name"])} - {duplicate_reason(
+                row
+              )}
+            </li>
+          </ul>
+        </div>
+
+        <div :if={review.invalid != []} id="player-import-invalid">
+          <h3>{gettext("Not read")}</h3>
+          <ul>
+            <li :for={bad <- review.invalid} id={"player-import-invalid-#{bad.line}"}>
+              {gettext("Line %{line}: %{reason}", line: bad.line, reason: bad.reason)}
+            </li>
+          </ul>
+          <p :if={review.invalid_more > 0} class="hint">
+            {ngettext(
+              "%{count} more row not listed.",
+              "%{count} more rows not listed.",
+              review.invalid_more
+            )}
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button
+          :if={@import}
+          id="confirm-player-import"
+          type="button"
+          class="pe-btn primary"
+          phx-click="import_players_confirm"
+          phx-disable-with={gettext("Adding…")}
+          disabled={@import.review.add == []}
+        >
+          {ngettext(
+            "Add %{count} player",
+            "Add %{count} players",
+            length(@import.review.add)
+          )}
+        </button>
+        <button
+          id="cancel-player-import"
+          type="button"
+          class="pe-btn"
+          phx-click="import_players_cancel"
+        >
+          {gettext("Cancel")}
+        </button>
+      </div>
+    </form>
+    """
+  end
+
+  defp duplicate_reason(%{reason: :fide_id, of: :tournament}),
+    do: gettext("this FIDE ID is already in the tournament")
+
+  defp duplicate_reason(%{reason: :fide_id, of: {:line, n}}),
+    do: gettext("same FIDE ID as line %{line}", line: n)
+
+  defp duplicate_reason(%{reason: :name, of: :tournament}),
+    do: gettext("same name and birth year as a player already in the tournament")
+
+  defp duplicate_reason(%{reason: :name, of: {:line, n}}),
+    do: gettext("same name and birth year as line %{line}", line: n)
 
   ## ---------- Bulk rating refresh modal ----------
 
