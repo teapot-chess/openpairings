@@ -152,7 +152,7 @@ doet:
   gewijzigd, en het programma stopt niet langer een wijziging die de FIDE-regels
   verbieden.
 - Elke pagina van het toernooi toont een regel *Niet in de FIDE-modus*, met een
-  link die uitlegt wat dat betekent.
+  link die uitlegt wat dat betekent. Met de × ernaast vouw je de regel in tot een klein label dat nog steeds daarheen linkt; de pijl op het label klapt hem weer open. De regel kan worden ingevouwen, nooit verwijderd.
 
 > [!WARNING]
 > Verlaat de FIDE-modus alleen voor een evenement dat niemand naar FIDE stuurt:

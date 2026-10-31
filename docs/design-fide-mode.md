@@ -665,7 +665,9 @@ not a policy of ours. What was built:
   (`TrfExport.export/3`'s `for: :rating`, `docs/import-export.md`); copies
   and TRF26 downloads still carry it.
 - **The permanent indication** (Q46): one muted line on every page of a
-  tournament not in FIDE mode, in `Layouts.app`.
+  tournament not in FIDE mode, in `Layouts.app`. The arbiter can collapse it
+  to a small "Not FIDE mode" chip (kept in localStorage per tournament), but
+  the `#not-fide-mode` element stays on every page: collapsed, never removed.
 - **Hand edits stay in FIDE mode** (Q63-Q69): the regulations foresee an
   arbiter changing pairings (C.04.2:4.4), so a hand edit is not an exit.
   It is a manual pairing alteration (`PairingsEngine.ManualPairing`): a

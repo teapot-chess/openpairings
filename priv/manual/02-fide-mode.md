@@ -141,7 +141,7 @@ the round is not paired. The second question lists what leaving does:
 - The locked settings and the closed rounds can be changed afterwards, and the
   program no longer stops a change that FIDE rules forbid.
 - Every page of the tournament shows a line, *Not in FIDE mode*, with a link
-  that explains what it means.
+  that explains what it means. The × beside it folds the line into a small chip that still links there; the chevron on the chip unfolds it again. The line can be folded, never removed.
 
 > [!WARNING]
 > Leave FIDE mode only for an event that nobody sends to FIDE: a club

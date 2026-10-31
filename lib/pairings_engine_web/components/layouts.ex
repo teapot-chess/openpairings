@@ -741,11 +741,74 @@ defmodule PairingsEngineWeb.Layouts do
       <%!-- VCL4THP Q46: while a tournament is not in FIDE mode, every one
             of its pages says so - not only the settings that took it out.
             One quiet line rather than a banner: a Keizer club evening is
-            never in FIDE mode and nothing is wrong with it. --%>
-      <p :if={not_in_fide_mode?(@tournament)} id="not-fide-mode" class="fide-mode-strip">
-        {gettext("Not in FIDE mode.")}
-        <.link navigate={~p"/t/#{@tournament.id}/settings/fide"}>{gettext("What that means")}</.link>
-      </p>
+            never in FIDE mode and nothing is wrong with it. The line can be
+            collapsed to a chip (remembered per browser and tournament), but
+            the element never leaves the page. --%>
+      <div
+        :if={not_in_fide_mode?(@tournament)}
+        id="not-fide-mode"
+        class="fide-mode-strip"
+        phx-hook=".FideStrip"
+        phx-update="ignore"
+        data-key={"pe-fide-strip-#{@tournament.id}"}
+      >
+        <p class="fide-strip-full">
+          <span>{gettext("Not in FIDE mode.")}</span>
+          <.link navigate={~p"/t/#{@tournament.id}/settings/fide"} class="pe-btn fide-strip-more">
+            {gettext("What that means")}
+            <.icon name="hero-arrow-right-mini" class="size-4" />
+          </.link>
+          <button
+            type="button"
+            id="not-fide-mode-dismiss"
+            class="fide-strip-x"
+            data-fide-dismiss
+            aria-label={gettext("Collapse the FIDE mode notice")}
+            title={gettext("Collapse the FIDE mode notice")}
+          >
+            <.icon name="hero-x-mark-mini" class="size-4" />
+          </button>
+        </p>
+        <p class="fide-strip-chip">
+          <.link navigate={~p"/t/#{@tournament.id}/settings/fide"} class="fide-chip-link">
+            {gettext("Not FIDE mode")}
+          </.link>
+          <button
+            type="button"
+            id="not-fide-mode-expand"
+            class="fide-strip-x"
+            data-fide-expand
+            aria-label={gettext("Show the full FIDE mode notice")}
+            title={gettext("Show the full FIDE mode notice")}
+          >
+            <.icon name="hero-chevron-down-mini" class="size-4" />
+          </button>
+        </p>
+        <script :type={Phoenix.LiveView.ColocatedHook} name=".FideStrip">
+          export default {
+            mounted() {
+              const root = this.el
+              const key = root.dataset.key
+              const set = (collapsed, save) => {
+                root.toggleAttribute("data-collapsed", collapsed)
+                if (!save) return
+                try { window.localStorage.setItem(key, collapsed ? "1" : "0") } catch (_e) {}
+              }
+              let stored = null
+              try { stored = window.localStorage.getItem(key) } catch (_e) {}
+              set(stored === "1", false)
+              this.onClick = (e) => {
+                if (e.target.closest("[data-fide-dismiss]")) set(true, true)
+                else if (e.target.closest("[data-fide-expand]")) set(false, true)
+              }
+              root.addEventListener("click", this.onClick)
+            },
+            destroyed() {
+              this.el.removeEventListener("click", this.onClick)
+            }
+          }
+        </script>
+      </div>
       {render_slot(@inner_block)}
     </main>
     <.flash_group flash={@flash} />
