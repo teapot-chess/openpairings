@@ -112,6 +112,10 @@ defmodule PairingsEngine.Application do
       PairingsEngine.Publishing.Drain,
       PairingsEngine.Registrations.Poll,
       PairingsEngine.Backup.Scheduler,
+      # Sends the newest backup off the box, encrypted; idle unless configured.
+      PairingsEngine.Ops.OffsiteBackup.Scheduler,
+      # Writes crash reports for the logger handler installed below.
+      PairingsEngine.Ops.ErrorReports.Recorder,
       PairingsEngine.Registrations.Retention.Scheduler,
       # For work a LiveView must not do in its own process. The publishing
       # connection check is a network round trip with a fifteen-second timeout,
@@ -159,6 +163,12 @@ defmodule PairingsEngine.Application do
       PairingsEngine.BrowserLauncher.maybe_open()
       # Off unless `PAIR_TIMING` asks for it - see the module.
       PairingsEngine.PairTiming.maybe_attach()
+      # Crash reports into the admin page, not into a third party's
+      # dashboard - see `PairingsEngine.Ops.ErrorReports`. Off in test.
+      if Application.get_env(:pairings_engine, :error_reports, true) do
+        PairingsEngine.Ops.ErrorReports.LoggerHandler.install()
+      end
+
       # Plugins' own boot work, now that Repo and PubSub are there. Never
       # fails the boot: see `PairingsEngine.Plugins.boot/0`.
       PairingsEngine.Plugins.boot()

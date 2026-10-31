@@ -56,6 +56,10 @@ defmodule PairingsEngineWeb.Plugs.RequestLogging do
   `:info` is Phoenix's own default for both, so every path this does not
   redact logs exactly as it did before this plug existed.
   """
+  # `/healthz` is polled, by a monitor and by the deploy, every few seconds;
+  # a log that records each poll twice records little else.
+  def log_level(%Plug.Conn{path_info: ["healthz"]}), do: false
+
   def log_level(%Plug.Conn{status: nil} = conn) do
     if redacted_path(conn.path_info), do: false, else: :info
   end

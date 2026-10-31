@@ -2,6 +2,7 @@ defmodule PairingsEngineWeb.Router do
   use PairingsEngineWeb, :router
 
   import PairingsEngineWeb.UserAuth
+  import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -113,7 +114,30 @@ defmodule PairingsEngineWeb.Router do
       ] do
       live "/admin", AdminLive
       live "/admin/rating-inbox", RatingInboxLive
+      live "/admin/system", SystemLive
     end
+  end
+
+  # Liveness for monitors and the deploy script. No pipeline at all - no
+  # session, no CSRF, no locale - and no log line per poll. Public by design
+  # and says almost nothing; see PairingsEngine.Ops.Health.
+  get "/healthz", PairingsEngineWeb.HealthController, :show, log: false
+
+  # LiveDashboard, in production too, for administrators only: the plug
+  # checks on the HTTP request, the on_mount hooks on the socket, so neither
+  # half is reachable without the role. Its pages read process state and
+  # metrics, not tournament data, but process state is somebody's business.
+  scope "/admin" do
+    pipe_through [:browser, :require_authenticated_user, :require_admin_user]
+
+    live_dashboard "/dashboard",
+      metrics: PairingsEngineWeb.Telemetry,
+      live_session_name: :admin_dashboard,
+      csp_nonce_assign_key: :csp_nonce,
+      on_mount: [
+        {PairingsEngineWeb.UserAuth, :require_authenticated},
+        {PairingsEngineWeb.RequireRole, :admin}
+      ]
   end
 
   scope "/", PairingsEngineWeb do
@@ -319,19 +343,12 @@ defmodule PairingsEngineWeb.Router do
   #   pipe_through :api
   # end
 
-  # Enable LiveDashboard in development
+  # The mailbox preview, in development only. (LiveDashboard moved to
+  # /admin/dashboard, behind the admin role, on 2026-10-31.)
   if Application.compile_env(:pairings_engine, :dev_routes) do
-    # If you want to use the LiveDashboard in production, you should put
-    # it behind authentication and allow only admins to access it.
-    # If your application does not have an admins-only section yet,
-    # you can use Plug.BasicAuth to set up some basic authentication
-    # as long as you are also using SSL (which you should anyway).
-    import Phoenix.LiveDashboard.Router
-
     scope "/dev" do
       pipe_through :browser
 
-      live_dashboard "/dashboard", metrics: PairingsEngineWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end

@@ -6,6 +6,9 @@
 #     from consume_uploaded_entries, backup names looked up in Backup.list/0,
 #     theme-pack files behind a whitelist regex, the engine trace's own temp
 #     directory); none is a raw user string.
+#     Ops.Age / Ops.OffsiteBackup (2026-10-31): the backup path comes from
+#     Backup.list/0 plus a fixed suffix, or is an argument the operator typed
+#     to `mix ops.age` on their own machine.
 #   * XSS.SendResp / XSS.Raw / XSS.ContentType - bodies are escaped HTML builders,
 #     binaries (xlsx, fonts, images, QR SVG) or the repo's own rendered manual and
 #     changelog; content types come from validated image sniffing or literals.

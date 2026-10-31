@@ -399,6 +399,25 @@ defmodule PairingsEngineWeb.UserAuth do
     end
   end
 
+  @doc """
+  Plug for controller-level routes that only an administrator may reach -
+  the LiveDashboard, today. After `require_authenticated_user`, whose scope
+  it reads; the plug twin of `{PairingsEngineWeb.RequireRole, :admin}`, and
+  answers the same way: a redirect home, not a 404.
+  """
+  def require_admin_user(conn, _opts) do
+    if PairingsEngine.Authz.may_administer?(
+         conn.assigns.current_scope && conn.assigns.current_scope.user
+       ) do
+      conn
+    else
+      conn
+      |> put_flash(:error, gettext("This page is for administrators."))
+      |> redirect(to: ~p"/")
+      |> halt()
+    end
+  end
+
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))
   end
