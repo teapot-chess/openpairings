@@ -99,7 +99,7 @@ defmodule PairingsEngineWeb.AuditLive do
     {"all", :all},
     {"players", ~w(player.created player.updated player.deleted player.ratings_refreshed
         player.data_refreshed player.clubs_refreshed player.bulk_absent_set player.bulk_paid_set
-        player.bulk_category_set registration.accepted registration.discarded
+        player.bulk_category_set player.imported registration.accepted registration.discarded
         team.created team.updated team.deleted team.player_assigned team.player_removed
         team.roster_filled
         team.board_order_changed team.seeding_changed team.withdrawn team.reinstated
@@ -574,6 +574,29 @@ defmodule PairingsEngineWeb.AuditLive do
           "Marked every player present for the whole tournament (%{count} players).",
           count
         )
+  end
+
+  def describe("player.imported", d) do
+    count = count(d, "count")
+
+    case d["source"] do
+      "trf" ->
+        ngettext(
+          "Imported %{count} player from a TRF file.",
+          "Imported %{count} players from a TRF file.",
+          count
+        )
+
+      "csv" ->
+        ngettext(
+          "Imported %{count} player from a CSV file.",
+          "Imported %{count} players from a CSV file.",
+          count
+        )
+
+      _ ->
+        ngettext("Imported %{count} player.", "Imported %{count} players.", count)
+    end
   end
 
   def describe("player.bulk_paid_set", d) do

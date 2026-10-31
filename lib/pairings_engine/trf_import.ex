@@ -174,6 +174,70 @@ defmodule PairingsEngine.TrfImport do
     end
   end
 
+  # A `001` record's fixed-width head: everything up to the final rank. The
+  # round blocks start at column 92, so cutting here leaves the player and
+  # none of the games.
+  @player_head_cols 89
+
+  @doc """
+  The players of a TRF file (TRF06, TRF16 or TRF26 - the `001` record has the
+  same columns in all three) and nothing else: no tournament header, no
+  rounds, results, teams or other records, so a file with a broken result or
+  a half-finished header still yields its players.
+
+  Same size bounds (`check_bounds/1`) and decoding (BOM, CP1252 fallback) as
+  an import, and the same parser and field mapping (`player_attrs/1`) - each
+  `001` line is cut before its round blocks and parsed on its own, so one bad
+  line is one entry in the list and not the end of the file. Nothing touches
+  the database. The file's own starting ranks are not carried over: a player
+  added to an existing tournament is numbered as if added by hand.
+
+  `{:ok, [{line_no, {:ok, attrs} | {:error, reason}}]}`, with `attrs` a
+  string-keyed map as the Players page's add form sends; or `{:error,
+  reason}` (see `error_message/1`) when the file as a whole is no TRF.
+  """
+  def parse_players(content) when is_binary(content) do
+    with :ok <- check_bounds(content) do
+      lines =
+        content
+        |> decode_content()
+        |> String.split(~r/\r\n|\r|\n/)
+        |> Enum.with_index(1)
+        |> Enum.filter(fn {line, _} -> String.starts_with?(line, "001") end)
+
+      case lines do
+        [] -> {:error, {:parse_failed, "no player records (\"001\" lines) found"}}
+        _ -> {:ok, Enum.map(lines, fn {line, n} -> {n, player_line(line)} end)}
+      end
+    end
+  end
+
+  defp player_line(line) do
+    head = String.slice(line, 0, @player_head_cols)
+
+    case Trf.parse(head) do
+      %{players: [p]} -> player_entry(p)
+      _ -> {:error, "not a readable player record"}
+    end
+  rescue
+    _ -> {:error, "not a readable player record"}
+  end
+
+  defp player_entry(p) do
+    attrs = p |> player_attrs() |> Map.delete(:pairing_number)
+
+    case Player.changeset(%Player{}, attrs) do
+      %{valid?: true} ->
+        {:ok,
+         for {k, v} <- attrs, v not in [nil, ""], into: %{} do
+           {Atom.to_string(k), to_string(v)}
+         end}
+
+      changeset ->
+        {:error, changeset_error_text(changeset)}
+    end
+  end
+
   # Shared by `import_text/2` and `build_structs/1`: measure + decode +
   # parse + build the same unpersisted structs either caller needs, while
   # also handing back the raw parsed `data` (with each player's per-round
