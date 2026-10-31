@@ -145,6 +145,11 @@ jobs:
       # Checked out below into hall-plugins/. mix.exs lets the desktop edition
       # take these two and refuses any other plugin, so the private ones
       # (KBSB, CTIP) cannot slip in here.
+      # THE PINS: the release tags of the two hall plug-in repositories that go
+      # into the desktop binaries. To bump, change these two lines to the new
+      # release tags (gh release list -R teapot-chess/Polis), nothing else.
+      POLIS_REF: v0.5.0
+      NUNKI_REF: v0.5.0
       PAIRINGS_PLUGINS_DIR: hall-plugins
       PAIRINGS_PLUGINS: polis/plugins/openpairings_polis,nunki/plugins/openpairings_nunki
 
@@ -163,12 +168,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: teapot-chess/Polis
+          ref: ${{ env.POLIS_REF }}
           path: hall-plugins/polis
           persist-credentials: false
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: teapot-chess/Nunki
+          ref: ${{ env.NUNKI_REF }}
           path: hall-plugins/nunki
           persist-credentials: false
 
