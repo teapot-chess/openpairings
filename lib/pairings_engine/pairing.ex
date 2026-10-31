@@ -2233,7 +2233,7 @@ defmodule PairingsEngine.Pairing do
       published_at = Tournaments.compute_published_at(tournament, next_number)
 
       round =
-        Repo.insert!(%Round{
+        %Round{
           tournament_id: tournament.id,
           number: next_number,
           status: "playing",
@@ -2243,7 +2243,9 @@ defmodule PairingsEngine.Pairing do
           explanation: explanation,
           virtual_points: virtual_points_used(tournament, paired_players),
           baku_points: baku_points_used(tournament, next_number)
-        })
+        }
+        |> engine_stamp(explanation)
+        |> Repo.insert!()
 
       insert_round_absentee_byes(tournament, next_number, round_absentees)
 
@@ -3674,6 +3676,12 @@ defmodule PairingsEngine.Pairing do
           # never able to fail the account (`store_engine_trace/3`).
           store_engine_trace(id, job, sections)
 
+          # And the engine's pairing proof, last, on the same terms: it pairs
+          # the round once more, so nothing else waits behind it. A stored
+          # proof is news for the results site, which announces it.
+          if PairingsEngine.PairingProofs.run(id, job, sections) == :stored,
+            do: PairingsEngine.Publishing.enqueue_id(tournament.id)
+
           case payload do
             nil -> {:error, :nothing_to_explain}
             payload -> {:ok, payload}
@@ -4683,6 +4691,13 @@ defmodule PairingsEngine.Pairing do
 
   # `boards` is `plan_boards/1`'s: `{board, white, black}`, `black` nil for
   # the pairing-allocated bye.
+  # A round whose record is an engine account was paired by Ainalrami: it
+  # is stored saying so, and with which version (`Round.engine_fields/0`).
+  defp engine_stamp(%Round{} = round, %{"engine" => "ainalrami"}),
+    do: struct(round, Round.engine_fields())
+
+  defp engine_stamp(%Round{} = round, _explanation), do: round
+
   defp create_round(
          boards,
          tournament,
@@ -4699,7 +4714,7 @@ defmodule PairingsEngine.Pairing do
       published_at = Tournaments.compute_published_at(tournament, next_number)
 
       round =
-        Repo.insert!(%Round{
+        %Round{
           tournament_id: tournament.id,
           number: next_number,
           status: "playing",
@@ -4709,7 +4724,9 @@ defmodule PairingsEngine.Pairing do
           explanation: explanation,
           virtual_points: virtual_points_used(tournament, paired_players),
           baku_points: baku_points_used(tournament, next_number)
-        })
+        }
+        |> engine_stamp(explanation)
+        |> Repo.insert!()
 
       insert_boards(round, boards)
 
@@ -4732,7 +4749,8 @@ defmodule PairingsEngine.Pairing do
           round_absentees,
           next_number + 1,
           round.virtual_points,
-          baku_points_used(tournament, next_number + 1)
+          baku_points_used(tournament, next_number + 1),
+          Map.take(round, [:engine, :engine_version])
         )
       else
         round
@@ -4762,20 +4780,35 @@ defmodule PairingsEngine.Pairing do
   # Its Baku points are its own round number's, which is what the next
   # match's history always said about it; they are recorded now so it keeps
   # saying so.
-  defp create_mirrored_leg(tournament, leg1_pairings, round_absentees, leg2_number, virtual, baku) do
+  defp create_mirrored_leg(
+         tournament,
+         leg1_pairings,
+         round_absentees,
+         leg2_number,
+         virtual,
+         baku,
+         engine
+       ) do
     leg2_published_at = Tournaments.compute_published_at(tournament, leg2_number)
 
+    # Leg 2 is leg 1 mirrored, not paired, but the boards are the engine's
+    # all the same: it says which engine, and carries no proof of its own.
     leg2 =
-      Repo.insert!(%Round{
-        tournament_id: tournament.id,
-        number: leg2_number,
-        status: "playing",
-        paired_at: Round.paired_now(),
-        published_at: leg2_published_at,
-        publish_due_at: Tournaments.due_publish_at(leg2_published_at),
-        virtual_points: virtual,
-        baku_points: baku
-      })
+      Repo.insert!(
+        struct(
+          %Round{
+            tournament_id: tournament.id,
+            number: leg2_number,
+            status: "playing",
+            paired_at: Round.paired_now(),
+            published_at: leg2_published_at,
+            publish_due_at: Tournaments.due_publish_at(leg2_published_at),
+            virtual_points: virtual,
+            baku_points: baku
+          },
+          engine
+        )
+      )
 
     Enum.each(leg1_pairings, fn p ->
       {white_id, black_id} =

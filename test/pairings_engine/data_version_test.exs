@@ -64,7 +64,7 @@ defmodule PairingsEngine.DataVersionTest do
     assert version(t) != after_status
   end
 
-  test "the trigger names every column of the round but its account and trace" do
+  test "the trigger names every column of the round but its account, trace and proof" do
     columns =
       Repo.query!("PRAGMA table_info(rounds)").rows
       |> Enum.map(&Enum.at(&1, 1))
@@ -74,7 +74,7 @@ defmodule PairingsEngine.DataVersionTest do
         "SELECT sql FROM sqlite_master WHERE type = 'trigger' AND name = 'rounds_data_version_update'"
       ).rows
 
-    for column <- columns -- ["explanation", "engine_trace"] do
+    for column <- columns -- ~w(explanation engine_trace proof proof_sha256 proof_bytes) do
       assert sql =~ ~s|OLD."#{column}" IS NOT NEW."#{column}"|,
              "rounds.#{column} is not in rounds_data_version_update - recreate the trigger " <>
                "(see migration DataVersionIgnoresRoundAccounts) in the migration that added it"

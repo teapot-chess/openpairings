@@ -350,6 +350,32 @@ page offers to do so and says that it did.
 If an organiser's rule changed the round (a bye preference, a pair wish), the
 page says which board it moved and what the FIDE rules alone would have given.
 
+### The engine and its proof {#the-engine-and-its-proof}
+
+Every Swiss round paired by the engine records which engine paired it and
+which version (*ainalrami 0.48.0*, say). It is kept per round because an
+update between two rounds can change the engine halfway through an event, and
+the record should say what paired round 5, not what is installed today. A
+round paired by hand, by a round-robin table, by Keizer, or before the program
+kept this has none.
+
+After the round is saved, the program also works out the engine's **pairing
+proof**: a file in which the engine shows that every choice it made while
+pairing the round was the best one the rules allow, and that the boards are
+the ones it arrived at. It is made in the background, never while you wait
+for *Pair round*, by pairing the round a second time on the engine's slower
+reference path; it is kept only if that second pairing gives exactly the
+boards the round holds. Anyone can check it with the engine's own verifier,
+which shares no code with the engine. A field of more than 300 players gets no
+proof (working one out costs too much memory there), and neither do team
+rounds, round robins and Keizer, which have no such choice to prove.
+
+The proof goes to the results site with the round
+([Publishing](14-publishing.md#the-proof-of-a-round)), into the full backup
+([Import and export](12-import-export.md#backup-and-copy)), and the ITDX
+file's round lines name the engine and the proof's SHA-256.
+
+
 ## Preview of the next round
 
 While the last few games of a Swiss round are still being played, **Preview

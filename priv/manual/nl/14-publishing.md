@@ -77,6 +77,18 @@ Schakelaars (geavanceerd) bepalen welke details een gepubliceerde pagina mag ton
 
 Een kaart **Reeks** op dezelfde instellingenpagina koppelt edities van hetzelfde evenement in verschillende jaren (Open Brugge 2025, 2026, ...). Kies *Een nieuwe reeks beginnen*, of *Zelfde reeks als ...* om je aan te sluiten bij de reeks van een ander toernooi dat je mag bewerken (dat krijgt er dan een als het er geen had), of *Geen deel van een reeks* om eruit te stappen. De resultatensite toont dan de andere edities die ze van dezelfde uitgever heeft en die openbaar zijn, onder **Andere edities**. Een reeks is geen *groep*, dat zijn meerdere onderdelen van één evenement. **Dupliceren** behoudt de reeks, dus de kopie voor volgend jaar zit er meteen in.
 
+### Het bewijs van een ronde {#the-proof-of-a-round}
+
+Een ronde met een paringsbewijs ([Paren](06-pairing.md#the-engine-and-its-proof))
+stuurt het naar de uitslagensite, die naast de titel van de ronde een kleine
+knop **Bewijs** toont: die klapt open en zegt welke engine en versie de ronde
+gepaard heeft, biedt het bewijsbestand aan om te downloaden en geeft de
+SHA-256 ervan. De momentopname zelf bevat alleen die SHA-256; de site vraagt
+om elk bewijs dat ze nog niet heeft en dat wordt één keer apart verstuurd.
+Komt een bewijs niet aan, dan is de publicatie niet mislukt: de volgende
+stuurt het. Oudere rondes, en rondes zonder bewijs, tonen geen knop.
+
+
 ### Het zaalscherm {#the-hall-display}
 
 Een schermvullende pagina voor een televisie of beamer in de speelzaal, op een adres dat op de instellingenpagina getoond wordt zodra het toernooi gepubliceerd is. De kaart **Zaalscherm** (geavanceerd) kiest wat er wordt doorlopen (paringen, de lijst *Zoek je bord* op naam, resultaten, standen), seconden per pagina, hoeveel plaatsen van de stand getoond worden, of de paringen vastgehouden worden tot het eerste resultaat van een nieuwe ronde binnen is, en een **Mededeling** (gewone tekst, tot 500 tekens) die op het scherm getoond wordt. Bewaren verstuurt die meteen.
