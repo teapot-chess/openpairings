@@ -105,6 +105,8 @@ defmodule PairingsEngineWeb.FideModeLiveTest do
       for path <- ["players", "pairings", "standings"] do
         {:ok, lv, _} = live(conn, "/t/#{out.id}/#{path}")
         assert has_element?(lv, "#not-fide-mode"), "no indication on #{path}"
+        assert has_element?(lv, "#not-fide-mode #not-fide-mode-dismiss")
+        assert has_element?(lv, "#not-fide-mode #not-fide-mode-expand")
 
         {:ok, lv, _} = live(conn, "/t/#{in_mode.id}/#{path}")
         refute has_element?(lv, "#not-fide-mode")
