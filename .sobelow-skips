@@ -21,6 +21,11 @@ SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:806,2D86250
 SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:824,5E17D61
 SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:862,4F4D86F
 SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:876,6AA79FC
+SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:879,ED06BD
+SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:887,1126A2C
+SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:905,1C65196
+SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:943,32BD255
+SQL.Query: SQL injection,lib/pairings_engine/fide/sync.ex:957,1BBD8C9
 Traversal.FileModule: Directory Traversal in `File.chmod`,lib/pairings_engine/launcher_details.ex:204,226A7B
 Traversal.FileModule: Directory Traversal in `File.chmod`,lib/pairings_engine/launcher_details.ex:209,72F63AF
 Traversal.FileModule: Directory Traversal in `File.cp`,lib/pairings_engine/desktop/data_home.ex:380,337AFE9
