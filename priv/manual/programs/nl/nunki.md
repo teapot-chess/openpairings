@@ -13,6 +13,11 @@ wandeling naar de microfoon bespaart. Wat er omgeroepen wordt en wanneer,
 beslis je in OpenPairings; Nunki is waar het hardop gezegd wordt. Met
 ruimtes leest een omroeper alleen de borden van zijn eigen ruimte voor.
 
+**Desktop of gehost.** Het werkt met het desktop-OpenPairings op dezelfde pc,
+net zo goed als met de gehoste server: de desktopversie heeft de omroeper
+ingebouwd. Installeer Nunki naast OpenPairings (Ascella doet beide) en plak
+de koppelingslink erin, net als bij een server.
+
 **Waar het past.** In OpenPairings: de instellingen van het toernooi, *Hall
 announcer*, *Add an announcer*; de link die verschijnt is één keer goed, voor
 vijftien minuten. Plak hem in Nunki op de zaal-pc, of scan de QR-code met

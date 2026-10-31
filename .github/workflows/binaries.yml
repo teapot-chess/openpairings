@@ -139,6 +139,14 @@ jobs:
       OTP_VERSION: "29.0.5"
       OPENSSL_VERSION: "3.5.9"
       ELIXIR_VERSION: "1.20.4"
+      # The hall plug-ins (Polis, the print station; Nunki, the announcer) are
+      # built into the desktop binaries, so the hall programs that Ascella
+      # installs beside OpenPairings on one PC have something to connect to.
+      # Checked out below into hall-plugins/. mix.exs lets the desktop edition
+      # take these two and refuses any other plugin, so the private ones
+      # (KBSB, CTIP) cannot slip in here.
+      PAIRINGS_PLUGINS_DIR: hall-plugins
+      PAIRINGS_PLUGINS: polis/plugins/openpairings_polis,nunki/plugins/openpairings_nunki
 
     steps:
       # Actions are pinned to a commit, not to a tag. A tag is mutable, and
@@ -151,6 +159,18 @@ jobs:
       # (https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/):
       # the old pins were being silently forced onto Node 24 already.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: teapot-chess/Polis
+          path: hall-plugins/polis
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: teapot-chess/Nunki
+          path: hall-plugins/nunki
+          persist-credentials: false
 
       # Not on the Mac. There setup-beam installs erlef/otp_builds' runtime,
       # which is built on the newest runner for the newest macOS: every

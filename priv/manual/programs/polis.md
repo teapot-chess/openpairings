@@ -13,6 +13,11 @@ room: a station can print only one room's boards, some board numbers or some
 categories. A round changed after it was printed is never reprinted by
 itself; the station says so and offers Reprint.
 
+**Desktop or hosted.** It works with the desktop OpenPairings on the same PC
+as well as with the hosted server: the desktop build has the print station
+built in. Install Polis next to OpenPairings (Ascella does both) and paste
+the join link into it, the same as with a server.
+
 **Where it fits.** In OpenPairings, the station is added under the
 tournament's Settings, *Print station*, *Add a print station*. The link it shows is good once,
 for fifteen minutes: paste it into Polis on the station's computer, or scan

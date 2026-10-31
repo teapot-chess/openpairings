@@ -14,6 +14,11 @@ ruimte afdrukken, of alleen sommige bordnummers of categorieën. Een ronde die
 na het afdrukken veranderde, wordt nooit vanzelf opnieuw afgedrukt; het
 station meldt het en biedt aan ze opnieuw af te drukken.
 
+**Desktop of gehost.** Het werkt met het desktop-OpenPairings op dezelfde pc,
+net zo goed als met de gehoste server: de desktopversie heeft het
+printstation ingebouwd. Installeer Polis naast OpenPairings (Ascella doet
+beide) en plak de koppelingslink erin, net als bij een server.
+
 **Waar het past.** In OpenPairings voeg je het station toe in de
 instellingen van het toernooi, *Print station*, *Add a print station*. De link die verschijnt is één keer
 goed, voor vijftien minuten: plak hem in Polis op de computer van het
