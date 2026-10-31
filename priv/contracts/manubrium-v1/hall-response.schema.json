@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/teapot-chess/openpairings/main/priv/contracts/manubrium-v1/hall-response.schema.json",
+  "title": "GET /tournaments/:id/hall response",
+  "description": "The hall apps of the tournament: which are switched on for the account, the stations and announcers joined (online or not), the latest published round and the countdown that runs. Joining one is done in OpenPairings (Settings) or with its pairing link; this only shows them and sends commands.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apps", "devices", "round", "countdown"],
+  "properties": {
+    "apps": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["polis", "nunki"]},
+      "description": "The hall apps switched on for the tournament owner's account. A command for an app that is not here has nobody to go to."
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["app", "id", "name", "room", "online", "last_seen_at"],
+        "properties": {
+          "app": {"type": "string", "enum": ["polis", "nunki"]},
+          "id": {"type": "integer", "minimum": 1},
+          "name": {"type": "string"},
+          "room": {"type": "string", "description": "The room it stands in, or empty."},
+          "online": {"type": "boolean", "description": "A live line heard from in the last 90 seconds."},
+          "last_seen_at": {"type": ["string", "null"], "description": "ISO 8601, UTC."}
+        }
+      }
+    },
+    "round": {"type": ["integer", "null"], "minimum": 1, "description": "The latest published round, or null while none is."},
+    "countdown": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["round", "seconds_left"],
+          "properties": {
+            "round": {"type": "integer", "minimum": 1},
+            "seconds_left": {"type": "integer", "minimum": 1}
+          }
+        }
+      ],
+      "description": "The countdown still running for the announcers, or null."
+    }
+  }
+}

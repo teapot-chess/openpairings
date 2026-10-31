@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/teapot-chess/openpairings/main/priv/contracts/manubrium-v1/hall-command-response.schema.json",
+  "title": "Answer to a hall command",
+  "description": "What the three commands answer: how many devices the command went to (online ones; 0 is an honest answer, not an error) and, for a countdown, the one that runs now (null after a cancel).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sent_to"],
+  "properties": {
+    "sent_to": {"type": "integer", "minimum": 0},
+    "round": {"type": ["integer", "null"], "minimum": 1, "description": "The latest published round the command was about."},
+    "countdown": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["round", "seconds_left"],
+          "properties": {
+            "round": {"type": "integer", "minimum": 1},
+            "seconds_left": {"type": "integer", "minimum": 1}
+          }
+        }
+      ]
+    }
+  }
+}
