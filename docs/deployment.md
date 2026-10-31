@@ -344,10 +344,95 @@ written under it has aged out of `BACKUP_RETENTION`.
 unreadable - there is no recovery. That is why it has to be kept off the
 server, in a password manager or equivalent, not only in the deploy's `.env`.
 
-A backup on the same disk survives a bad deploy, not the disk: download one
-from Connections now and then. Keep the copy you would restore from **outside**
+A backup on the same disk survives a bad deploy, not the disk: set up
+[off-site backups](#off-site-backups), or download one from Connections now
+and then. Keep the copy you would restore from **outside**
 `backups/`, where a prune removes it once it is older than the window (unless
 it is the newest).
+
+### Off-site backups
+
+`PairingsEngine.Ops.OffsiteBackup` replaces "download one now and then".
+Once an hour it looks for a local backup that has not left the box, encrypts
+it, and `PUT`s it to an S3-compatible bucket (Hetzner Object Storage,
+Cloudflare R2, Backblaze B2, MinIO, AWS) as
+`<prefix>/<backup file name>.age`. A failed send is retried within the hour;
+a new local backup is off the box within an hour of being written.
+
+**The server cannot read what it sends.** Each copy is encrypted in the
+[age](https://age-encryption.org/v1) format to one or more X25519 *public*
+keys. The secret half never goes near the server: whoever takes the box and
+the bucket credentials gets ciphertext. This is on top of
+`PAIRINGS_BACKUP_PASSPHRASE`, not instead of it - a passphrase-encrypted
+backup is still passphrase-encrypted inside the age file.
+
+Off unless every required variable is set; a partial set refuses to boot,
+naming what is missing (never a value):
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `OFFSITE_BACKUP_RECIPIENTS` | - (required) | age public keys (`age1...`), comma-separated. List two, kept in two places |
+| `OFFSITE_BACKUP_S3_ENDPOINT` | - (required) | `https://` endpoint, e.g. `https://fsn1.your-objectstorage.com` (plain `http://` only for localhost) |
+| `OFFSITE_BACKUP_S3_BUCKET` | - (required) | bucket; requests are path-style (`<endpoint>/<bucket>/<key>`) |
+| `OFFSITE_BACKUP_S3_ACCESS_KEY_ID` | - (required) | a key that can `PUT` into that bucket, ideally nothing else |
+| `OFFSITE_BACKUP_S3_SECRET_ACCESS_KEY` | - (required) | its secret |
+| `OFFSITE_BACKUP_S3_REGION` | `us-east-1` | SigV4 region (`fsn1`, `auto` for R2, ...) |
+| `OFFSITE_BACKUP_S3_PREFIX` | `openpairings` | key prefix inside the bucket |
+| `OFFSITE_BACKUP_STALE_HOURS` | 36 | hours without a successful send before the status is `stale` |
+| `OPS_ALERT_EMAIL` | none | where a NEW kind of crash is mailed (needs SMTP); at most one mail per 15 minutes |
+
+Read only in production (`config/runtime.exs`, prod block). Set them in the
+service's environment like the other secrets; the access key and secret are
+secrets, the public keys are not. **Admin → System** shows each run (when,
+result, object, size - the reason on failure is the S3 error code, never the
+reply, which quotes the access key id) and has a *Send now* button;
+`/healthz` reports `"backup": "ok" | "stale" | "failing" | "disabled"`.
+
+**Deleting old copies is the bucket's job.** Nothing here lists or deletes
+remote objects, so the access key can be write-only. Set a lifecycle rule on
+the bucket (expire `openpairings/` after, say, 90 days).
+
+**Making the key** - on your own machine, never the server:
+
+    mix ops.age keygen --out openpairings-backup-key.txt
+
+prints the public key for `OFFSITE_BACKUP_RECIPIENTS` and writes the secret
+to the file (it is never printed). The standard `age-keygen` does the same.
+Keep the file offline, in two places. **Lose every secret key and every
+off-site copy is noise.**
+
+**Restoring from an off-site copy.** Download the object, then on a machine
+that holds the key:
+
+    age -d -i openpairings-backup-key.txt -o openpairings-....opbak openpairings-....opbak.age
+    # or, from a checkout of this repo:
+    mix ops.age decrypt --identity openpairings-backup-key.txt openpairings-....opbak.age
+
+The result is an ordinary local backup: put it in `backups/` and follow
+[Restoring a backup](#restoring-a-backup) from the top (it still needs
+`PAIRINGS_BACKUP_PASSPHRASE` if it was written under one).
+
+### Health check and error reports
+
+`GET /healthz` is public, unauthenticated, uncached and unlogged:
+
+    {"status":"ok","version":"0.111.0","checks":{"database":"ok","backup":"disabled"}}
+
+`200` with `"ok"` when the database answers a trivial query, `503` with
+`"degraded"` when it does not. **Only the database decides the status**; the
+backup is reported beside it and never makes the check fail, so a monitor (or
+the deploy script, waiting for a restart) is not told the app is dead because
+a bucket was unreachable. Nothing else is in the body.
+
+Crashes - a LiveView, a request, a background process - are recorded on the
+box, not sent to a third-party tracker: one row per fingerprint, with a count
+and first/last seen, at most 200 rows, on **Admin → System**. No request data
+is kept and stack frames carry no arguments; see
+`PairingsEngine.Ops.ErrorReports` for what is cut and why.
+
+**LiveDashboard** is at `/admin/dashboard` in production too, for
+administrators only (the role check runs on the HTTP request and again on the
+socket).
 
 ### The takedown journal, beside the database
 
