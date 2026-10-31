@@ -33,7 +33,7 @@ instelling *Spelers die nog gelijk staan delen een plaats* (Instellingen, Tiebre
 - **Rechtsklik op een speler** (of druk op de toets voor het contextmenu of
   Shift+F10 op de naam, of tik erop op een aanraakscherm) voor een klein menu:
   **Spelerskaart** opent dezelfde kaart als de pagina Spelers en de pagina
-  Paringen, en **Open de lijst met spelers** gaat naar de pagina Spelers. Dat
+  Paringen, en **Speler bewerken** opent de pagina Spelers met het bewerkformulier van die speler al open. Dat
   werkt ook op de individuele ranglijst van een teamtoernooi; de teamtabel heeft
   geen kaart, dus ook geen menu.
 

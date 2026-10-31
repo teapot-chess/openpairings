@@ -292,9 +292,20 @@ defmodule PairingsEngineWeb.StandingsLive do
   def handle_event("card_prev", _params, socket), do: {:noreply, step_card(socket, -1)}
   def handle_event("card_next", _params, socket), do: {:noreply, step_card(socket, 1)}
 
-  def handle_event("open_in_players", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/t/#{socket.assigns.tournament.id}/players")}
+  def handle_event("edit_player", %{"player-id" => id}, socket) do
+    case Tournaments.get_player(socket.assigns.tournament.id, id) do
+      nil ->
+        {:noreply, socket}
+
+      player ->
+        {:noreply,
+         push_navigate(socket,
+           to: ~p"/t/#{socket.assigns.tournament.id}/players?edit=#{player.id}"
+         )}
+    end
   end
+
+  def handle_event("edit_player", _params, socket), do: {:noreply, socket}
 
   def handle_event("columns_loaded", %{"columns" => columns}, socket) when is_list(columns) do
     {:noreply, assign(socket, visible: columns)}
@@ -1943,10 +1954,11 @@ defmodule PairingsEngineWeb.StandingsLive do
         <button
           type="button"
           role="menuitem"
-          id="menu-open-players"
-          phx-click="open_in_players"
+          id="menu-edit-player"
+          phx-click="edit_player"
+          phx-value-player-id={@menu.player_id}
         >
-          {gettext("Open the Players list")}
+          {gettext("Edit player")}
         </button>
       </div>
     </div>
