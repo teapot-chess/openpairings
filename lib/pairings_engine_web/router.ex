@@ -450,6 +450,12 @@ defmodule PairingsEngineWeb.Router do
     get "/tournaments/:id/board-links", BoardLinkController, :index
     post "/tournaments/:id/board-links", BoardLinkController, :create
     delete "/tournaments/:id/board-links/:link_id", BoardLinkController, :delete
+
+    # The hall apps (Polis, Nunki): who is online, and three commands.
+    get "/tournaments/:id/hall", HallController, :show
+    post "/tournaments/:id/hall/print", HallController, :print
+    post "/tournaments/:id/hall/countdown", HallController, :countdown
+    post "/tournaments/:id/hall/announce", HallController, :announce
   end
 
   # Trading a grant for an account code (`BoardConnectController.grant/2`).

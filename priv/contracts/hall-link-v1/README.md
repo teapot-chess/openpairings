@@ -38,8 +38,8 @@ schema is one message, named by who sends it:
 | `device-status-nunki`, `device-settings-nunki` | Nunki | the line |
 | `device-status-polis`, `device-settings-polis` | Polis | the line |
 | `server-welcome`, `server-refused`, `server-round`, `server-leave`, `server-pong` | server | the line, to both |
-| `server-settings-nunki`, `server-countdown`, `server-countdown-cancel`, `server-read`, `server-stop` | server | the line, to Nunki |
-| `server-settings-polis`, `server-print` | server | the line, to Polis |
+| `server-settings-nunki`, `server-countdown`, `server-countdown-cancel`, `server-read`, `server-stop`, `server-announce` | server | the line, to Nunki |
+| `server-settings-polis`, `server-print`, `server-standings` | server | the line, to Polis |
 | `pairing-link` | nobody: a link as shown, with what it means | the screen, the clipboard, a QR code |
 
 `examples/<schema>.json` and `examples/<schema>.<variant>.json` belong to
@@ -121,3 +121,33 @@ stay version 1: change the schema and its examples here, then
 `contracts:sync` in each consumer, then their tests. Anything a version-1
 peer would misread is version 2, a new directory, and a new `v` on the
 wire.
+
+## The second job (added to version 1)
+
+The hall programs did one thing each: Polis printed the pairings and the
+place cards, Nunki read the pairings aloud and counted down to a round.
+Version 1 grew four more, all additive, so a device that has not caught up
+simply ignores them:
+
+- **`print` knows three more things to print.** `what` is now also
+  `standings`, `playerlist` (the round's players in alphabetical order,
+  with board and room) and `slips` (one result slip per board). The first
+  needs data the round payload does not carry, and would go stale with
+  every result if it did (`rev` would change at each one, and the station
+  would call each a changed round). So the standings travel in their own
+  frame, `server-standings`, sent only just before a `print` that wants
+  them: the station holds the last one and prints it when the `print`
+  arrives. `playerlist` and `slips` are cut from the round payload the
+  station already holds.
+- **A board may name its room.** `board.room` in the round payload, for
+  Polis, only when the tournament has rooms: the player list's room
+  column. A device that does not know it ignores it.
+- **`server-announce`** to Nunki: a canned announcement (`canned`, five
+  of them, worded by the device in its own language) or free text
+  (`text`), said now and shown on the hall display. The countdown is the
+  one that was already here.
+- **Manubrium's side** is not on the line at all: the phone talks to the
+  server's own API, which the `manubrium-v1` contract describes
+  (`GET /tournaments/:id/hall`, and the commands `hall/print`,
+  `hall/countdown`, `hall/announce`). The server turns each into the frames
+  above for the devices that are online, and answers how many that was.

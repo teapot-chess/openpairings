@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/teapot-chess/openpairings/main/priv/contracts/manubrium-v1/hall-countdown-request.schema.json",
+  "title": "POST /tournaments/:id/hall/countdown request",
+  "description": "Start the countdown to the latest published round on every announcer that is online (`minutes`), or end the one that runs (`cancel`).",
+  "type": "object",
+  "additionalProperties": false,
+  "oneOf": [{"required": ["minutes"]}, {"required": ["cancel"]}],
+  "properties": {
+    "minutes": {"type": "integer", "enum": [1, 2, 5, 10, 15, 20, 30]},
+    "cancel": {"type": "boolean", "const": true}
+  }
+}

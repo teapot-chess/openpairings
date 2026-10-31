@@ -164,6 +164,37 @@ defmodule PairingsEngine.Plugin do
           penalty: String.t() | nil
         }
 
+  @typedoc """
+  A hall app (Polis, Nunki) as Manubrium shows it: `app` is its id as the
+  hall-link contract names it, `devices` the stations or announcers joined
+  to the tournament, `countdown` the one still running or nil. `nil` from
+  the callback means "not switched on for this account".
+  """
+  @type hall_status :: %{
+          app: String.t(),
+          devices: [
+            %{
+              id: pos_integer(),
+              name: String.t(),
+              room: String.t(),
+              online: boolean(),
+              last_seen_at: DateTime.t() | nil
+            }
+          ],
+          countdown: %{round: pos_integer(), seconds_left: pos_integer()} | nil
+        }
+
+  @typedoc """
+  What Manubrium can ask of the hall apps: print again (`what` as the
+  hall-link `print` frame has it), start or cancel the round countdown,
+  say something. An app answers `:unsupported` to what is not its job.
+  """
+  @type hall_command ::
+          {:print, String.t()}
+          | {:countdown, pos_integer()}
+          | :cancel_countdown
+          | {:announce, String.t() | nil, String.t() | nil}
+
   @callback id() :: String.t()
   @callback name() :: String.t()
   @callback description() :: String.t()
@@ -187,6 +218,9 @@ defmodule PairingsEngine.Plugin do
               {:ok, String.t(), [map()]} | :none
   @callback migrations_path() :: String.t()
   @callback boot() :: any()
+  @callback hall_status(Scope.t(), Tournament.t()) :: hall_status() | nil
+  @callback hall_command(Scope.t(), Tournament.t(), hall_command()) ::
+              {:ok, non_neg_integer()} | {:error, atom()} | :unsupported
 
   @optional_callbacks routes: 0,
                       http_routes: 0,
@@ -198,5 +232,7 @@ defmodule PairingsEngine.Plugin do
                       team_schedule: 1,
                       roster_candidates: 3,
                       migrations_path: 0,
-                      boot: 0
+                      boot: 0,
+                      hall_status: 2,
+                      hall_command: 3
 end
