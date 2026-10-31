@@ -237,7 +237,7 @@ config :pairings_engine,
 
 # Configure outgoing email.
 #
-# SMTP credentials (Gmail) come from the .env loader above or from the real
+# SMTP credentials (Gmail by default; SMTP_HOST/SMTP_PORT for another relay) come from the .env loader above or from the real
 # process environment (systemd `Environment=` lines on the server). When both
 # are present we use real Gmail SMTP. In :prod email is MANDATORY - magic-link
 # login depends on it and there is no local mailbox in production - so we refuse
@@ -251,12 +251,45 @@ smtp_configured? =
   is_binary(smtp_username) and String.trim(smtp_username) != "" and
     is_binary(smtp_password) and String.trim(smtp_password) != ""
 
+# Optional: any SMTP relay with STARTTLS on its submission port, not only Gmail.
+smtp_host =
+  case System.get_env("SMTP_HOST") do
+    nil -> "smtp.gmail.com"
+    raw -> if String.trim(raw) == "", do: "smtp.gmail.com", else: String.trim(raw)
+  end
+
+smtp_port =
+  case System.get_env("SMTP_PORT") do
+    nil ->
+      587
+
+    raw ->
+      case Integer.parse(String.trim(raw)) do
+        {port, ""} when port in 1..65535 ->
+          port
+
+        _ ->
+          if String.trim(raw) == "",
+            do: 587,
+            else: raise("SMTP_PORT must be a port number (1-65535), got: #{inspect(raw)}")
+      end
+  end
+
+# Display name on outgoing mail; the address stays SMTP_USERNAME.
+smtp_from_name =
+  case System.get_env("SMTP_FROM_NAME") do
+    nil -> "OpenPairings"
+    raw -> if String.trim(raw) == "", do: "OpenPairings", else: String.trim(raw)
+  end
+
+config :pairings_engine, :mail_from_name, smtp_from_name
+
 cond do
   smtp_configured? and config_env() != :test ->
     config :pairings_engine, PairingsEngine.Mailer,
       adapter: Swoosh.Adapters.SMTP,
-      relay: "smtp.gmail.com",
-      port: 587,
+      relay: smtp_host,
+      port: smtp_port,
       username: smtp_username,
       password: smtp_password,
       tls: :always,
@@ -267,7 +300,7 @@ cond do
         verify: :verify_peer,
         cacerts: :public_key.cacerts_get(),
         depth: 3,
-        server_name_indication: ~c"smtp.gmail.com"
+        server_name_indication: String.to_charlist(smtp_host)
       ]
 
     # The SMTP adapter (gen_smtp) needs no HTTP API client.

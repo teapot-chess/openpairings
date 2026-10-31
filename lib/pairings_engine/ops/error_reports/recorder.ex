@@ -80,12 +80,11 @@ defmodule PairingsEngine.Ops.ErrorReports.Recorder do
   end
 
   defp send_mail(to, row) do
-    from_address = System.get_env("SMTP_USERNAME") || "contact@example.com"
 
     email =
       new()
       |> to(to)
-      |> from({"OpenPairings", from_address})
+      |> from(PairingsEngine.Mailer.from())
       |> subject("OpenPairings: new error (#{row.kind})")
       |> text_body("""
       A crash this server had not seen before.

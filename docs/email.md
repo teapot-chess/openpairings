@@ -40,11 +40,21 @@ At boot time, `config/runtime.exs` reads the `.env` file if it exists:
 
 If both `SMTP_USERNAME` and `SMTP_PASSWORD` are present and non-empty, the mailer is configured to use Swoosh's SMTP adapter with Gmail's relay (smtp.gmail.com:587, TLS, STARTTLS).
 
+Another mail server works too. Three optional variables:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `SMTP_HOST` | `smtp.gmail.com` | the relay; its certificate is verified against this name |
+| `SMTP_PORT` | `587` | submission port with STARTTLS; a value that is not a port number refuses to boot |
+| `SMTP_FROM_NAME` | `OpenPairings` | the display name on outgoing mail; the address is still `SMTP_USERNAME` |
+
+Mail bodies are sent with CRLF line endings, as SMTP requires; with bare LF Gmail on Android showed an empty message.
+
 If either variable is missing or empty, the local mailbox adapter remains active (dev = Swoosh.Adapters.Local, test = Swoosh.Adapters.Test).
 
 ### From address
 
-Outgoing emails use the `SMTP_USERNAME` as the from address at send time. If not set, they use the placeholder `contact@example.com`. No email address is hardcoded into source code.
+Outgoing emails use the `SMTP_USERNAME` as the from address at send time, and `SMTP_FROM_NAME` as the display name. If not set, they use the placeholder `contact@example.com`. No email address is hardcoded into source code.
 
 ### Testing
 
