@@ -126,6 +126,14 @@ defmodule PairingsEngine.PlayerImport do
     end
   end
 
+  @doc "`parse/2` of the file at `path` (an upload's temporary file); `{:error, :unreadable}` when it cannot be read."
+  def parse_file(path, filename \\ "") do
+    case File.read(path) do
+      {:ok, raw} -> parse(raw, filename)
+      {:error, _} -> {:error, :unreadable}
+    end
+  end
+
   ## ---------- TRF ----------
 
   defp parse_trf(raw) do

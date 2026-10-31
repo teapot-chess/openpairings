@@ -2177,9 +2177,9 @@ defmodule PairingsEngineWeb.PlayersLive do
   defp handle_import_progress(_name, _entry, socket), do: {:noreply, socket}
 
   defp read_player_file(path, name) do
-    case File.read(path) do
-      {:ok, raw} -> PlayerImport.parse(raw, name)
-      {:error, _} -> {:error, gettext("That file could not be read.")}
+    case PlayerImport.parse_file(path, name) do
+      {:error, :unreadable} -> {:error, gettext("That file could not be read.")}
+      other -> other
     end
   rescue
     exception ->
