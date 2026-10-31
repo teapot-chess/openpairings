@@ -17,6 +17,8 @@ Each entry is tagged so a version can be skimmed:
 
 ## [Unreleased]
 
+- [Feature] **Take the board's result.** The Pairings page has long shown what a live board saw, and just as long left you to retype it, which is a fine way to learn that boards and humans disagree about 1-0. Beside a result the board saw whole, where you have entered none, there is now a **Take** button, and above the table **Take all agreeing (n)**, which asks first and says how many. Both write through exactly the route a typed result takes, so locks, published rounds, team matches and OpenResults behave as before, and the audit log says the result was taken from the board. Existing results are never overwritten, a game whose moves were worked out, guessed or rewritten afterwards is not offered, and nothing is entered without your click.
+
 - [Change] **Standings: the row menu's second item now edits the player.** "Open the Players list" took you to the Players list and promptly forgot whom you had clicked. It is now **Edit player**, and the Players page opens with that player's edit form already waiting.
 
 - [Change] **New tournament: Format now sits above Rate of play.** The rate list follows the format, and the format was hiding underneath it, so a blitz event met a dropdown of classical time controls and nothing to suggest otherwise. Standard, Rapid and Blitz now come first, where you would look for them.

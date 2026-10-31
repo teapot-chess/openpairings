@@ -111,6 +111,8 @@ defmodule PairingsEngineWeb.PairingsLive do
        hand_reasons: [],
        # What the boards in the hall reported - see `assign_board_reports/1`.
        board_reports: nil,
+       # The count shown in the "Take all agreeing" confirmation, or nil.
+       confirm_take_all: nil,
        # Bumped whenever a result-entry write is REFUSED (e.g. an archived
        # tournament) - see the `result`/`confirm_clear_result` handlers'
        # comments and the `.BlindResultEntry` hook's `updated()` for why: a
@@ -388,6 +390,103 @@ defmodule PairingsEngineWeb.PairingsLive do
   end
 
   defp already_current?(_hint, _tournament, _socket), do: false
+
+  # Only a board with no result yet is ever a candidate: taking never
+  # overwrites.
+  defp take_candidate(pairing, reports) do
+    if pairing.result in [nil, ""],
+      do: PairingsEngine.BoardLink.takeable(pairing, Map.get(reports, pairing.game_uid)),
+      else: :error
+  end
+
+  defp take_all_candidates(%{board_reports: reports, round: %{} = round})
+       when is_map(reports) do
+    for pairing <- round.pairings,
+        {:ok, result} <- [take_candidate(pairing, reports)],
+        do: {pairing, result}
+  end
+
+  defp take_all_candidates(_assigns), do: []
+
+  defp log_result_entered(socket, pairing, result, extra) do
+    Audit.log(
+      socket.assigns.tournament.id,
+      socket.assigns.current_scope,
+      "pairing.result_entered",
+      Map.merge(
+        %{
+          pairing_id: pairing.id,
+          round: socket.assigns.round_number,
+          board: pairing.board,
+          white: player_name(pairing.white_player),
+          black: player_name(pairing.black_player),
+          from: pairing.result,
+          to: result
+        },
+        extra
+      )
+    )
+  end
+
+  # The one place a result typed or taken is written and recorded.
+  defp write_result(socket, pairing, result, extra) do
+    %{tournament: t, round_number: round_number} = socket.assigns
+    previous = pairing.result
+
+    case Tournaments.update_pairing_result(pairing, result) do
+      {:ok, _} ->
+        action =
+          if previous in [nil, ""],
+            do: "pairing.result_entered",
+            else: "pairing.result_changed"
+
+        Audit.log(
+          t.id,
+          socket.assigns.current_scope,
+          action,
+          Map.merge(
+            %{
+              pairing_id: pairing.id,
+              round: round_number,
+              board: pairing.board,
+              white: player_name(pairing.white_player),
+              black: player_name(pairing.black_player),
+              from: previous,
+              to: result
+            },
+            extra
+          )
+        )
+
+        {:noreply,
+         socket |> assign(confirm_clear_pairing_id: nil, confirm_postponed: nil) |> refresh()}
+
+      # A postponed game given a result that is not a draw (VCL4THP
+      # Q163), or a result already sent in a finalised TRF. Nothing was
+      # written; the choice is staged and the board asks first, the way
+      # clearing a result does. The nonce bump puts the select back to
+      # what is stored in the meantime.
+      {:error, {:needs_acknowledgement, ids}} ->
+        {:noreply,
+         socket
+         |> assign(
+           confirm_clear_pairing_id: nil,
+           confirm_postponed: %{pairing_id: pairing.id, result: result, ids: ids},
+           write_refused_nonce: socket.assigns.write_refused_nonce + 1
+         )
+         |> refresh()}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, error_text(reason))
+         |> assign(
+           confirm_clear_pairing_id: nil,
+           write_refused_nonce: socket.assigns.write_refused_nonce + 1
+         )
+         |> refresh()}
+    end
+  end
 
   # What the boards in the hall reported, per game, for the column beside
   # the results - or nil for a tournament with no live boards, which then
@@ -2223,54 +2322,79 @@ defmodule PairingsEngineWeb.PairingsLive do
         {:noreply, socket}
 
       pairing ->
-        previous = pairing.result
+        write_result(socket, pairing, result, %{})
+    end
+  end
 
+  # Taking what a board saw (`PairingsEngine.BoardLink.takeable/2`): the
+  # arbiter's click, and nothing else, enters it. It goes through
+  # `write_result/4` - the very function a hand-entered result does - so
+  # every lock and rule applies; only the audit line says where it came from.
+  def handle_event("take_board_result", %{"pairing-id" => id}, socket) do
+    with reports when is_map(reports) <- socket.assigns.board_reports,
+         %{} = round <- socket.assigns.round,
+         %{} = pairing <- Enum.find(round.pairings, &(&1.id == String.to_integer(id))),
+         {:ok, result} <- take_candidate(pairing, reports) do
+      write_result(socket, pairing, result, %{source: "board"})
+    else
+      _ ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("That board result can no longer be taken."))
+         |> assign_board_reports()
+         |> refresh()}
+    end
+  end
+
+  def handle_event("ask_take_all_board_results", _params, socket) do
+    case take_all_candidates(socket.assigns) do
+      [] -> {:noreply, assign(socket, confirm_take_all: nil)}
+      list -> {:noreply, assign(socket, confirm_take_all: length(list))}
+    end
+  end
+
+  def handle_event("cancel_take_all_board_results", _params, socket),
+    do: {:noreply, assign(socket, confirm_take_all: nil)}
+
+  def handle_event("take_all_board_results", _params, socket) do
+    socket = assign(socket, confirm_take_all: nil)
+
+    {taken, refused} =
+      Enum.reduce(take_all_candidates(socket.assigns), {0, 0}, fn {pairing, result}, {ok, no} ->
         case Tournaments.update_pairing_result(pairing, result) do
           {:ok, _} ->
-            action =
-              if previous in [nil, ""],
-                do: "pairing.result_entered",
-                else: "pairing.result_changed"
+            log_result_entered(socket, pairing, result, %{source: "board", bulk: true})
+            {ok + 1, no}
 
-            Audit.log(t.id, socket.assigns.current_scope, action, %{
-              pairing_id: pairing.id,
-              round: round_number,
-              board: pairing.board,
-              white: player_name(pairing.white_player),
-              black: player_name(pairing.black_player),
-              from: previous,
-              to: result
-            })
-
-            {:noreply,
-             socket |> assign(confirm_clear_pairing_id: nil, confirm_postponed: nil) |> refresh()}
-
-          # A postponed game given a result that is not a draw (VCL4THP
-          # Q163), or a result already sent in a finalised TRF. Nothing was
-          # written; the choice is staged and the board asks first, the way
-          # clearing a result does. The nonce bump puts the select back to
-          # what is stored in the meantime.
-          {:error, {:needs_acknowledgement, ids}} ->
-            {:noreply,
-             socket
-             |> assign(
-               confirm_clear_pairing_id: nil,
-               confirm_postponed: %{pairing_id: pairing.id, result: result, ids: ids},
-               write_refused_nonce: socket.assigns.write_refused_nonce + 1
-             )
-             |> refresh()}
-
-          {:error, reason} ->
-            {:noreply,
-             socket
-             |> put_flash(:error, error_text(reason))
-             |> assign(
-               confirm_clear_pairing_id: nil,
-               write_refused_nonce: socket.assigns.write_refused_nonce + 1
-             )
-             |> refresh()}
+          _ ->
+            {ok, no + 1}
         end
-    end
+      end)
+
+    socket =
+      if refused > 0,
+        do:
+          put_flash(
+            socket,
+            :error,
+            ngettext(
+              "%{count} board result could not be taken (a lock or a rule refused it); enter it by hand.",
+              "%{count} board results could not be taken (a lock or a rule refused them); enter them by hand.",
+              refused
+            )
+          ),
+        else:
+          put_flash(
+            socket,
+            :info,
+            ngettext(
+              "Took %{count} result from the boards.",
+              "Took %{count} results from the boards.",
+              taken
+            )
+          )
+
+    {:noreply, refresh(socket)}
   end
 
   # The arbiter confirmed a result that is not a draw for a postponed game.
@@ -8696,6 +8820,61 @@ defmodule PairingsEngineWeb.PairingsLive do
         </ul>
       </div>
 
+      <%!-- Results the boards saw whole, for boards with none entered. Asked
+            first, with the count; focus goes to Cancel, the safe answer. --%>
+      <% take_all_count = length(take_all_candidates(assigns)) %>
+      <div
+        :if={@board_reports && (take_all_count > 0 or @confirm_take_all)}
+        id="take-board-results"
+        class="card take-board-results"
+        role="region"
+        aria-label={gettext("Results from the boards")}
+      >
+        <%= if @confirm_take_all do %>
+          <span class="hint" id="take-all-board-results-text">
+            {ngettext(
+              "Enter the result the board saw for %{count} game that has none? Existing results are never touched.",
+              "Enter the results the boards saw for %{count} games that have none? Existing results are never touched.",
+              @confirm_take_all
+            )}
+          </span>
+          <button
+            type="button"
+            class="pe-btn primary"
+            id="take-all-board-results-yes"
+            phx-click="take_all_board_results"
+            aria-describedby="take-all-board-results-text"
+          >
+            {gettext("Yes, enter them")}
+          </button>
+          <button
+            type="button"
+            class="pe-btn"
+            id="take-all-board-results-cancel"
+            phx-click="cancel_take_all_board_results"
+            aria-describedby="take-all-board-results-text"
+            phx-mounted={JS.focus()}
+          >
+            {gettext("Cancel")}
+          </button>
+        <% else %>
+          <button
+            type="button"
+            class="pe-btn"
+            id="take-all-board-results"
+            phx-click="ask_take_all_board_results"
+            disabled={!is_nil(@tournament.archived_at)}
+          >
+            {gettext("Take all agreeing (%{count})", count: take_all_count)}
+          </button>
+          <span class="hint">
+            {gettext(
+              "Boards that saw the whole game and have no result entered. Nothing is entered until you confirm."
+            )}
+          </span>
+        <% end %>
+      </div>
+
       <div class="card table-card">
         <table
           class="pe-table pairings-board-table"
@@ -9003,6 +9182,37 @@ defmodule PairingsEngineWeb.PairingsLive do
                   report={Map.get(@board_reports, pairing.game_uid)}
                   tournament={@tournament}
                 />
+                <%!-- Taking is the arbiter's click and nothing else: the same
+                      write as typing the result, recorded as taken from the
+                      board. Only for a result the board saw whole. --%>
+                <button
+                  :if={
+                    match?(
+                      {:ok, _},
+                      PairingsEngine.BoardLink.takeable(
+                        pairing,
+                        Map.get(@board_reports, pairing.game_uid)
+                      )
+                    )
+                  }
+                  type="button"
+                  class="pe-btn board-take"
+                  id={"take-board-result-#{pairing.id}"}
+                  phx-click="take_board_result"
+                  phx-value-pairing-id={pairing.id}
+                  disabled={!is_nil(@tournament.archived_at)}
+                  aria-label={
+                    gettext(
+                      "Take the board's result %{result}, board %{board}: %{white} against %{black}",
+                      result: Map.get(@board_reports, pairing.game_uid).result,
+                      board: display_board,
+                      white: player_name(pairing.white_player),
+                      black: player_name(pairing.black_player)
+                    )
+                  }
+                >
+                  {gettext("Take")}
+                </button>
               </td>
             </tr>
           </tbody>
