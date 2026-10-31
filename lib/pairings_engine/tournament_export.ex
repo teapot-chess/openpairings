@@ -100,6 +100,7 @@ defmodule PairingsEngine.TournamentExport do
     fide_tournament_id fide_homologated norm_event_type fide_id_ranges officials
     pairing_system rr_cycles rr_match_format rr_reverse_last_two rr_round_map
     swiss_match_format
+    swiss_variant
     keizer_top_value pair_by_category
     team_boards team_match_points_win team_match_points_draw team_match_points_loss
     team_board_colours team_pab_match_points team_pab_game_points team_withdrawal_annul team_forfeit_board_points

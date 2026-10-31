@@ -379,14 +379,14 @@ defmodule PairingsEngine.ManualPairing do
 
   @doc """
   Whether a round of `tournament` can be held to a pairing checker: an
-  individual Dutch Swiss paired as one pool, both legs not mirrored (the
-  engine), or a round robin paired by hand (its Berger table).
+  individual Dutch Swiss (not Dubov: the checker is the Dutch system) paired
+  as one pool, both legs not mirrored (the engine), or a round robin paired by hand (its Berger table).
   """
   def checkable?(%Tournament{} = t), do: swiss_checkable?(t) or RoundRobin.by_hand?(t)
 
   defp swiss_checkable?(t) do
     t.pairing_system == "swiss" and not t.pair_by_category and not t.swiss_match_format and
-      not Tournament.paired_as_teams?(t)
+      not Tournament.paired_as_teams?(t) and not Tournament.dubov?(t)
   end
 
   @doc """

@@ -151,6 +151,11 @@ defmodule PairingsEngine.Compliance do
       restore_to: ["swiss", "round_robin"]
     },
     %{
+      setting: :swiss_variant,
+      code: :swiss_system_not_endorsed,
+      restore_to: ["dutch"]
+    },
+    %{
       setting: :pair_by_category,
       code: :categories_paired_separately,
       restore_to: [false]
@@ -255,6 +260,13 @@ defmodule PairingsEngine.Compliance do
   # down.
   defp departed?(:non_fide_pairing_system, t),
     do: t.pairing_system not in ["swiss", "round_robin"]
+
+  # The Dubov system (C.04.4.1) is a FIDE system, but not the one this
+  # program is endorsed for: the endorsement covers the Dutch system
+  # (C.04.3) and nothing else, and `VCL.03` asks the system a standard
+  # invocation runs to be an endorsed one. A Dubov event is paired by
+  # FIDE's rules and still is not FIDE mode here.
+  defp departed?(:swiss_system_not_endorsed, t), do: Tournament.dubov?(t)
 
   # Each category is paired completely independently - its own engine run and
   # its own pairing-allocated bye - and the results are merged into one

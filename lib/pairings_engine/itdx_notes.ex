@@ -43,7 +43,7 @@ defmodule PairingsEngine.ItdxNotes do
                rate_of_play initial_colour initial_colour_drawn rating_method
                initial_order_tiebreak late_entry_numbering round_one_absentees_late soft_position
                extra_points_mode count_extra_points pair_by_category categories_enabled
-               rr_cycles rr_match_format rr_reverse_last_two keizer_top_value swiss_match_format
+               rr_cycles rr_match_format rr_reverse_last_two keizer_top_value swiss_match_format swiss_variant
                postponed_games postponed_requester_outcome postponed_opponent_outcome
                fide_compliance_lost_round baku_group_a_last
                team_boards team_match_points_win team_match_points_draw team_match_points_loss

@@ -500,10 +500,17 @@ defmodule PairingsEngine.Norms.Forms do
   # otherwise.
   defp swiss_variant_label(tournament, o) do
     case blank(Map.get(o, "swiss_variant")) do
-      nil -> if tournament.pairing_system == "swiss", do: "Dutch", else: nil
-      variant -> variant
+      nil ->
+        if tournament.pairing_system == "swiss", do: swiss_system_label(tournament), else: nil
+
+      variant ->
+        variant
     end
   end
+
+  # The column the Settings page sets (`Tournament.swiss_variant`).
+  defp swiss_system_label(%{swiss_variant: "dubov"}), do: "Dubov"
+  defp swiss_system_label(_tournament), do: "Dutch"
 
   defp standard_label("standard"), do: "Standard"
   defp standard_label("rapid"), do: "Rapid"

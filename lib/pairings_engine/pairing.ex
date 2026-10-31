@@ -1529,12 +1529,16 @@ defmodule PairingsEngine.Pairing do
       round_absentees,
       pending_payload(tournament, next_number, plan.sections)
     )
+    |> stamp_dubov(tournament)
     |> with_deferred(plan.sections)
   end
 
   defp save_plan(%{kind: :categories} = plan, tournament, next_number) do
     round_absentees = round_absentees(tournament, next_number, plan.round_specific)
-    insert_category_round(tournament, plan, next_number, round_absentees)
+
+    tournament
+    |> insert_category_round(plan, next_number, round_absentees)
+    |> stamp_dubov(tournament)
   end
 
   @doc false
@@ -1703,7 +1707,7 @@ defmodule PairingsEngine.Pairing do
          rank_by_id,
          player_by_local_rank
        ) do
-    if (tournament.engine_bye_preferences || []) != [] do
+    if (tournament.engine_bye_preferences || []) != [] or Tournament.dubov?(tournament) do
       {:error, :variants_unsupported}
     else
       round_index = length(run.history.rounds) - 1
@@ -2714,6 +2718,120 @@ defmodule PairingsEngine.Pairing do
       # exactly as the option's absence does, byte for byte.
       bye_exclusions: tournament.engine_bye_exclusions || []
     ]
+  end
+
+  # The Dubov system (C.04.4.1, `Ainalrami.Dubov`): the same field, read off
+  # the same TRF, with the options it shares with the Dutch engine - the
+  # round count, the initial colour, the point system and the forbidden
+  # pairs. Baku's virtual points ride on the players, as they do for Dutch.
+  # The organiser's own tools (soft rules, bye preferences and exclusions,
+  # the match format) are not Dubov's; the engine refuses them rather than
+  # pairing as if they had been honoured, and so does this, in words.
+  #
+  # No account, no trace and no proof: the explainer, the command-line
+  # trace and the proof are the Dutch engine's, and none of them describes
+  # a Dubov round. `deferred` is nil, so the round is saved with no
+  # explanation record and the job has nothing to start.
+  defp run_dubov(tournament, parsed, round_number, category_name, soft) do
+    cond do
+      soft != [] ->
+        {:error, ainalrami_scoped(dubov_refusal(:soft_pairs), category_name)}
+
+      (tournament.engine_bye_exclusions || []) != [] ->
+        {:error, ainalrami_scoped(dubov_refusal(:bye_exclusions), category_name)}
+
+      (tournament.engine_bye_preferences || []) != [] ->
+        {:error, ainalrami_scoped(dubov_refusal(:bye_preferences), category_name)}
+
+      true ->
+        opts = [
+          expected_rounds: parsed.tournament[:number_of_rounds],
+          initial_colour: parsed.tournament[:initial_colour],
+          point_system: Tournament.engine_point_system(tournament),
+          forbidden_pairs: parsed.tournament[:forbidden_pairs]
+        ]
+
+        case Ainalrami.Dubov.pair_next_round(parsed.players, opts) do
+          {:ok, pairs} ->
+            {:ok, Enum.map(pairs, &ainalrami_bye_to_zero/1), nil}
+
+          {:error, reason} ->
+            Logger.warning(
+              "The Dubov system refused #{engine_log_scope(tournament, round_number, category_name)}: #{inspect(reason)}"
+            )
+
+            dubov_error(reason, parsed.players, category_name)
+        end
+    end
+  end
+
+  defp dubov_error(:no_legal_pairing, _players, category_name) do
+    {:error,
+     {:no_legal_pairing,
+      ainalrami_scoped(
+        "The Dubov system found no legal pairing for this round (C.04.4.1 1.9.3: the Chief Arbiter decides). It has no topscorer exception, so this can happen where the Dutch system would pair.",
+        category_name
+      )}}
+  end
+
+  defp dubov_error(:no_legal_bye, _players, category_name) do
+    {:error,
+     {:no_legal_pairing,
+      ainalrami_scoped(
+        "The Dubov system found nobody who can take the bye and leave the rest of the field pairable.",
+        category_name
+      )}}
+  end
+
+  defp dubov_error({:unrated, ranks}, players, category_name) do
+    names =
+      players
+      |> Enum.filter(&(&1.rank in ranks))
+      |> Enum.map_join(", ", &(Map.get(&1, :name) || "##{&1.rank}"))
+
+    {:error,
+     ainalrami_scoped(
+       "The Dubov system needs a rating for every player (C.04.4.1 1.1), and these have none: #{names}. Give each a rating on the Players page before pairing.",
+       category_name
+     )}
+  end
+
+  defp dubov_error(reason, _players, category_name) do
+    {:error,
+     ainalrami_scoped(
+       "The Dubov system could not pair this round: #{inspect(reason)}",
+       category_name
+     )}
+  end
+
+  defp dubov_refusal(:soft_pairs),
+    do:
+      "The Dubov system does not take soft pairing rules. Remove them, or make them hard, before pairing."
+
+  defp dubov_refusal(:bye_exclusions),
+    do:
+      "The Dubov system does not take bye exclusions: who gets the bye is decided by C.04.4.1 3.1 alone. Remove them before pairing."
+
+  defp dubov_refusal(:bye_preferences),
+    do:
+      "The Dubov system does not take bye preferences: who gets the bye is decided by C.04.4.1 3.1 alone. Remove them before pairing."
+
+  # A round the Dubov system paired records the engine that did it, as a
+  # Dutch round does through its account (`engine_stamp/2`) - which a Dubov
+  # round has none of. Only the engine's plans reach here, never a round
+  # paired by hand.
+  defp stamp_dubov({:ok, %Round{} = round}, tournament),
+    do: {:ok, stamp_dubov_round(round, tournament)}
+
+  defp stamp_dubov({:ok, %Round{} = round, sections}, tournament),
+    do: {:ok, stamp_dubov_round(round, tournament), sections}
+
+  defp stamp_dubov(other, _tournament), do: other
+
+  defp stamp_dubov_round(round, tournament) do
+    if Tournament.dubov?(tournament),
+      do: round |> Ecto.Changeset.change(Round.engine_fields()) |> Repo.update!(),
+      else: round
   end
 
   defp soft_position(%Tournament{soft_position: "weak"}), do: :weak
@@ -3761,6 +3879,9 @@ defmodule PairingsEngine.Pairing do
 
   defp run_ainalrami(tournament, input, round_number, category_name, soft, run) do
     case ainalrami_field(input) do
+      {:ok, parsed} when tournament.swiss_variant == "dubov" ->
+        run_dubov(tournament, parsed, round_number, category_name, soft)
+
       {:ok, parsed} ->
         engine_opts = ainalrami_opts(tournament, parsed, soft)
 

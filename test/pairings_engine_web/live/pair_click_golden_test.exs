@@ -186,6 +186,11 @@ defmodule PairingsEngineWeb.PairClickGoldenTest do
   `swiss_variant` ("dutch"). The version is normalised to `:engine_version`,
   so an engine bump does not show here. With those keys taken out the
   regenerated file is equal, term for term, to the one before.
+
+  And for the Swiss system (dubov-wiring): every JSON export, and the
+  written snapshot, gains `tournament.swiss_variant` ("dutch"). With that
+  key taken out the regenerated file is equal, term for term, to the one
+  before.
   """
   use PairingsEngineWeb.ConnCase, async: false
 

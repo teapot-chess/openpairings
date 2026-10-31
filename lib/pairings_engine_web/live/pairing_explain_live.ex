@@ -39,10 +39,26 @@ defmodule PairingsEngineWeb.PairingExplainLive do
         # A team Swiss was paired team against team (C.04.6): the individual
         # analysis below would explain boards the engine never decided on.
         # Its page is the team engine's own account.
-        if Tournament.team_swiss?(tournament) do
-          {:ok, mount_team(socket, tournament, round_number)}
-        else
-          mount_individual(socket, tournament, round_number)
+        # A Dubov round (C.04.4.1) has no account of its own, and the
+        # reconstruction below is the Dutch system's: it would explain the
+        # round by rules that did not pair it.
+        cond do
+          Tournament.team_swiss?(tournament) ->
+            {:ok, mount_team(socket, tournament, round_number)}
+
+          Tournament.dubov?(tournament) ->
+            {:ok,
+             socket
+             |> put_flash(
+               :info,
+               gettext(
+                 "The pairing rationale explains the Dutch system's rounds. This tournament is paired by the Dubov system, which has none here yet."
+               )
+             )
+             |> push_navigate(to: ~p"/t/#{tournament.id}/pairings")}
+
+          true ->
+            mount_individual(socket, tournament, round_number)
         end
 
       _ ->

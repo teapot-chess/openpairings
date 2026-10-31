@@ -555,4 +555,45 @@ defmodule PairingsEngineWeb.SettingsOptionsLiveTest do
       refute Repo.reload!(tournament).round_one_absentees_late
     end
   end
+
+  describe "Swiss system - Dutch or Dubov" do
+    test "choosing Dubov leaves FIDE mode and says why, on the page and in the strip", %{
+      conn: conn,
+      scope: scope
+    } do
+      tournament = create_tournament(scope)
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/options")
+
+      assert has_element?(lv, "#swiss-variant-select option[value=dutch][selected]")
+      refute has_element?(lv, "#swiss-variant-dubov-note")
+
+      lv
+      |> form("#pairing-settings-form", %{"tournament" => %{"swiss_variant" => "dubov"}})
+      |> render_submit()
+
+      PairingsEngineWeb.FideGateHelpers.confirm_fide_exit(lv)
+
+      saved = Repo.reload!(tournament)
+      assert saved.swiss_variant == "dubov"
+      refute PairingsEngine.Compliance.fide_mode?(saved)
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/options")
+      assert has_element?(lv, "#swiss-variant-dubov-note")
+      assert has_element?(lv, "#not-fide-mode-dubov")
+    end
+
+    test "it is frozen once round 1 is paired", %{conn: conn, scope: scope} do
+      tournament = create_tournament(scope)
+
+      for {name, rating} <- [{"A", 2000}, {"B", 1900}] do
+        Tournaments.create_player(tournament.id, %{name: name, fide_rating: rating})
+      end
+
+      {:ok, _} =
+        PairingsEngine.Pairing.pair_next_round(Tournaments.get_tournament!(tournament.id))
+
+      {:ok, lv, _html} = live(conn, ~p"/t/#{tournament.id}/settings/options")
+      assert has_element?(lv, "#swiss-variant-select[disabled]")
+    end
+  end
 end

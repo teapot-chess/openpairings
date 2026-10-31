@@ -161,6 +161,38 @@ Een speler met een **vaste tafel** ([Spelers en ratinglijsten](04-players-and-ra
 wordt met die tafel gelabeld; dat is alleen een label voor het afdrukken en
 verandert niet wie tegen wie speelt.
 
+### Het Dubov-systeem {#the-dubov-system}
+
+Een Zwitsers toernooi wordt gepaard met het FIDE **Nederlandse systeem**
+(C.04.3), tenzij je iets anders kiest. *Instellingen - Opties - Zwitsers
+systeem* (geavanceerd) biedt ook het **Dubov-systeem** (C.04.4.1, de editie van
+2026), gepaard door dezelfde engine.
+
+> [!WARNING]
+> Kies je Dubov, dan verlaat het toernooi de **FIDE-modus**. Dubov is een
+> FIDE-systeem, maar dit programma is door de FIDE alleen erkend voor het
+> Nederlandse systeem, en die erkenning dekt Dubov niet. De instelling, de
+> FIDE-pagina en de strook bovenaan elke pagina van het toernooi zeggen dat.
+
+Wat er anders is met Dubov:
+
+- elke speler heeft een FIDE-rating nodig: een speler zonder rating houdt de
+  paring tegen, en de melding noemt hem;
+- het heeft geen uitzondering voor de koplopers, dus het kan een ronde
+  onpaarbaar vinden die het Nederlandse systeem wel zou paren, en dan paar je
+  die ronde met de hand;
+- het matchformaat, byevoorkeuren, bye-uitsluitingen en zachte paringsregels
+  gaan er niet mee samen: het programma weigert de ronde en zegt wat in de weg
+  zit. Verboden paringen, club- en federatie-uitsluitingen en Baku-versnelling
+  werken wel;
+- de ronde heeft geen paringsverantwoording, geen engine-verslag en geen
+  paringsbewijs, want die beschrijven het Nederlandse systeem.
+
+De keuze ligt vast zodra ronde 1 gepaard is. Het ratingrapport schrijft
+`192 FIDE_DUBOV` (`FIDE_DUBOV_BAKU` met Baku), een import van zo'n bestand komt
+terug als Dubov-toernooi, en de uitslagensite krijgt het systeem te horen.
+
+
 ## Rondetoernooi {#round-robin}
 
 Een rondetoernooi paart het **hele toernooi in één keer**: de knop luidt *Het

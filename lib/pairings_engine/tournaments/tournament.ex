@@ -12,6 +12,7 @@ defmodule PairingsEngine.Tournaments.Tournament do
   # Which pairing engine PairingsEngine.Pairing.pair_next_round/1 dispatches
   # to - independent of `type` above (FIDE report classification).
   @pairing_systems ~w(swiss round_robin keizer)
+  @swiss_variants ~w(dutch dubov)
   # How many times everyone plays everyone in a round robin. Any whole
   # number from 1 up to this: a list of allowed values only lasted until
   # somebody wanted the one after its end. Ten is a sanity bound on a form
@@ -855,6 +856,15 @@ defmodule PairingsEngine.Tournaments.Tournament do
     # first round, same as `pairing_system`/`rr_match_format`.
     field :swiss_match_format, :boolean, default: false
 
+    # Swiss only: which FIDE Swiss system pairs the rounds - "dutch"
+    # (C.04.3, `Ainalrami.Pairing`) or "dubov" (C.04.4.1, `Ainalrami.Dubov`).
+    # Inert for every other pairing system and for team events, which pair
+    # by C.04.6. Dubov takes the tournament out of FIDE mode: the program
+    # is endorsed for the Dutch system only (`PairingsEngine.Compliance`).
+    # Frozen with round 1 like `pairing_system`. Not the IT3 form's
+    # free-text `officials["swiss_variant"]`, which it fills when blank.
+    field :swiss_variant, :string, default: "dutch"
+
     # Team tournaments only (`type` "team-roundrobin"/"team-swiss") - inert
     # for every individual tournament, same tolerance as `acceleration`.
     # See docs/team-tournaments.md.
@@ -1497,6 +1507,7 @@ defmodule PairingsEngine.Tournaments.Tournament do
       :rr_reverse_last_two,
       :keizer_top_value,
       :swiss_match_format,
+      :swiss_variant,
       :team_boards,
       :team_match_points_win,
       :team_match_points_draw,
@@ -1537,6 +1548,8 @@ defmodule PairingsEngine.Tournaments.Tournament do
     |> validate_inclusion(:status, @statuses)
     |> validate_inclusion(:standard, @standards)
     |> validate_inclusion(:pairing_system, @pairing_systems)
+    |> validate_inclusion(:swiss_variant, @swiss_variants)
+    |> validate_dubov_shape()
     |> validate_required([:rr_cycles])
     |> validate_number(:rr_cycles,
       greater_than_or_equal_to: 1,
@@ -1608,6 +1621,23 @@ defmodule PairingsEngine.Tournaments.Tournament do
   # Rooms are tidied (names trimmed, boards rewritten, new rooms given an
   # id) or refused, with every problem named, through the one checker the
   # Rooms page also uses for its live feedback.
+  # The Dubov system pairs every round on its own (C.04.4.1): it has no
+  # mirrored second leg, so the Swiss match format is not available with
+  # it. The engine refuses the combination; the settings say so first.
+  defp validate_dubov_shape(changeset) do
+    if get_field(changeset, :pairing_system) == "swiss" and
+         get_field(changeset, :swiss_variant) == "dubov" and
+         get_field(changeset, :swiss_match_format) == true do
+      add_error(
+        changeset,
+        :swiss_variant,
+        "the Dubov system cannot be combined with the match format"
+      )
+    else
+      changeset
+    end
+  end
+
   defp validate_rooms(changeset) do
     case fetch_change(changeset, :rooms) do
       :error ->
@@ -2739,6 +2769,17 @@ defmodule PairingsEngine.Tournaments.Tournament do
   def type_label(other), do: other
 
   def pairing_systems, do: @pairing_systems
+
+  @doc "The Swiss systems a Swiss tournament can be paired by."
+  def swiss_variants, do: @swiss_variants
+
+  @doc """
+  Whether `tournament` pairs its rounds by the Dubov system (C.04.4.1): an
+  individual Swiss with `swiss_variant` "dubov". Team events pair by
+  C.04.6 whatever the field says.
+  """
+  def dubov?(%{pairing_system: "swiss", swiss_variant: "dubov"} = t), do: not team?(t)
+  def dubov?(_tournament), do: false
   def max_rr_cycles, do: @max_rr_cycles
   def soft_positions, do: @soft_positions
 

@@ -463,12 +463,12 @@ defmodule PairingsEngine.Snapshot do
 
   # The contract's three systems are `pairing_system`'s three, not `type`'s
   # four: `type` is the FIDE report classification and has no Keizer at all.
-  # Added 2026-10-31: which Swiss system, beside `system: swiss`. Only the
-  # Dutch system is paired today; a team Swiss (C.04.6) is none of the
-  # individual systems and says nothing.
+  # Added 2026-10-31: which Swiss system, beside `system: swiss` - the
+  # tournament's `swiss_variant`, "dutch" or "dubov". A team Swiss (C.04.6)
+  # is none of the individual systems and says nothing.
   defp put_swiss_variant(row, %Tournament{} = t) do
     if system(t) == "swiss" and not Tournament.team?(t),
-      do: Map.put(row, "swiss_variant", "dutch"),
+      do: Map.put(row, "swiss_variant", t.swiss_variant || "dutch"),
       else: row
   end
 

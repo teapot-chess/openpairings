@@ -2058,6 +2058,11 @@ defmodule PairingsEngine.TrfExport do
       t.swiss_match_format ->
         "CUSTOM_SWISS"
 
+      # The Dubov system (C.04.4.1): `FIDE_DUBOV`, `_BAKU` under Baku, as
+      # TRF26's table spells it. The table has no edition suffix for it.
+      t.swiss_variant == "dubov" ->
+        "FIDE_DUBOV" <> baku
+
       true ->
         "FIDE_DUTCH_2025" <> baku
     end

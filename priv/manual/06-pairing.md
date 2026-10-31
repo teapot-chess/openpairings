@@ -151,6 +151,36 @@ A player with a **fixed table** ([Players and rating lists](04-players-and-ratin
 labelled with that table; it is a label for printing only and does not
 change who plays whom.
 
+### The Dubov system {#the-dubov-system}
+
+A Swiss is paired by the FIDE **Dutch system** (C.04.3) unless you choose
+otherwise. *Settings - Options - Swiss system* (advanced) also offers the
+**Dubov system** (C.04.4.1, the 2026 edition), paired by the same engine.
+
+> [!WARNING]
+> Choosing Dubov takes the tournament **out of FIDE mode**. Dubov is a FIDE
+> system, but this program is endorsed by FIDE for the Dutch system only, and
+> the endorsement does not stretch to cover it. The setting, the FIDE page and
+> the strip at the top of every page of the tournament say so.
+
+What is different with Dubov:
+
+- every player needs a FIDE rating: an unrated player stops the pairing, and
+  the message names them;
+- it has no topscorer exception, so it can find a round unpairable that the
+  Dutch system would pair, and then the round is yours to pair by hand;
+- the match format, bye preferences, bye exclusions and soft pairing rules do
+  not go with it: the program refuses the round and says which one is in the
+  way. Forbidden pairings, club and federation exclusions and Baku
+  acceleration do work;
+- the round has no pairing rationale, no engine trace and no pairing proof,
+  because those describe the Dutch system.
+
+The choice is frozen once round 1 is paired. The rating report writes
+`192 FIDE_DUBOV` (`FIDE_DUBOV_BAKU` with Baku), an import of such a file comes
+back as a Dubov tournament, and the results site is told the system.
+
+
 ## Round robin
 
 A round robin pairs the **whole tournament at once**: the button reads *Pair

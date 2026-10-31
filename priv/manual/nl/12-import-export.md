@@ -207,7 +207,7 @@ wordt uitgelegd in [Versturen naar FIDE](10-fide-report.md).
 Het geschreven bestand is TRF26, het rapportformaat van 2026. Het heeft de spelerregels
 in de TRF16-indeling, en de toernooirecords: het aantal rondes (142), de startkleur
 (152), het puntensysteem als dat niet 1, ½, 0 is (162), het programma (182), het type
-toernooi (192, bijvoorbeeld `FIDE_DUTCH_2025` voor een Zwitsers toernooi, `_BAKU` met versnelling,
+toernooi (192, bijvoorbeeld `FIDE_DUTCH_2025` voor een Zwitsers toernooi, `FIDE_DUBOV` voor een Dubov-toernooi, `_BAKU` met versnelling,
 `BERGER_ROUNDROBIN_Gn`, `FIDE_TEAM_TYPEA_MP_GP`, of `CUSTOM_SWISS` voor Keizer), de
 tiebreaks (202) en het speeltempo (222). Het meldt de gespeelde partijen en niets
 wat er alleen is om de volgende ronde te paren: geen virtuele punten (250), geen verboden
