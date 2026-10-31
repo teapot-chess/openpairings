@@ -1,4 +1,4 @@
-defmodule PairingsEngineWeb.ManubriumHallTest do
+defmodule PairingsEngineWeb.ManubriumHallAppsTest do
   @moduledoc """
   The hall apps from Manubrium (`PairingsEngineWeb.ManubriumApi.HallController`):
   who is online, and the three commands. The core knows no hall app, so a

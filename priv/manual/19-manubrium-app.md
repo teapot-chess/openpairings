@@ -137,10 +137,10 @@ withdraw one, as on the **Boards** settings page.
 
 ## The hall's printer and announcer {#hall}
 
-If the hall has a print station ([Polis](/help/other/polis)) or an announcer
-([Nunki](/help/other/nunki)) joined to the tournament, **More** has a **Hall**
-card for the organiser and editors. It lists them with their room and whether
-they are online, and has four things to press:
+If the hall has a print station (Polis) or an announcer (Nunki) joined to the
+tournament, **More** has a **Hall (print stations and announcers)** card for
+the organiser and editors. It lists them with their room and whether
+they are online, and has three things to press:
 
 - **Reprint round**: the latest published round's pairings, place cards, both,
   the standings, a player list in alphabetical order with board and room, or

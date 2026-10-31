@@ -25,7 +25,7 @@ defmodule PairingsEngineWeb.ManubriumContractTest do
   @api "/api/manubrium/v1"
 
   # Every request example, and so every one the tests must send. The hall ones
-  # are sent by `ManubriumHallTest`, which has a plugin to answer them.
+  # are sent by `ManubriumHallAppsTest`, which has a plugin to answer them.
   @request_examples ~w(
     board-link-create-request.json
     byes-request.json

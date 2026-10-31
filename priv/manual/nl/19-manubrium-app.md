@@ -142,10 +142,10 @@ op de instellingenpagina **Borden**.
 
 ## De printer en de omroeper in de zaal {#hall}
 
-Is er een printstation ([Polis](/help/other/polis)) of een omroeper
-([Nunki](/help/other/nunki)) aan het toernooi gekoppeld, dan heeft **Meer** een
-kaart **Zaal (printstations en omroepers)** voor de organisator en bewerkers. Die toont ze met hun zaal en
-of ze online zijn, en heeft vier dingen om op te drukken:
+Is er een printstation (Polis) of een omroeper (Nunki) aan het toernooi
+gekoppeld, dan heeft **Meer** een kaart **Zaal (printstations en omroepers)**
+voor de organisator en bewerkers. Die toont ze met hun zaal en
+of ze online zijn, en heeft drie dingen om op te drukken:
 
 - **Ronde opnieuw printen**: de paringen van de laatst gepubliceerde ronde, de
   tafelkaartjes, allebei, de stand, een spelerslijst op alfabet met bord en
